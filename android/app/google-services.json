@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "228645493671",
+    "firebase_url": "https://barbero-88d00-default-rtdb.firebaseio.com",
+    "project_id": "barbero-88d00",
+    "storage_bucket": "barbero-88d00.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:228645493671:android:2eb7e4d7ac4fe94671f482",
+        "android_client_info": {
+          "package_name": "com.atelier22.atelier22"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:228645493671:android:1988f47a70dbe19d71f482",
+        "android_client_info": {
+          "package_name": "com.barberin.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:228645493671:android:e293681e913a4d4c71f482",
+        "android_client_info": {
+          "package_name": "com.example.barbero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
