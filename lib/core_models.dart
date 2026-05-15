@@ -369,10 +369,105 @@ List<ServicePriceSetting> buildDefaultServicePrices() {
   ];
 }
 
+class SlotCapacityOverride {
+  const SlotCapacityOverride({
+    required this.dayIndex,
+    required this.start,
+    required this.end,
+    required this.appointmentsPerSlot,
+  });
+
+  final int dayIndex;
+  final String start;
+  final String end;
+  final int appointmentsPerSlot;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dayIndex': dayIndex,
+      'start': start,
+      'end': end,
+      'appointmentsPerSlot': appointmentsPerSlot,
+    };
+  }
+
+  factory SlotCapacityOverride.fromJson(Map<String, dynamic> json) {
+    return SlotCapacityOverride(
+      dayIndex: (json['dayIndex'] as num?)?.toInt() ?? 0,
+      start: json['start'] as String? ?? '--:--',
+      end: json['end'] as String? ?? '--:--',
+      appointmentsPerSlot:
+          (json['appointmentsPerSlot'] as num?)?.toInt() ?? 1,
+    );
+  }
+
+  SlotCapacityOverride copyWith({
+    int? dayIndex,
+    String? start,
+    String? end,
+    int? appointmentsPerSlot,
+  }) {
+    return SlotCapacityOverride(
+      dayIndex: dayIndex ?? this.dayIndex,
+      start: start ?? this.start,
+      end: end ?? this.end,
+      appointmentsPerSlot: appointmentsPerSlot ?? this.appointmentsPerSlot,
+    );
+  }
+}
+
+class BarberWeeklySchedule {
+  const BarberWeeklySchedule({
+    required this.barberId,
+    required this.days,
+  });
+
+  final String barberId;
+  final List<ScheduleDay> days;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'barberId': barberId,
+      'days': days.map((day) => day.toJson()).toList(),
+    };
+  }
+
+  factory BarberWeeklySchedule.fromJson(Map<String, dynamic> json) {
+    final rawDays = (json['days'] as List<dynamic>? ?? const [])
+        .cast<Map>()
+        .toList()
+        .asMap()
+        .entries
+        .map((entry) {
+          final day = ScheduleDay.fromJson(
+            Map<String, dynamic>.from(entry.value),
+          );
+          return day.copyWith(name: scheduleDayNameForIndex(entry.key));
+        })
+        .toList();
+    return BarberWeeklySchedule(
+      barberId: '${json['barberId'] ?? ''}'.trim(),
+      days: rawDays.isEmpty ? buildDefaultWeeklySchedule() : rawDays,
+    );
+  }
+
+  BarberWeeklySchedule copyWith({
+    String? barberId,
+    List<ScheduleDay>? days,
+  }) {
+    return BarberWeeklySchedule(
+      barberId: barberId ?? this.barberId,
+      days: days ?? this.days,
+    );
+  }
+}
+
 class WeeklyScheduleData {
   const WeeklyScheduleData({
     required this.slotMinutes,
     required this.appointmentsPerSlot,
+    required this.slotCapacityOverrides,
+    required this.barberSchedules,
     required this.showPrices,
     required this.serviceDurations,
     required this.servicePrices,
@@ -381,6 +476,8 @@ class WeeklyScheduleData {
 
   final int slotMinutes;
   final int appointmentsPerSlot;
+  final List<SlotCapacityOverride> slotCapacityOverrides;
+  final List<BarberWeeklySchedule> barberSchedules;
   final bool showPrices;
   final List<ServiceDurationSetting> serviceDurations;
   final List<ServicePriceSetting> servicePrices;
@@ -404,6 +501,8 @@ class WeeklyScheduleRepository {
     return WeeklyScheduleData(
       slotMinutes: 30,
       appointmentsPerSlot: 1,
+      slotCapacityOverrides: const <SlotCapacityOverride>[],
+      barberSchedules: const <BarberWeeklySchedule>[],
       showPrices: false,
       serviceDurations: buildDefaultServiceDurations(),
       servicePrices: buildDefaultServicePrices(),
@@ -424,6 +523,23 @@ class WeeklyScheduleRepository {
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final slotMinutes = data['slotMinutes'] as int? ?? 30;
     final appointmentsPerSlot = data['appointmentsPerSlot'] as int? ?? 1;
+    final rawSlotCapacityOverrides =
+        (data['slotCapacityOverrides'] as List<dynamic>? ?? const [])
+            .cast<Map>()
+            .map(
+              (item) =>
+                  SlotCapacityOverride.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .toList();
+    final rawBarberSchedules =
+        (data['barberSchedules'] as List<dynamic>? ?? const [])
+            .cast<Map>()
+            .map(
+              (item) =>
+                  BarberWeeklySchedule.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .where((item) => item.barberId.isNotEmpty)
+            .toList();
     final showPrices = data['showPrices'] == true;
     final rawServiceDurations =
         (data['serviceDurations'] as List<dynamic>? ?? const [])
@@ -458,6 +574,8 @@ class WeeklyScheduleRepository {
     return WeeklyScheduleData(
       slotMinutes: slotMinutes,
       appointmentsPerSlot: appointmentsPerSlot,
+      slotCapacityOverrides: rawSlotCapacityOverrides,
+      barberSchedules: rawBarberSchedules,
       showPrices: showPrices,
       serviceDurations: rawServiceDurations.isEmpty
           ? buildDefaultServiceDurations()
@@ -480,6 +598,8 @@ class WeeklyScheduleRepository {
       await save(
         slotMinutes: defaults.slotMinutes,
         appointmentsPerSlot: defaults.appointmentsPerSlot,
+        slotCapacityOverrides: defaults.slotCapacityOverrides,
+        barberSchedules: defaults.barberSchedules,
         showPrices: defaults.showPrices,
         serviceDurations: defaults.serviceDurations,
         servicePrices: defaults.servicePrices,
@@ -495,6 +615,8 @@ class WeeklyScheduleRepository {
       await save(
         slotMinutes: defaults.slotMinutes,
         appointmentsPerSlot: defaults.appointmentsPerSlot,
+        slotCapacityOverrides: defaults.slotCapacityOverrides,
+        barberSchedules: defaults.barberSchedules,
         showPrices: defaults.showPrices,
         serviceDurations: defaults.serviceDurations,
         servicePrices: defaults.servicePrices,
@@ -505,12 +627,24 @@ class WeeklyScheduleRepository {
 
     final hasServiceDurations = raw['serviceDurations'] is List;
     final hasServicePrices = raw['servicePrices'] is List;
+    final hasSlotCapacityOverrides = raw['slotCapacityOverrides'] is List;
+    final hasBarberSchedules = raw['barberSchedules'] is List;
     final hasShowPrices = raw['showPrices'] is bool;
-    if (!hasServiceDurations || !hasServicePrices || !hasShowPrices) {
+    if (!hasServiceDurations ||
+        !hasServicePrices ||
+        !hasSlotCapacityOverrides ||
+        !hasBarberSchedules ||
+        !hasShowPrices) {
       final defaults = buildDefaultData();
       final merged = WeeklyScheduleData(
         slotMinutes: existing.slotMinutes,
         appointmentsPerSlot: existing.appointmentsPerSlot,
+        slotCapacityOverrides: hasSlotCapacityOverrides
+            ? existing.slotCapacityOverrides
+            : defaults.slotCapacityOverrides,
+        barberSchedules: hasBarberSchedules
+            ? existing.barberSchedules
+            : defaults.barberSchedules,
         showPrices: hasShowPrices ? existing.showPrices : defaults.showPrices,
         serviceDurations: hasServiceDurations
             ? existing.serviceDurations
@@ -523,6 +657,8 @@ class WeeklyScheduleRepository {
       await save(
         slotMinutes: merged.slotMinutes,
         appointmentsPerSlot: merged.appointmentsPerSlot,
+        slotCapacityOverrides: merged.slotCapacityOverrides,
+        barberSchedules: merged.barberSchedules,
         showPrices: merged.showPrices,
         serviceDurations: merged.serviceDurations,
         servicePrices: merged.servicePrices,
@@ -537,6 +673,8 @@ class WeeklyScheduleRepository {
   Future<void> save({
     required int slotMinutes,
     required int appointmentsPerSlot,
+    required List<SlotCapacityOverride> slotCapacityOverrides,
+    required List<BarberWeeklySchedule> barberSchedules,
     required bool showPrices,
     required List<ServiceDurationSetting> serviceDurations,
     required List<ServicePriceSetting> servicePrices,
@@ -555,6 +693,12 @@ class WeeklyScheduleRepository {
         'schedule': {
           'slotMinutes': slotMinutes,
           'appointmentsPerSlot': appointmentsPerSlot,
+          'slotCapacityOverrides': slotCapacityOverrides
+              .map((item) => item.toJson())
+              .toList(),
+          'barberSchedules': barberSchedules
+              .map((item) => item.toJson())
+              .toList(),
           'showPrices': showPrices,
           'serviceDurations': serviceDurations
               .map((service) => service.toJson())

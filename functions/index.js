@@ -643,6 +643,20 @@ function normalizeWeeklySchedulePayload(payload) {
       10,
       Math.max(1, Number.parseInt(source.appointmentsPerSlot, 10) || 1),
   );
+  const slotCapacityOverrides = Array.isArray(source.slotCapacityOverrides) ?
+    source.slotCapacityOverrides.map((item) => ({
+      dayIndex: Math.min(
+          6,
+          Math.max(0, Number.parseInt(item?.dayIndex, 10) || 0),
+      ),
+      start: normalizeClockValue(item?.start, "--:--"),
+      end: normalizeClockValue(item?.end, "--:--"),
+      appointmentsPerSlot: Math.min(
+          10,
+          Math.max(1, Number.parseInt(item?.appointmentsPerSlot, 10) || 1),
+      ),
+    })).filter((item) => timeToMinutes(item.start) >= 0 && timeToMinutes(item.end) > timeToMinutes(item.start)) :
+    [];
 
   const serviceDurations = Array.isArray(source.serviceDurations) ?
     source.serviceDurations.map((item) => ({
@@ -699,9 +713,41 @@ function normalizeWeeklySchedulePayload(payload) {
     });
   }
 
+  const barberSchedules = Array.isArray(source.barberSchedules) ?
+    source.barberSchedules.map((item) => {
+      const barberId = String(item?.barberId || "").trim();
+      const rawDays = Array.isArray(item?.days) ?
+        item.days.slice(0, 7).map((dayItem, index) => ({
+          name: String(dayItem?.name || dayNames[index] || "Day"),
+          enabled: dayItem?.enabled === true,
+          start: normalizeClockValue(dayItem?.start, "--:--"),
+          end: normalizeClockValue(dayItem?.end, "--:--"),
+          breakStart: normalizeClockValue(dayItem?.breakStart, "--:--"),
+          breakEnd: normalizeClockValue(dayItem?.breakEnd, "--:--"),
+        })) :
+        [];
+      while (rawDays.length < 7) {
+        rawDays.push({
+          name: dayNames[rawDays.length],
+          enabled: false,
+          start: "--:--",
+          end: "--:--",
+          breakStart: "--:--",
+          breakEnd: "--:--",
+        });
+      }
+      return {
+        barberId,
+        days: rawDays,
+      };
+    }).filter((item) => item.barberId) :
+    [];
+
   return {
     slotMinutes,
     appointmentsPerSlot,
+    slotCapacityOverrides,
+    barberSchedules,
     serviceDurations,
     servicePrices,
     showPrices,
@@ -729,6 +775,12 @@ async function loadShopContext(shopId) {
   const slotMinutes = Number.parseInt(schedule.slotMinutes, 10) || 30;
   const appointmentsPerSlot =
     Number.parseInt(schedule.appointmentsPerSlot, 10) || 1;
+  const slotCapacityOverrides = Array.isArray(schedule.slotCapacityOverrides) ?
+    schedule.slotCapacityOverrides :
+    [];
+  const barberSchedules = Array.isArray(schedule.barberSchedules) ?
+    schedule.barberSchedules :
+    [];
   const serviceDurations = Array.isArray(schedule.serviceDurations) ?
     schedule.serviceDurations :
     [];
@@ -777,6 +829,8 @@ async function loadShopContext(shopId) {
     days,
     slotMinutes,
     appointmentsPerSlot,
+    slotCapacityOverrides,
+    barberSchedules,
     serviceDurations,
     servicePrices,
     appointments,
@@ -1220,6 +1274,9 @@ function buildCustomerShellPayload({shopId, shop, decoded, appointments}) {
     slotMinutes: Number.parseInt(schedule.slotMinutes, 10) || 30,
     appointmentsPerSlot:
       Number.parseInt(schedule.appointmentsPerSlot, 10) || 1,
+    slotCapacityOverrides: Array.isArray(schedule.slotCapacityOverrides) ?
+      schedule.slotCapacityOverrides :
+      [],
     showPrices: schedule.showPrices === true,
     services,
     barbers,
@@ -1281,6 +1338,9 @@ function findCurrentCustomerEntry(shop, decoded) {
 function computeAvailableSlots({
   days,
   appointments,
+  appointmentsPerSlot = 1,
+  slotCapacityOverrides = [],
+  barberSchedules = [],
   barberId,
   dateText,
   requiredMinutes,
@@ -1292,7 +1352,12 @@ function computeAvailableSlots({
       Number.parseInt(dayText, 10),
   );
   if (Number.isNaN(date.getTime())) return [];
-  const day = days[date.getDay() === 0 ? 6 : date.getDay() - 1];
+  const resolvedDays = resolveScheduleDaysForBarber({
+    days,
+    barberSchedules,
+    barberId,
+  });
+  const day = resolvedDays[date.getDay() === 0 ? 6 : date.getDay() - 1];
   if (!day || day.enabled !== true) return [];
 
   const start = timeToMinutes(day.start);
@@ -1325,6 +1390,41 @@ function computeAvailableSlots({
   const roundedNow = isToday ?
     roundUpToStep(athensNow.totalMinutes + 1, AVAILABILITY_STEP_MINUTES) :
     0;
+  const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+
+  const hasCapacityForWindow = (windowStart, windowEnd) => {
+    for (
+      let minute = windowStart;
+      minute < windowEnd;
+      minute += AVAILABILITY_STEP_MINUTES
+    ) {
+      const activeAppointments = appointments.filter((appointment) => {
+        if (
+          appointment.date !== dateText ||
+          !isAppointmentBlockingStatus(appointment.status)
+        ) {
+          return false;
+        }
+        const appointmentStart = timeToMinutes(appointment.time);
+        const appointmentDuration = appointment.totalMinutes > 0 ?
+          appointment.totalMinutes :
+          requiredMinutes;
+        const appointmentEnd = appointmentStart + appointmentDuration;
+        return appointmentStart < minute + AVAILABILITY_STEP_MINUTES &&
+          appointmentEnd > minute;
+      }).length;
+      const maxAppointments = resolveAppointmentsPerSlotForMinute({
+        dayIndex,
+        minuteOfDay: minute,
+        appointmentsPerSlot,
+        slotCapacityOverrides,
+      });
+      if (activeAppointments >= maxAppointments) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const available = [];
   const segments = breakStart >= 0 && breakEnd > breakStart ?
@@ -1353,6 +1453,9 @@ function computeAvailableSlots({
           minute + requiredMinutes <= appointment.start;
           minute += AVAILABILITY_STEP_MINUTES
         ) {
+          if (!hasCapacityForWindow(minute, minute + requiredMinutes)) {
+            continue;
+          }
           available.push({
             startTime: minutesToTime(minute),
             endTime: minutesToTime(minute + requiredMinutes),
@@ -1374,6 +1477,9 @@ function computeAvailableSlots({
       minute + requiredMinutes <= segment.end;
       minute += AVAILABILITY_STEP_MINUTES
     ) {
+      if (!hasCapacityForWindow(minute, minute + requiredMinutes)) {
+        continue;
+      }
       available.push({
         startTime: minutesToTime(minute),
         endTime: minutesToTime(minute + requiredMinutes),
@@ -1396,10 +1502,61 @@ function formatDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+function resolveAppointmentsPerSlotForMinute({
+  dayIndex,
+  minuteOfDay,
+  appointmentsPerSlot,
+  slotCapacityOverrides,
+}) {
+  let resolved = Math.max(1, Number.parseInt(appointmentsPerSlot, 10) || 1);
+  const overrides = Array.isArray(slotCapacityOverrides) ?
+    slotCapacityOverrides :
+    [];
+  for (const item of overrides) {
+    const itemDayIndex = Number.parseInt(item?.dayIndex, 10);
+    if (itemDayIndex !== dayIndex) {
+      continue;
+    }
+    const start = timeToMinutes(item?.start);
+    const end = timeToMinutes(item?.end);
+    if (start < 0 || end <= start) {
+      continue;
+    }
+    if (minuteOfDay >= start && minuteOfDay < end) {
+      resolved = Math.min(
+          10,
+          Math.max(1, Number.parseInt(item?.appointmentsPerSlot, 10) || 1),
+      );
+    }
+  }
+  return resolved;
+}
+
+function resolveScheduleDaysForBarber({
+  days,
+  barberSchedules,
+  barberId,
+}) {
+  const normalizedBarberId = String(barberId || "").trim();
+  if (!normalizedBarberId) {
+    return Array.isArray(days) ? days : [];
+  }
+  const matching = (Array.isArray(barberSchedules) ? barberSchedules : []).find(
+      (item) => String(item?.barberId || "").trim() === normalizedBarberId,
+  );
+  if (matching && Array.isArray(matching.days) && matching.days.length >= 7) {
+    return matching.days;
+  }
+  return Array.isArray(days) ? days : [];
+}
+
 function buildBookingFallbackSuggestions({
   shop,
   days,
   appointments,
+  appointmentsPerSlot,
+  slotCapacityOverrides,
+  barberSchedules,
   barberId,
   dateText,
   requiredMinutes,
@@ -1437,6 +1594,9 @@ function buildBookingFallbackSuggestions({
   const sameBarberSlots = computeAvailableSlots({
     days,
     appointments,
+    appointmentsPerSlot,
+    slotCapacityOverrides,
+    barberSchedules,
     barberId: selectedBarber.id,
     dateText,
     requiredMinutes,
@@ -1468,6 +1628,9 @@ function buildBookingFallbackSuggestions({
     const slots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: otherBarber.id,
       dateText,
       requiredMinutes,
@@ -1495,6 +1658,9 @@ function buildBookingFallbackSuggestions({
     const slots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: otherBarber.id,
       dateText,
       requiredMinutes,
@@ -1532,6 +1698,9 @@ function buildBookingFallbackSuggestions({
     const slots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: selectedBarber.id,
       dateText: nextDateText,
       requiredMinutes,
@@ -3230,6 +3399,9 @@ exports.atelier22GetAvailability = onRequest(async (request, response) => {
     const slots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId,
       dateText,
       requiredMinutes,
@@ -3320,6 +3492,9 @@ exports.atelier22BookAppointment = onRequest(async (request, response) => {
     const availableSlots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId,
       dateText,
       requiredMinutes: totalMinutes,
@@ -3333,6 +3508,9 @@ exports.atelier22BookAppointment = onRequest(async (request, response) => {
           shop,
           days,
           appointments,
+          appointmentsPerSlot,
+          slotCapacityOverrides,
+          barberSchedules,
           barberId,
           dateText,
           requiredMinutes: totalMinutes,
@@ -3584,6 +3762,9 @@ exports.barberoCreateManualAppointment = onRequest(async (request, response) => 
     const availableSlots = computeAvailableSlots({
       days,
       appointments,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: requestedBarberId,
       dateText,
       requiredMinutes: totalMinutes,
@@ -3836,6 +4017,9 @@ exports.atelier22RescheduleAppointment = onRequest(async (request, response) => 
     const availableSlots = computeAvailableSlots({
       days,
       appointments: appointmentsWithoutCurrent,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: nextBarberId,
       dateText: nextDateText,
       requiredMinutes,
@@ -3972,6 +4156,9 @@ exports.barberoRescheduleAppointment = onRequest(async (request, response) => {
     const availableSlots = computeAvailableSlots({
       days,
       appointments: appointmentsWithoutCurrent,
+      appointmentsPerSlot,
+      slotCapacityOverrides,
+      barberSchedules,
       barberId: nextBarberId,
       dateText: nextDateText,
       requiredMinutes,

@@ -24,6 +24,7 @@ part 'core_models.dart';
 part 'crew_management.dart';
 part 'admin_tools.dart';
 part 'legal_pages.dart';
+part 'help_center.dart';
 part 'notifications_page.dart';
 part 'billing_page.dart';
 part 'billing_store.dart';
@@ -675,6 +676,8 @@ List<Appointment> buildHomeAppointmentsForDate({
   required List<Appointment> bookedAppointments,
   required List<ScheduleDay> weeklySchedule,
   required int slotMinutes,
+  required int appointmentsPerSlot,
+  required List<SlotCapacityOverride> slotCapacityOverrides,
 }) {
   if (weeklySchedule.length < 7 || slotMinutes <= 0) {
     return bookedAppointments;
@@ -699,12 +702,45 @@ List<Appointment> buildHomeAppointmentsForDate({
           _parseClockValue(left.time).compareTo(_parseClockValue(right.time)),
     );
 
+  bool slotHasCapacity(int startMinute) {
+    final capacity = resolveAppointmentsPerSlotForMinute(
+      dayIndex: selectedDate.weekday - 1,
+      minuteOfDay: startMinute,
+      defaultAppointmentsPerSlot: appointmentsPerSlot,
+      overrides: slotCapacityOverrides,
+    );
+    if (capacity <= 1) {
+      return !sortedAppointments.any((appointment) {
+        final appointmentStart = _parseClockValue(appointment.time);
+        final appointmentEnd = appointmentStart + appointment.minutes;
+        return appointmentStart < startMinute + slotMinutes &&
+            appointmentEnd > startMinute;
+      });
+    }
+    var overlapCount = 0;
+    for (final appointment in sortedAppointments) {
+      final appointmentStart = _parseClockValue(appointment.time);
+      final appointmentEnd = appointmentStart + appointment.minutes;
+      if (appointmentStart < startMinute + slotMinutes &&
+          appointmentEnd > startMinute) {
+        overlapCount += 1;
+        if (overlapCount >= capacity) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   void fillGap(int gapStart, int gapEnd) {
     for (
       var minute = gapStart;
       minute + slotMinutes <= gapEnd;
       minute += slotMinutes
     ) {
+      if (!slotHasCapacity(minute)) {
+        continue;
+      }
       slots.add(
         Appointment(
           _formatClockMinutes(minute),
@@ -758,6 +794,29 @@ List<Appointment> buildHomeAppointmentsForDate({
   }
 
   return slots;
+}
+
+int resolveAppointmentsPerSlotForMinute({
+  required int dayIndex,
+  required int minuteOfDay,
+  required int defaultAppointmentsPerSlot,
+  required List<SlotCapacityOverride> overrides,
+}) {
+  var resolved = defaultAppointmentsPerSlot;
+  for (final override in overrides) {
+    if (override.dayIndex != dayIndex) {
+      continue;
+    }
+    final start = _parseClockValue(override.start);
+    final end = _parseClockValue(override.end);
+    if (start < 0 || end <= start) {
+      continue;
+    }
+    if (minuteOfDay >= start && minuteOfDay < end) {
+      resolved = override.appointmentsPerSlot;
+    }
+  }
+  return resolved < 1 ? 1 : resolved;
 }
 
 int _parseClockValue(String value) {

@@ -15,8 +15,12 @@ class _BarberShellState extends State<BarberShell>
   String ownerFirstName = 'Owner';
   List<ScheduleDay> weeklySchedule = buildDefaultWeeklySchedule();
   int slotMinutes = 30;
+  int appointmentsPerSlot = 1;
   List<ServiceDurationSetting> serviceDurations = buildDefaultServiceDurations();
   List<ServicePriceSetting> servicePrices = buildDefaultServicePrices();
+  List<SlotCapacityOverride> slotCapacityOverrides =
+      const <SlotCapacityOverride>[];
+  List<BarberWeeklySchedule> barberSchedules = const <BarberWeeklySchedule>[];
   List<Appointment> liveAppointments = const <Appointment>[];
   List<CustomerProfile> liveCustomers = const <CustomerProfile>[];
   List<CrewMember> liveBarbers = const <CrewMember>[];
@@ -729,7 +733,14 @@ class _BarberShellState extends State<BarberShell>
         final ownerName = '${shopData['ownerName'] ?? ''}'.trim();
         setState(() {
           slotMinutes = scheduleData.slotMinutes;
+          appointmentsPerSlot = scheduleData.appointmentsPerSlot;
           weeklySchedule = List<ScheduleDay>.from(scheduleData.days);
+          slotCapacityOverrides = List<SlotCapacityOverride>.from(
+            scheduleData.slotCapacityOverrides,
+          );
+          barberSchedules = List<BarberWeeklySchedule>.from(
+            scheduleData.barberSchedules,
+          );
           serviceDurations = List<ServiceDurationSetting>.from(
             scheduleData.serviceDurations,
           );
@@ -1216,6 +1227,8 @@ class _BarberShellState extends State<BarberShell>
       bookedAppointments: bookedAppointments,
       weeklySchedule: weeklySchedule,
       slotMinutes: slotMinutes,
+      appointmentsPerSlot: appointmentsPerSlot,
+      slotCapacityOverrides: slotCapacityOverrides,
     );
     final pages = [
       BarberHomePage(
@@ -1542,6 +1555,26 @@ bool _looksCorruptedServiceText(String value) {
 WeeklyScheduleData _parseWeeklyScheduleFromShop(Map<String, dynamic> shopData) {
   final schedule =
       _mapFromRawValue(shopData['weekly_schedule']) ?? <String, dynamic>{};
+  final rawServiceDurations =
+      (schedule['serviceDurations'] as List?)
+          ?.whereType<Map>()
+          .map(
+            (item) => ServiceDurationSetting.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList() ??
+      const <ServiceDurationSetting>[];
+  final rawServicePrices =
+      (schedule['servicePrices'] as List?)
+          ?.whereType<Map>()
+          .map(
+            (item) => ServicePriceSetting.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList() ??
+      const <ServicePriceSetting>[];
   final rawDays =
       (schedule['days'] as List?)
           ?.whereType<Map>()
@@ -1556,9 +1589,34 @@ WeeklyScheduleData _parseWeeklyScheduleFromShop(Map<String, dynamic> shopData) {
     slotMinutes: (schedule['slotMinutes'] as num?)?.toInt() ?? 30,
     appointmentsPerSlot:
         (schedule['appointmentsPerSlot'] as num?)?.toInt() ?? 1,
+    slotCapacityOverrides:
+        (schedule['slotCapacityOverrides'] as List?)
+            ?.whereType<Map>()
+            .map(
+              (item) => SlotCapacityOverride.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .toList() ??
+        const <SlotCapacityOverride>[],
+    barberSchedules:
+        (schedule['barberSchedules'] as List?)
+            ?.whereType<Map>()
+            .map(
+              (item) => BarberWeeklySchedule.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .where((item) => item.barberId.isNotEmpty)
+            .toList() ??
+        const <BarberWeeklySchedule>[],
     showPrices: schedule['showPrices'] == true,
-    serviceDurations: buildDefaultServiceDurations(),
-    servicePrices: buildDefaultServicePrices(),
+    serviceDurations: rawServiceDurations.isEmpty
+        ? buildDefaultServiceDurations()
+        : rawServiceDurations,
+    servicePrices: rawServicePrices.isEmpty
+        ? buildDefaultServicePrices()
+        : rawServicePrices,
     days: normalizedDays,
   );
 }
@@ -2989,155 +3047,178 @@ class _AppSideMenuSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.menu_rounded,
-                            color: Color(0xFFD1A45C),
-                            size: 22,
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.menu_rounded,
+                                    color: Color(0xFFD1A45C),
+                                    size: 22,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    '\u039c\u0395\u039d\u039f\u03a5',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      letterSpacing: 1.3,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFD1A45C),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 22),
+                              if (permissions?.manageCrew == true) ...[
+                                _SideMenuItem(
+                                  icon: Icons.groups_rounded,
+                                  label: 'Barbers',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const CrewManagementPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                _SideMenuItem(
+                                  icon: Icons.admin_panel_settings_outlined,
+                                  label: 'Admin tools',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const AdminToolsPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              if (permissions?.editSchedule == true) ...[
+                                _SideMenuItem(
+                                  icon: Icons.schedule_rounded,
+                                  label:
+                                      '\u0395\u03b2\u03b4\u03bf\u03bc\u03b1\u03b4\u03b9\u03b1\u03af\u03bf \u03c0\u03c1\u03cc\u03b3\u03c1\u03b1\u03bc\u03bc\u03b1',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const WeeklySchedulePage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                _SideMenuItem(
+                                  icon: Icons.tune_rounded,
+                                  label:
+                                      '\u0394\u03b9\u03b1\u03c1\u03ba\u03b5\u03af\u03b5\u03c2 \u03c5\u03c0\u03b7\u03c1\u03b5\u03c3\u03b9\u03ce\u03bd',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const ServiceDurationsPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                _SideMenuItem(
+                                  icon: Icons.groups_rounded,
+                                  label:
+                                      '\u03a1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd \u03b1\u03bd\u03ac slot',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const AppointmentsPerSlotPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              if (permissions?.editPrices == true) ...[
+                                _SideMenuItem(
+                                  icon: Icons.euro_rounded,
+                                  label:
+                                      '\u03a4\u03b9\u03bc\u03ad\u03c2 \u03c5\u03c0\u03b7\u03c1\u03b5\u03c3\u03b9\u03ce\u03bd',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const ServicePricesPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              if (session?.isOwner == true) ...[
+                                _SideMenuItem(
+                                  icon: Icons.workspace_premium_outlined,
+                                  label: 'Subscription',
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _openBarberoMenuPage(
+                                      context,
+                                      const BarberoBillingPage(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              _SideMenuItem(
+                                icon: Icons.help_outline_rounded,
+                                label: 'Help Center',
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _openBarberoMenuPage(
+                                    context,
+                                    const BarberoHelpCenterPage(),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              _SideMenuItem(
+                                icon: Icons.privacy_tip_outlined,
+                                label: 'Privacy Policy',
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _openBarberoMenuPage(
+                                    context,
+                                    const BarberoPrivacyPolicyPage(),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              _SideMenuItem(
+                                icon: Icons.gavel_rounded,
+                                label: 'Terms & Conditions',
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _openBarberoMenuPage(
+                                    context,
+                                    const BarberoTermsPage(),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              _SideMenuItem(
+                                icon: Icons.logout_rounded,
+                                label: 'Logout',
+                                onTap: () async {
+                                  Navigator.of(context).pop();
+                                  await FirebaseAuth.instance.signOut();
+                                },
+                              ),
+                              const SizedBox(height: 14),
+                            ],
                           ),
-                          SizedBox(width: 10),
-                          Text(
-                            '\u039c\u0395\u039d\u039f\u03a5',
-                            style: TextStyle(
-                              fontSize: 12,
-                              letterSpacing: 1.3,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFD1A45C),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 22),
-                      if (permissions?.manageCrew == true) ...[
-                        _SideMenuItem(
-                          icon: Icons.groups_rounded,
-                          label: 'Barbers',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const CrewManagementPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        _SideMenuItem(
-                          icon: Icons.admin_panel_settings_outlined,
-                          label: 'Admin tools',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const AdminToolsPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      if (permissions?.editSchedule == true) ...[
-                        _SideMenuItem(
-                          icon: Icons.schedule_rounded,
-                          label:
-                              '\u0395\u03b2\u03b4\u03bf\u03bc\u03b1\u03b4\u03b9\u03b1\u03af\u03bf \u03c0\u03c1\u03cc\u03b3\u03c1\u03b1\u03bc\u03bc\u03b1',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const WeeklySchedulePage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        _SideMenuItem(
-                          icon: Icons.tune_rounded,
-                          label:
-                              '\u0394\u03b9\u03b1\u03c1\u03ba\u03b5\u03af\u03b5\u03c2 \u03c5\u03c0\u03b7\u03c1\u03b5\u03c3\u03b9\u03ce\u03bd',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const ServiceDurationsPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        _SideMenuItem(
-                          icon: Icons.groups_rounded,
-                          label:
-                              '\u03a1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd \u03b1\u03bd\u03ac slot',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const AppointmentsPerSlotPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      if (permissions?.editPrices == true) ...[
-                        _SideMenuItem(
-                          icon: Icons.euro_rounded,
-                          label:
-                              '\u03a4\u03b9\u03bc\u03ad\u03c2 \u03c5\u03c0\u03b7\u03c1\u03b5\u03c3\u03b9\u03ce\u03bd',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const ServicePricesPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      if (session?.isOwner == true) ...[
-                        _SideMenuItem(
-                          icon: Icons.workspace_premium_outlined,
-                          label: 'Subscription',
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _openBarberoMenuPage(
-                              context,
-                              const BarberoBillingPage(),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      _SideMenuItem(
-                        icon: Icons.privacy_tip_outlined,
-                        label: 'Privacy Policy',
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _openBarberoMenuPage(
-                            context,
-                            const BarberoPrivacyPolicyPage(),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _SideMenuItem(
-                        icon: Icons.gavel_rounded,
-                        label: 'Terms & Conditions',
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _openBarberoMenuPage(
-                            context,
-                            const BarberoTermsPage(),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _SideMenuItem(
-                        icon: Icons.logout_rounded,
-                        label: 'Logout',
-                        onTap: () async {
-                          Navigator.of(context).pop();
-                          await FirebaseAuth.instance.signOut();
-                        },
-                      ),
-                      const Spacer(),
+                      const SizedBox(height: 12),
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -3929,6 +4010,7 @@ class _QuickAddAppointmentSheetState extends State<_QuickAddAppointmentSheet> {
                 )
               else
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _selectedService?.key,
                   decoration: _darkFieldDecoration('Service'),
                   dropdownColor: const Color(0xFF181818),
@@ -3937,7 +4019,10 @@ class _QuickAddAppointmentSheetState extends State<_QuickAddAppointmentSheet> {
                         (service) => DropdownMenuItem<String>(
                           value: service.key,
                           child: Text(
-                            '${service.label} | ${service.minutes} min | EUR ${_priceByServiceKey[service.key] ?? 0}',
+                            '${service.label} • ${service.minutes} min • EUR ${_priceByServiceKey[service.key] ?? 0}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
                             style: const TextStyle(color: Color(0xFFF0E5D1)),
                           ),
                         ),

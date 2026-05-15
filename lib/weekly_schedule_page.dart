@@ -69,12 +69,19 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
 
   int slotMinutes = 30;
   int appointmentsPerSlot = 1;
+  List<SlotCapacityOverride> slotCapacityOverrides =
+      const <SlotCapacityOverride>[];
+  List<BarberWeeklySchedule> barberSchedules =
+      const <BarberWeeklySchedule>[];
   List<ServiceDurationSetting> serviceDurations =
       buildDefaultServiceDurations();
   List<ServicePriceSetting> servicePrices = buildDefaultServicePrices();
   bool showPrices = false;
   bool isLoading = true;
   bool isSaving = false;
+  bool _editingPerBarber = false;
+  List<CrewMember> _barbers = const <CrewMember>[];
+  String? _selectedBarberId;
   static final scheduleRepository = WeeklyScheduleRepository();
 
   @override
@@ -86,9 +93,24 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
   int get enabledDays => schedule.where((day) => day.enabled).length;
   int get closedDays => schedule.length - enabledDays;
 
+  List<ScheduleDay> get _activeScheduleDays {
+    if (!_editingPerBarber || (_selectedBarberId?.trim().isEmpty ?? true)) {
+      return schedule;
+    }
+    final selectedBarberId = _selectedBarberId!.trim();
+    final existing = barberSchedules.cast<BarberWeeklySchedule?>().firstWhere(
+          (item) => item?.barberId.trim() == selectedBarberId,
+          orElse: () => null,
+        );
+    if (existing != null) {
+      return existing.days;
+    }
+    return schedule.map((day) => day.copyWith()).toList(growable: false);
+  }
+
   int get totalHours {
     int minutes = 0;
-    for (final day in schedule.where((day) => day.enabled)) {
+    for (final day in _activeScheduleDays.where((day) => day.enabled)) {
       minutes += _toMinutes(day.end) - _toMinutes(day.start);
       if (day.breakStart != '--:--' && day.breakEnd != '--:--') {
         minutes -= _toMinutes(day.breakEnd) - _toMinutes(day.breakStart);
@@ -106,17 +128,81 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
   }
 
   void _updateDay(int index, ScheduleDay value) {
-    setState(() => schedule[index] = value);
+    setState(() {
+      if (!_editingPerBarber || (_selectedBarberId?.trim().isEmpty ?? true)) {
+        schedule[index] = value;
+        return;
+      }
+      final selectedBarberId = _selectedBarberId!.trim();
+      final next = List<BarberWeeklySchedule>.from(barberSchedules);
+      final existingIndex = next.indexWhere(
+        (item) => item.barberId.trim() == selectedBarberId,
+      );
+      final baseDays = existingIndex >= 0
+          ? List<ScheduleDay>.from(next[existingIndex].days)
+          : schedule.map((day) => day.copyWith()).toList();
+      baseDays[index] = value;
+      final nextEntry = BarberWeeklySchedule(
+        barberId: selectedBarberId,
+        days: baseDays,
+      );
+      if (existingIndex >= 0) {
+        next[existingIndex] = nextEntry;
+      } else {
+        next.add(nextEntry);
+      }
+      barberSchedules = next;
+    });
     _saveSchedule();
+  }
+
+  Future<void> _loadBarbers() async {
+    try {
+      final shopId = requireCurrentBarberoSession().shopId;
+      final snapshot =
+          await FirebaseDatabase.instance.ref('shops/$shopId/barbers').get();
+      final rawBarbers = _mapFromRawValue(snapshot.value) ?? <String, dynamic>{};
+      final parsed = <CrewMember>[];
+      for (final entry in rawBarbers.entries) {
+        final value = _mapFromRawValue(entry.value);
+        if (value == null) {
+          continue;
+        }
+        final member = CrewMember.fromJson(entry.key, value);
+        if (member.fullName.trim().isEmpty) {
+          continue;
+        }
+        parsed.add(member);
+      }
+      parsed.sort(
+        (left, right) =>
+            left.fullName.toLowerCase().compareTo(right.fullName.toLowerCase()),
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _barbers = parsed;
+        _selectedBarberId ??=
+            parsed.isEmpty ? null : parsed.first.id.trim();
+      });
+    } catch (_) {}
   }
 
   Future<void> _loadSchedule() async {
     try {
       final remote = await scheduleRepository.loadOrCreateDefault();
+      await _loadBarbers();
       if (!mounted) return;
       setState(() {
         slotMinutes = remote.slotMinutes;
         appointmentsPerSlot = remote.appointmentsPerSlot;
+        slotCapacityOverrides = List<SlotCapacityOverride>.from(
+          remote.slotCapacityOverrides,
+        );
+        barberSchedules = List<BarberWeeklySchedule>.from(
+          remote.barberSchedules,
+        );
         serviceDurations = List<ServiceDurationSetting>.from(
           remote.serviceDurations,
         );
@@ -125,6 +211,9 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
         schedule
           ..clear()
           ..addAll(remote.days);
+        if (_selectedBarberId == null && _barbers.isNotEmpty) {
+          _selectedBarberId = _barbers.first.id.trim();
+        }
       });
     } catch (_) {
     } finally {
@@ -141,6 +230,8 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
       await scheduleRepository.save(
         slotMinutes: slotMinutes,
         appointmentsPerSlot: appointmentsPerSlot,
+        slotCapacityOverrides: slotCapacityOverrides,
+        barberSchedules: barberSchedules,
         serviceDurations: serviceDurations,
         servicePrices: servicePrices,
         showPrices: showPrices,
@@ -171,7 +262,7 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
   Future<void> _pickStartTime(int index) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _parseTime(schedule[index].start),
+      initialTime: _parseTime(_activeScheduleDays[index].start),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -185,13 +276,16 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
       },
     );
     if (picked == null) return;
-    _updateDay(index, schedule[index].copyWith(start: _formatTime(picked)));
+    _updateDay(
+      index,
+      _activeScheduleDays[index].copyWith(start: _formatTime(picked)),
+    );
   }
 
   Future<void> _pickEndTime(int index) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _parseTime(schedule[index].end),
+      initialTime: _parseTime(_activeScheduleDays[index].end),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -205,13 +299,17 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
       },
     );
     if (picked == null) return;
-    _updateDay(index, schedule[index].copyWith(end: _formatTime(picked)));
+    _updateDay(
+      index,
+      _activeScheduleDays[index].copyWith(end: _formatTime(picked)),
+    );
   }
 
   Future<void> _pickBreakStart(int index) async {
-    final initialValue = schedule[index].breakStart == '--:--'
-        ? schedule[index].start
-        : schedule[index].breakStart;
+    final day = _activeScheduleDays[index];
+    final initialValue = day.breakStart == '--:--'
+        ? day.start
+        : day.breakStart;
     final picked = await showTimePicker(
       context: context,
       initialTime: _parseTime(initialValue),
@@ -231,19 +329,20 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
     final formatted = _formatTime(picked);
     _updateDay(
       index,
-      schedule[index].copyWith(
+      day.copyWith(
         breakStart: formatted,
-        breakEnd: schedule[index].breakEnd == '--:--'
+        breakEnd: day.breakEnd == '--:--'
             ? formatted
-            : schedule[index].breakEnd,
+            : day.breakEnd,
       ),
     );
   }
 
   Future<void> _pickBreakEnd(int index) async {
-    final initialValue = schedule[index].breakEnd == '--:--'
-        ? schedule[index].end
-        : schedule[index].breakEnd;
+    final day = _activeScheduleDays[index];
+    final initialValue = day.breakEnd == '--:--'
+        ? day.end
+        : day.breakEnd;
     final picked = await showTimePicker(
       context: context,
       initialTime: _parseTime(initialValue),
@@ -263,10 +362,10 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
     final formatted = _formatTime(picked);
     _updateDay(
       index,
-      schedule[index].copyWith(
-        breakStart: schedule[index].breakStart == '--:--'
+      day.copyWith(
+        breakStart: day.breakStart == '--:--'
             ? formatted
-            : schedule[index].breakStart,
+            : day.breakStart,
         breakEnd: formatted,
       ),
     );
@@ -320,6 +419,95 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
                   style: TextStyle(fontSize: 11, color: Color(0xFF8C8C8C)),
                 ),
                 const SizedBox(height: 10),
+                SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment<bool>(
+                      value: false,
+                      label: Text('General'),
+                      icon: Icon(Icons.storefront_outlined),
+                    ),
+                    ButtonSegment<bool>(
+                      value: true,
+                      label: Text('Per barber'),
+                      icon: Icon(Icons.content_cut_rounded),
+                    ),
+                  ],
+                  selected: {_editingPerBarber},
+                  style: ButtonStyle(
+                    foregroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? const Color(0xFF111111)
+                          : const Color(0xFFF0E5D1),
+                    ),
+                    backgroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? const Color(0xFFD1A45C)
+                          : const Color(0xFF191919),
+                    ),
+                  ),
+                  onSelectionChanged: (selection) {
+                    setState(() {
+                      _editingPerBarber = selection.first;
+                      if (_editingPerBarber &&
+                          (_selectedBarberId == null || _selectedBarberId!.isEmpty) &&
+                          _barbers.isNotEmpty) {
+                        _selectedBarberId = _barbers.first.id.trim();
+                      }
+                    });
+                  },
+                ),
+                if (_editingPerBarber) ...[
+                  const SizedBox(height: 10),
+                  if (_barbers.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF111111),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF242424)),
+                      ),
+                      child: const Text(
+                        'No barbers available yet. Add a barber first to set a personal weekly schedule.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFB9B1A5),
+                        ),
+                      ),
+                    )
+                  else
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedBarberId,
+                      decoration: _darkFieldDecoration('Barber'),
+                      dropdownColor: const Color(0xFF181818),
+                      items: _barbers
+                          .map(
+                            (barber) => DropdownMenuItem<String>(
+                              value: barber.id.trim(),
+                              child: Text(
+                                barber.fullName,
+                                style: const TextStyle(
+                                  color: Color(0xFFF0E5D1),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _selectedBarberId = value.trim());
+                      },
+                    ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'If a barber does not have a personal schedule, they automatically inherit the general shop schedule.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF8C8C8C)),
+                  ),
+                ],
+                const SizedBox(height: 10),
                 if (isLoading)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 10),
@@ -367,23 +555,24 @@ class _WeeklySchedulePageState extends State<WeeklySchedulePage> {
                 Expanded(
                   child: ListView.separated(
                     physics: const BouncingScrollPhysics(),
-                    itemCount: schedule.length,
+                    itemCount: _activeScheduleDays.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 6),
                     itemBuilder: (context, index) {
+                      final activeDay = _activeScheduleDays[index];
                       return ScheduleDayCard(
-                        day: schedule[index],
+                        day: activeDay,
                         onChanged: (value) => _updateDay(index, value),
-                        onTapStart: schedule[index].enabled
+                        onTapStart: activeDay.enabled
                             ? () => _pickStartTime(index)
                             : null,
-                        onTapEnd: schedule[index].enabled
+                        onTapEnd: activeDay.enabled
                             ? () => _pickEndTime(index)
                             : null,
-                        onTapBreakStart: schedule[index].enabled
+                        onTapBreakStart: activeDay.enabled
                             ? () => _pickBreakStart(index)
                             : null,
-                        onTapBreakEnd: schedule[index].enabled
+                        onTapBreakEnd: activeDay.enabled
                             ? () => _pickBreakEnd(index)
                             : null,
                       );
@@ -680,6 +869,10 @@ class _ServiceDurationsPageState extends State<ServiceDurationsPage> {
   final WeeklyScheduleRepository _repository = WeeklyScheduleRepository();
   int slotMinutes = 30;
   int appointmentsPerSlot = 1;
+  List<SlotCapacityOverride> slotCapacityOverrides =
+      const <SlotCapacityOverride>[];
+  List<BarberWeeklySchedule> barberSchedules =
+      const <BarberWeeklySchedule>[];
   List<ScheduleDay> days = buildDefaultWeeklySchedule();
   List<ServiceDurationSetting> serviceDurations =
       buildDefaultServiceDurations();
@@ -701,6 +894,12 @@ class _ServiceDurationsPageState extends State<ServiceDurationsPage> {
       setState(() {
         slotMinutes = remote.slotMinutes;
         appointmentsPerSlot = remote.appointmentsPerSlot;
+        slotCapacityOverrides = List<SlotCapacityOverride>.from(
+          remote.slotCapacityOverrides,
+        );
+        barberSchedules = List<BarberWeeklySchedule>.from(
+          remote.barberSchedules,
+        );
         serviceDurations = List<ServiceDurationSetting>.from(
           remote.serviceDurations,
         );
@@ -721,6 +920,8 @@ class _ServiceDurationsPageState extends State<ServiceDurationsPage> {
       await _repository.save(
         slotMinutes: slotMinutes,
         appointmentsPerSlot: appointmentsPerSlot,
+        slotCapacityOverrides: slotCapacityOverrides,
+        barberSchedules: barberSchedules,
         serviceDurations: serviceDurations,
         servicePrices: servicePrices,
         showPrices: showPrices,
@@ -894,6 +1095,10 @@ class _ServicePricesPageState extends State<ServicePricesPage> {
   final WeeklyScheduleRepository _repository = WeeklyScheduleRepository();
   int slotMinutes = 30;
   int appointmentsPerSlot = 1;
+  List<SlotCapacityOverride> slotCapacityOverrides =
+      const <SlotCapacityOverride>[];
+  List<BarberWeeklySchedule> barberSchedules =
+      const <BarberWeeklySchedule>[];
   List<ScheduleDay> days = buildDefaultWeeklySchedule();
   List<ServiceDurationSetting> serviceDurations =
       buildDefaultServiceDurations();
@@ -915,6 +1120,12 @@ class _ServicePricesPageState extends State<ServicePricesPage> {
       setState(() {
         slotMinutes = remote.slotMinutes;
         appointmentsPerSlot = remote.appointmentsPerSlot;
+        slotCapacityOverrides = List<SlotCapacityOverride>.from(
+          remote.slotCapacityOverrides,
+        );
+        barberSchedules = List<BarberWeeklySchedule>.from(
+          remote.barberSchedules,
+        );
         serviceDurations = List<ServiceDurationSetting>.from(
           remote.serviceDurations,
         );
@@ -935,6 +1146,8 @@ class _ServicePricesPageState extends State<ServicePricesPage> {
       await _repository.save(
         slotMinutes: slotMinutes,
         appointmentsPerSlot: appointmentsPerSlot,
+        slotCapacityOverrides: slotCapacityOverrides,
+        barberSchedules: barberSchedules,
         serviceDurations: serviceDurations,
         servicePrices: servicePrices,
         showPrices: showPrices,
@@ -1098,6 +1311,10 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
   final WeeklyScheduleRepository _repository = WeeklyScheduleRepository();
   int slotMinutes = 30;
   int appointmentsPerSlot = 1;
+  List<SlotCapacityOverride> slotCapacityOverrides =
+      const <SlotCapacityOverride>[];
+  List<BarberWeeklySchedule> barberSchedules =
+      const <BarberWeeklySchedule>[];
   List<ScheduleDay> days = buildDefaultWeeklySchedule();
   List<ServiceDurationSetting> serviceDurations =
       buildDefaultServiceDurations();
@@ -1119,6 +1336,12 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
       setState(() {
         slotMinutes = remote.slotMinutes;
         appointmentsPerSlot = remote.appointmentsPerSlot;
+        slotCapacityOverrides = List<SlotCapacityOverride>.from(
+          remote.slotCapacityOverrides,
+        );
+        barberSchedules = List<BarberWeeklySchedule>.from(
+          remote.barberSchedules,
+        );
         serviceDurations = List<ServiceDurationSetting>.from(
           remote.serviceDurations,
         );
@@ -1139,6 +1362,8 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
       await _repository.save(
         slotMinutes: slotMinutes,
         appointmentsPerSlot: appointmentsPerSlot,
+        slotCapacityOverrides: slotCapacityOverrides,
+        barberSchedules: barberSchedules,
         serviceDurations: serviceDurations,
         servicePrices: servicePrices,
         showPrices: showPrices,
@@ -1148,6 +1373,296 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
     } finally {
       if (mounted) setState(() => isSaving = false);
     }
+  }
+
+  String _dayLabel(int index) {
+    if (index >= 0 && index < days.length) {
+      return days[index].name;
+    }
+    return scheduleDayNameForIndex(index);
+  }
+
+  String _formatOverrideSummary(SlotCapacityOverride item) {
+    return '${_dayLabel(item.dayIndex)} • ${item.start}-${item.end}';
+  }
+
+  Future<void> _openOverrideEditor({int? index}) async {
+    final existing =
+        index == null ? null : slotCapacityOverrides[index];
+    var selectedDayIndex = existing?.dayIndex ?? 0;
+    var selectedStart = existing?.start ?? '09:00';
+    var selectedEnd = existing?.end ?? '17:00';
+    var selectedCapacity = existing?.appointmentsPerSlot ?? 1;
+
+    Future<void> pickTime({
+      required bool isStart,
+      required StateSetter modalSetState,
+    }) async {
+      final initial = TimeOfDay(
+        hour: int.tryParse((isStart ? selectedStart : selectedEnd).split(':').first) ?? 9,
+        minute: int.tryParse((isStart ? selectedStart : selectedEnd).split(':').last) ?? 0,
+      );
+      final picked = await showTimePicker(
+        context: context,
+        initialTime: initial,
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFFD1A45C),
+                surface: Color(0xFF151515),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (picked == null) {
+        return;
+      }
+      final nextValue =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      modalSetState(() {
+        if (isStart) {
+          selectedStart = nextValue;
+        } else {
+          selectedEnd = nextValue;
+        }
+      });
+    }
+
+    final result = await showModalBottomSheet<SlotCapacityOverride>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF111111),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, modalSetState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  18,
+                  18,
+                  18,
+                  18 + MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      existing == null
+                          ? 'Add hourly override'
+                          : 'Edit hourly override',
+                      style: const TextStyle(
+                        color: Color(0xFFF5ECDD),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Set a different slot capacity for a specific day and time range.',
+                      style: TextStyle(
+                        color: Color(0xFF8C8C8C),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedDayIndex,
+                      decoration: _darkFieldDecoration('Day'),
+                      dropdownColor: const Color(0xFF181818),
+                      items: List.generate(
+                        7,
+                        (dayIndex) => DropdownMenuItem<int>(
+                          value: dayIndex,
+                          child: Text(
+                            _dayLabel(dayIndex),
+                            style: const TextStyle(color: Color(0xFFF0E5D1)),
+                          ),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        modalSetState(() => selectedDayIndex = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => pickTime(
+                              isStart: true,
+                              modalSetState: modalSetState,
+                            ),
+                            child: _TimeFieldCard(
+                              label: 'Start',
+                              value: selectedStart,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => pickTime(
+                              isStart: false,
+                              modalSetState: modalSetState,
+                            ),
+                            child: _TimeFieldCard(
+                              label: 'End',
+                              value: selectedEnd,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Appointments per slot',
+                            style: TextStyle(
+                              color: Color(0xFFF2E3C8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '$selectedCapacity',
+                          style: const TextStyle(
+                            color: Color(0xFFD1A45C),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: const Color(0xFFD1A45C),
+                        inactiveTrackColor: const Color(0xFF2A2A2A),
+                        thumbColor: const Color(0xFFD1A45C),
+                        overlayColor: const Color(0x33D1A45C),
+                      ),
+                      child: Slider(
+                        min: 1,
+                        max: 10,
+                        divisions: 9,
+                        value: selectedCapacity.toDouble().clamp(1, 10),
+                        label: '$selectedCapacity',
+                        onChanged: (value) {
+                          modalSetState(() {
+                            selectedCapacity = value.round();
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFF0E5D1),
+                              side: const BorderSide(
+                                color: Color(0xFF3A3A3A),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text('CLOSE'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final start = _parseClockValue(selectedStart);
+                              final end = _parseClockValue(selectedEnd);
+                              if (start < 0 || end <= start) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'End time must be later than start time.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              Navigator.of(context).pop(
+                                SlotCapacityOverride(
+                                  dayIndex: selectedDayIndex,
+                                  start: selectedStart,
+                                  end: selectedEnd,
+                                  appointmentsPerSlot: selectedCapacity,
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD1A45C),
+                              foregroundColor: const Color(0xFF111111),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'SAVE',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    setState(() {
+      final next = List<SlotCapacityOverride>.from(slotCapacityOverrides);
+      if (index == null) {
+        next.add(result);
+      } else {
+        next[index] = result;
+      }
+      next.sort((left, right) {
+        final byDay = left.dayIndex.compareTo(right.dayIndex);
+        if (byDay != 0) {
+          return byDay;
+        }
+        return _parseClockValue(left.start).compareTo(
+          _parseClockValue(right.start),
+        );
+      });
+      slotCapacityOverrides = next;
+    });
+    await _save();
+  }
+
+  Future<void> _deleteOverride(int index) async {
+    setState(() {
+      final next = List<SlotCapacityOverride>.from(slotCapacityOverrides);
+      next.removeAt(index);
+      slotCapacityOverrides = next;
+    });
+    await _save();
   }
 
   @override
@@ -1265,6 +1780,130 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF111111),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF242424)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Hourly overrides',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFF2E3C8),
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _openOverrideEditor(),
+                            icon: const Icon(
+                              Icons.add_rounded,
+                              size: 18,
+                              color: Color(0xFFD1A45C),
+                            ),
+                            label: const Text(
+                              'Add',
+                              style: TextStyle(color: Color(0xFFD1A45C)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Use this when certain hours or days should allow fewer appointments than the general setting.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF8C8C8C),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (slotCapacityOverrides.isEmpty)
+                        const Text(
+                          'No hourly overrides yet.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFFB9B1A5),
+                          ),
+                        )
+                      else
+                        ...slotCapacityOverrides.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final item = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF171717),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFF2A2A2A),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _formatOverrideSummary(item),
+                                          style: const TextStyle(
+                                            color: Color(0xFFF5ECDD),
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Max ${item.appointmentsPerSlot} appointments per slot',
+                                          style: const TextStyle(
+                                            color: Color(0xFFD1A45C),
+                                            fontSize: 11.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _openOverrideEditor(
+                                      index: index,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      color: Color(0xFFD1A45C),
+                                      size: 18,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _deleteOverride(index),
+                                    icon: const Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: Color(0xFFE08A7A),
+                                      size: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
+                ),
                 const Spacer(),
                 PrimaryButton(
                   label:
@@ -1275,6 +1914,62 @@ class _AppointmentsPerSlotPageState extends State<AppointmentsPerSlotPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TimeFieldCard extends StatelessWidget {
+  const _TimeFieldCard({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF171717),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF2A2A2A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.schedule_rounded,
+            color: Color(0xFFD1A45C),
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFF8C8C8C),
+                    fontSize: 10.5,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Color(0xFFF0E5D1),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
