@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
 
 :root {
   --canvas: #f5f7f8;
@@ -17,7 +17,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--canvas);
-  font-family: "DM Sans", sans-serif;
+  font-family: "Roboto", sans-serif;
   line-height: 1.55;
   overflow-x: hidden;
 }
@@ -31,7 +31,7 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
 }
-.brand { display:flex; align-items:center; gap:11px; font:700 18px "Space Grotesk",sans-serif; letter-spacing:-.4px; }
+.brand { display:flex; align-items:center; gap:11px; font:700 17px "Roboto",sans-serif; letter-spacing:1.8px; }
 .brand img { object-fit:cover; border-radius:12px; }
 .site-nav { display:flex; gap:28px; margin-left:auto; margin-right:30px; }
 .site-nav a, .site-footer a { color:var(--muted); font-size:12px; font-weight:600; transition:color .2s ease; }
@@ -54,7 +54,7 @@ a { color: inherit; text-decoration: none; }
 }
 .hero-copy { max-width:620px; }
 .eyebrow { margin:0 0 20px; color:var(--gold); font-size:10px; font-weight:800; letter-spacing:2.3px; text-transform:uppercase; }
-h1, h2, h3 { font-family:"Space Grotesk",sans-serif; color:var(--ink); line-height:1.05; }
+h1, h2, h3 { font-family:"Roboto",sans-serif; color:var(--ink); line-height:1.05; }
 h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing:-3px; }
 .lead { max-width:570px; margin:28px 0 0; color:var(--muted); font-size:17px; line-height:1.6; }
 .actions { display:flex; gap:18px; align-items:center; margin-top:34px; }
@@ -76,8 +76,8 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .statement > p:not(.eyebrow) { max-width:610px; margin:24px 0 0; color:var(--muted); font-size:16px; }
 .signal-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:28px; margin-top:72px; }
 .signal-grid div { border-top:1px solid var(--ink); padding-top:16px; }
-.signal-grid strong { display:block; color:var(--gold); font:600 12px "Space Grotesk",sans-serif; }
-.signal-grid span { display:block; margin-top:19px; font:600 16px "Space Grotesk",sans-serif; }
+.signal-grid strong { display:block; color:var(--gold); font:600 12px "Roboto",sans-serif; }
+.signal-grid span { display:block; margin-top:19px; font:600 16px "Roboto",sans-serif; }
 .signal-grid p { margin:10px 0 0; color:var(--muted); font-size:12px; line-height:1.55; }
 .section { width:min(var(--max), calc(100% - 64px)); margin:0 auto; padding:122px 0; }
 .section-heading { max-width:800px; margin-bottom:62px; }
@@ -90,7 +90,7 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .large-shot img { display:block; width:245px; max-width:100%; border:1px solid #cdd6e0; border-radius:29px; box-shadow:0 25px 45px rgba(31,41,55,.13); }
 .large-shot figcaption { margin-top:15px; color:var(--muted); font-size:10px; letter-spacing:.8px; text-transform:uppercase; }
 .story-copy { max-width:500px; }
-.story-number { color:var(--gold); font:600 12px "Space Grotesk",sans-serif; }
+.story-number { color:var(--gold); font:600 12px "Roboto",sans-serif; }
 .story-copy h3 { margin:18px 0 16px; font-size:32px; letter-spacing:-1.4px; }
 .story-copy > p { margin:0; color:var(--muted); font-size:15px; line-height:1.65; }
 .line-list { list-style:none; margin:28px 0 0; padding:0; }
@@ -105,13 +105,13 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .workflow { border-top:1px solid var(--line); }
 .workflow-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:46px; }
 .workflow-grid div { border-top:1px solid var(--ink); padding-top:17px; }
-.workflow-grid span { color:var(--gold); font:600 12px "Space Grotesk",sans-serif; }
+.workflow-grid span { color:var(--gold); font:600 12px "Roboto",sans-serif; }
 .workflow-grid h3 { margin:20px 0 11px; font-size:21px; letter-spacing:-.6px; }
 .workflow-grid p { margin:0; color:var(--muted); font-size:13px; }
 .feature-section { border-top:1px solid var(--line); }
 .feature-list { border-top:1px solid var(--ink); }
 .feature-row { display:grid; grid-template-columns:60px 1fr 30px; gap:24px; align-items:start; padding:25px 0; border-bottom:1px solid var(--line); }
-.feature-row > span { color:var(--gold); font:600 12px "Space Grotesk",sans-serif; }
+.feature-row > span { color:var(--gold); font:600 12px "Roboto",sans-serif; }
 .feature-row h3 { margin:0 0 7px; font-size:21px; letter-spacing:-.6px; }
 .feature-row p { max-width:700px; margin:0; color:var(--muted); font-size:13px; }
 .feature-row b { color:var(--gold); text-align:right; font-size:20px; font-weight:400; }
@@ -126,12 +126,12 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .pricing-line > div:not(:first-child) { padding-left:24px; }
 .pricing-line > div:last-child { border-right:0; }
 .pricing-line span { display:block; color:var(--muted); font-size:11px; }
-.pricing-line strong { display:block; margin-top:15px; font:600 28px "Space Grotesk",sans-serif; letter-spacing:-1px; }
-.pricing-line small { display:block; margin-top:6px; color:var(--muted); font:400 11px "DM Sans",sans-serif; letter-spacing:0; }
+.pricing-line strong { display:block; margin-top:15px; font:600 28px "Roboto",sans-serif; letter-spacing:-1px; }
+.pricing-line small { display:block; margin-top:6px; color:var(--muted); font:400 11px "Roboto",sans-serif; letter-spacing:0; }
 .faq-section { border-top:1px solid var(--line); }
 .faq-list { border-top:1px solid var(--ink); }
 details { border-bottom:1px solid var(--line); }
-summary { list-style:none; cursor:pointer; padding:20px 0; font:600 15px "Space Grotesk",sans-serif; }
+summary { list-style:none; cursor:pointer; padding:20px 0; font:600 15px "Roboto",sans-serif; }
 summary::-webkit-details-marker { display:none; }
 summary::after { content:"+"; float:right; color:var(--gold); font-size:20px; font-weight:400; }
 details[open] summary::after { content:"−"; }
