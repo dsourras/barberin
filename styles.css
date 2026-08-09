@@ -82,7 +82,7 @@ h1 strong { font-weight:800; }
 .booking-point { min-height:205px; padding:22px 24px 26px 0; border-bottom:1px solid var(--line); }
 .booking-point:nth-child(odd) { padding-right:28px; border-right:1px solid var(--line); }
 .booking-point:nth-child(even) { padding-left:28px; }
-.booking-point strong { color:var(--gold); font:600 12px "Roboto",sans-serif; }
+.booking-bullet { display:block; width:7px; height:7px; margin-top:4px; background:var(--gold); }
 .booking-point h3 { margin:20px 0 10px; font-size:21px; letter-spacing:-.6px; }
 .booking-point p { margin:0; color:var(--muted); font-size:13px; line-height:1.58; }
 .statement { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:104px max(32px, calc((100% - var(--max)) / 2)) 86px; }
