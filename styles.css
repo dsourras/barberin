@@ -71,16 +71,12 @@ main {
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  width: 32px;
+.brand-logo {
+  display: block;
+  width: 36px;
   height: 36px;
-  place-items: center;
-  border: 1.5px solid var(--ink);
-  color: var(--ink);
-  font-family: Georgia, serif;
-  font-size: 22px;
-  font-weight: 700;
+  border: 1px solid var(--line-strong);
+  object-fit: cover;
 }
 
 .site-nav {
@@ -265,9 +261,12 @@ h3 {
   color: var(--ink);
 }
 
-.stage-brand strong {
-  color: var(--gold);
-  font-size: 15px;
+.stage-logo {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line-strong);
+  object-fit: cover;
 }
 
 .stage-body {
