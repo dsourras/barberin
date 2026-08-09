@@ -1,308 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="el">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f6f8fa" />
-    <meta
-      name="description"
-      content="Barberin: η δική σου προσωποποιημένη εφαρμογή για το barbershop σου."
-    />
-    <title>Barberin | Η δική σου εφαρμογή</title>
-    <link rel="stylesheet" href="./styles.css?v=2" />
-    <link rel="icon" href="./barberin_logo.jpg?v=1" type="image/jpeg" />
-  </head>
-  <body>
-    <main>
-      <header class="site-header">
-        <a class="brand" href="./index.html" aria-label="Barberin αρχική">
-          <img class="brand-logo" src="./barberin_logo.jpg" alt="" width="36" height="36" />
-          <span>Barberin</span>
-        </a>
-        <nav class="site-nav" aria-label="Κύρια πλοήγηση">
-          <a class="nav-link" href="#platform">Πλατφόρμα</a>
-          <a class="nav-link" href="#features">Λειτουργίες</a>
-          <a class="nav-link" href="#pricing">Τιμές</a>
-          <a class="nav-link" href="#faq">FAQ</a>
-        </nav>
-        <a class="header-cta" href="#contact">Ζήτησε demo</a>
-      </header>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f8">
+  <meta name="description" content="Barberin δημιουργεί το δικό σου branded customer app και το owner app για την καθημερινή λειτουργία του shop σου.">
+  <title>Barberin | Το δικό σου shop app</title>
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="icon" href="./barberin_logo.jpg?v=1" type="image/jpeg">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="Barberin αρχική">
+      <img src="./barberin_logo.jpg?v=1" alt="" width="42" height="42">
+      <span>Barberin</span>
+    </a>
+    <nav class="site-nav" aria-label="Κύρια πλοήγηση">
+      <a href="#why">Γιατί Barberin</a>
+      <a href="#apps">Οι δύο εφαρμογές</a>
+      <a href="#features">Λειτουργίες</a>
+      <a href="#pricing">Τιμές</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="header-cta" href="#contact">Ζήτησε παρουσίαση</a>
+  </header>
 
-      <section class="hero--marketing">
-        <div class="hero-copy">
-          <p class="eyebrow">Your shop. Your app. Your standard.</p>
-          <h1>Η δική σου εφαρμογή. Το δικό σου brand.</h1>
-          <p class="lead">
-            Το Barberin είναι το ιδιωτικό operating system του barbershop σου:
-            μια προσωποποιημένη customer εφαρμογή και ένα control center για
-            τον owner, σχεδιασμένα αποκλειστικά για τη δική σου λειτουργία.
-          </p>
-          <div class="actions">
-            <a class="button primary" href="#contact">Ζήτησε τη δική σου εφαρμογή</a>
-            <a class="button" href="#platform">Δες την πλατφόρμα</a>
-          </div>
-          <div class="hero-note">
-            <span>Branded customer app</span>
-            <span>Owner control center</span>
-            <span>Ανά κατάστημα</span>
-          </div>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">YOUR SHOP / YOUR APPS</p>
+        <h1>Το shop σου δεν χρειάζεται άλλη μία καταχώριση. Χρειάζεται το δικό του app.</h1>
+        <p class="lead">Το Barberin δημιουργεί μια customer εφαρμογή με το όνομα και το brand του καταστήματός σου, μαζί με το owner app που σου δίνει πλήρη, live έλεγχο της λειτουργίας σου.</p>
+        <div class="actions">
+          <a class="button primary" href="#contact">Ζήτησε τη δική σου εφαρμογή</a>
+          <a class="button text-button" href="#apps">Δες τις δύο εφαρμογές <span>↘</span></a>
         </div>
+        <div class="proof-list">
+          <span>Δικό σου όνομα στο App Store &amp; Google Play</span>
+          <span>Δική σου σχέση με τον πελάτη</span>
+          <span>Live διαχείριση από κινητό</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="visual-label">A real shop experience, shaped around your name</div>
+        <div class="phone-pair">
+          <figure class="phone-shot customer-shot">
+            <img src="./the_cut_society_home_mock.png" alt="The Cut Society customer app με επόμενα ραντεβού">
+            <figcaption><strong>The Cut Society</strong><span>customer app</span></figcaption>
+          </figure>
+          <figure class="phone-shot owner-shot">
+            <img src="./barberin_owner_mock.png" alt="Barberin owner app με ζωντανά στοιχεία καταστήματος">
+            <figcaption><strong>Barberin</strong><span>owner app</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
 
-        <div class="product-stage" aria-label="Προεπισκόπηση του Barberin owner app">
-          <div class="stage-topbar">
-            <span class="stage-brand"><img class="stage-logo" src="./barberin_logo.jpg" alt="" width="22" height="22" /> Barberin</span>
-            <span>Owner / Overview</span>
-          </div>
-          <div class="stage-body">
-            <aside class="stage-sidebar" aria-label="Πλοήγηση εφαρμογής">
-              <span>Overview</span>
-              <span>Schedule</span>
-              <span>Clients</span>
-              <span>Reports</span>
-              <span>More</span>
-            </aside>
-            <div class="stage-content">
-              <p class="stage-kicker">Atelier 22 / live shop view</p>
-              <div class="stage-title">
-                <h3>Today, in control.</h3>
-                <span class="stage-date">18 MAY 2026</span>
-              </div>
-              <div class="stage-kpis">
-                <div class="stage-kpi">
-                  <small>Revenue</small>
-                  <strong>€420</strong>
-                  <em>+12% this week</em>
-                </div>
-                <div class="stage-kpi">
-                  <small>Appointments</small>
-                  <strong>18</strong>
-                  <em>+8% this week</em>
-                </div>
-                <div class="stage-kpi">
-                  <small>Rebook rate</small>
-                  <strong>76%</strong>
-                  <em>+5% this week</em>
-                </div>
-              </div>
-              <div class="stage-schedule">
-                <div class="stage-row active">
-                  <time>09:00</time>
-                  <strong>Haircut &amp; Beard</strong>
-                  <span>Alex</span>
-                </div>
-                <div class="stage-row">
-                  <time>09:45</time>
-                  <strong>Classic Haircut</strong>
-                  <span>Nikos</span>
-                </div>
-                <div class="stage-row">
-                  <time>10:30</time>
-                  <strong>Child Cut</strong>
-                  <span>Alex</span>
-                </div>
-                <div class="stage-row">
-                  <time>11:15</time>
-                  <strong>Open slot</strong>
-                  <span>Available</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    <section class="statement" id="why">
+      <p class="eyebrow">THE DIFFERENCE</p>
+      <h2>Ο πελάτης ανοίγει το shop σου. Όχι έναν γενικό κατάλογο.</h2>
+      <p>Το app είναι χτισμένο γύρω από το δικό σου όνομα, τη δική σου ομάδα και τον δικό σου τρόπο δουλειάς. Η εμπειρία ξεκινά και τελειώνει στο brand σου.</p>
+      <div class="signal-grid">
+        <div><strong>01</strong><span>Direct bookings</span><p>Ο πελάτης κλείνει απευθείας, χωρίς να ψάχνει ανάμεσα σε άλλα μαγαζιά.</p></div>
+        <div><strong>02</strong><span>Your brand</span><p>Το δικό σου όνομα, οι δικές σου υπηρεσίες και η δική σου εικόνα στην οθόνη του.</p></div>
+        <div><strong>03</strong><span>Owner control</span><p>Ραντεβού, barbers, διαθεσιμότητα, υπηρεσίες και reports από ένα app.</p></div>
+        <div><strong>04</strong><span>Live insight</span><p>Βλέπεις τι συμβαίνει σήμερα και τι χρειάζεται προσοχή, σε πραγματικό χρόνο.</p></div>
+      </div>
+    </section>
 
-      <section class="section" id="platform">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">A private digital home for your shop</p>
-            <h2>Δεν είσαι μέσα σε μια πλατφόρμα. Έχεις τη δική σου.</h2>
-          </div>
-          <p>
-            Οι πελάτες σου δεν ψάχνουν ανάμεσα σε ανταγωνιστές. Ανοίγουν τη δική
-            σου εφαρμογή, βλέπουν το δικό σου brand και κλείνουν απευθείας μαζί σου.
-          </p>
+    <section class="section apps-section" id="apps">
+      <div class="section-heading">
+        <p class="eyebrow">TWO EXPERIENCES / ONE SHOP</p>
+        <h2>Δύο εφαρμογές. Ένα πλήρες digital home.</h2>
+        <p>Ο πελάτης έχει την προσωπική του εμπειρία. Εσύ έχεις το control center της επιχείρησης.</p>
+      </div>
+      <div class="app-story">
+        <div class="story-visual">
+          <figure class="large-shot"><img src="./the_cut_society_book_mock.png" alt="The Cut Society customer app με υπηρεσίες και τιμές"><figcaption>The Cut Society / book a service</figcaption></figure>
         </div>
-        <div class="manifesto">
-          <strong>Από το πρώτο tap μέχρι το τελευταίο report, όλα ανήκουν στο shop σου.</strong>
-          <p>
-            Το Barberin ενώνει την εμπειρία του πελάτη με τα πραγματικά δεδομένα
-            του καταστήματος: ραντεβού, ομάδα, υπηρεσίες, έσοδα, πληρότητα,
-            επιστροφές και αποφάσεις.
-          </p>
+        <div class="story-copy">
+          <span class="story-number">01</span>
+          <h3>Customer app με το όνομα του shop σου</h3>
+          <p>Ο πελάτης βλέπει το κατάστημά σου, τις υπηρεσίες σου, την ομάδα σου και τα διαθέσιμα slots. Κλείνει, βλέπει το ιστορικό του και λαμβάνει ενημερώσεις χωρίς να χρειάζεται τηλεφώνημα.</p>
+          <ul class="line-list">
+            <li>Booking 24/7 με δικό σου brand</li>
+            <li>Υπηρεσίες, barber και διαθεσιμότητα</li>
+            <li>Επιβεβαιώσεις, αλλαγές και notifications</li>
+          </ul>
         </div>
-      </section>
+      </div>
+      <div class="app-story reverse">
+        <div class="story-visual">
+          <figure class="large-shot"><img src="./barberin_reports_mock.png" alt="Barberin reports με revenue και appointment analytics"><figcaption>Barberin / reports &amp; business clarity</figcaption></figure>
+        </div>
+        <div class="story-copy">
+          <span class="story-number">02</span>
+          <h3>Barberin owner app για όλη τη λειτουργία</h3>
+          <p>Το πρόγραμμα, τα ραντεβού, οι barbers, οι υπηρεσίες, οι αργίες, τα operational alerts και τα analytics μένουν σε ένα σημείο. Όχι απλώς για να βλέπεις. Για να αποφασίζεις.</p>
+          <ul class="line-list">
+            <li>Live πρόγραμμα και manual appointments</li>
+            <li>Reports, revenue και barber performance</li>
+            <li>Customer intelligence και business snapshot</li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
-      <section class="section" id="features">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Built around the way barbershops work</p>
-            <h2>Λιγότερη διαχείριση. Περισσότερη εποπτεία.</h2>
-          </div>
-          <p>
-            Όχι άλλη generic πλατφόρμα. Μια καθαρή, ζωντανή εικόνα της δικής σου
-            επιχείρησης.
-          </p>
-        </div>
-        <div class="feature-list">
-          <article class="feature-row">
-            <span class="index">01</span>
-            <h3>Ραντεβού και διαθεσιμότητα</h3>
-            <p>Live slots με βάση υπηρεσία, διάρκεια, barber-specific πρόγραμμα, blocked dates, holidays και υπάρχοντα ραντεβού.</p>
-            <span class="arrow">↗</span>
-          </article>
-          <article class="feature-row">
-            <span class="index">02</span>
-            <h3>Η customer εμπειρία</h3>
-            <p>Branded εφαρμογή, services, barber επιλογή, ιστορικό, reschedule και push/in-app notifications σε κάθε αλλαγή.</p>
-            <span class="arrow">↗</span>
-          </article>
-          <article class="feature-row">
-            <span class="index">03</span>
-            <h3>Reports που ενημερώνονται</h3>
-            <p>Revenue, appointments, completion, cancellations, demand, customer intelligence και performance ανά barber/service.</p>
-            <span class="arrow">↗</span>
-          </article>
-          <article class="feature-row">
-            <span class="index">04</span>
-            <h3>Η ομάδα και οι υπηρεσίες σου</h3>
-            <p>Custom services, τιμές, διάρκεια, ανάθεση υπηρεσιών ανά barber, εβδομαδιαία προγράμματα και multi-shop διαχείριση.</p>
-            <span class="arrow">↗</span>
-          </article>
-          <article class="feature-row">
-            <span class="index">05</span>
-            <h3>Το επόμενο move</h3>
-            <p>Operational alerts, financial clarity και sustainability insights για να ξέρεις πού χρειάζεται προσοχή το shop.</p>
-            <span class="arrow">↗</span>
-          </article>
-        </div>
-      </section>
+    <section class="comparison section">
+      <div class="section-heading narrow">
+        <p class="eyebrow">OWN THE RELATIONSHIP</p>
+        <h2>Η διαφορά είναι ποιος μένει στο μυαλό του πελάτη.</h2>
+      </div>
+      <div class="compare-table">
+        <div class="compare-head"><span>Μια κοινή είσοδος</span><strong>Το δικό σου branded app</strong></div>
+        <div class="compare-row"><span>Ο πελάτης θυμάται ένα γενικό όνομα</span><strong>Ο πελάτης ανοίγει το δικό σου όνομα</strong></div>
+        <div class="compare-row"><span>Η κράτηση είναι μία συναλλαγή</span><strong>Η κράτηση γίνεται απευθείας σχέση</strong></div>
+        <div class="compare-row"><span>Το brand σου χάνεται μέσα στο περιβάλλον</span><strong>Το brand σου είναι η πρώτη οθόνη</strong></div>
+        <div class="compare-row"><span>Βλέπεις μόνο το ραντεβού</span><strong>Βλέπεις πελάτες, ζήτηση και απόδοση</strong></div>
+      </div>
+    </section>
 
-      <section class="section" id="pricing">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Simple, predictable, per shop</p>
-            <h2>Μια συνδρομή. Ένα δικό σου shop.</h2>
-          </div>
-          <p>
-            Κάθε κατάστημα λειτουργεί ανεξάρτητα, με δικό του brand, δεδομένα,
-            customer app και subscription.
-          </p>
-        </div>
-        <div class="pricing-table">
-          <div class="pricing-line">
-            <h3>Monthly</h3>
-            <div class="price">29,99€ <small>/ μήνα</small></div>
-            <p>Πλήρης πρόσβαση χωρίς ετήσια δέσμευση.</p>
-            <a class="button" href="#contact">Μίλησέ μας</a>
-          </div>
-          <div class="pricing-line featured">
-            <h3>Yearly <span class="eyebrow">Best value</span></h3>
-            <div class="price">299,99€ <small>/ έτος</small></div>
-            <p>Όλα του Monthly, περίπου 25€/μήνα.</p>
-            <a class="button primary" href="#contact">Ξεκίνα συζήτηση</a>
-          </div>
-          <div class="pricing-line">
-            <h3>Custom setup</h3>
-            <div class="price">Quote</div>
-            <p>Branding, app identity, ρυθμίσεις shop, onboarding και δημοσίευση.</p>
-            <a class="button" href="#contact">Ζήτησε προσφορά</a>
-          </div>
-        </div>
-      </section>
+    <section class="section workflow">
+      <div class="section-heading">
+        <p class="eyebrow">HOW IT WORKS</p>
+        <h2>Απλό για τον πελάτη. Απόλυτο για τον owner.</h2>
+      </div>
+      <div class="workflow-grid">
+        <div><span>01</span><h3>Στήνουμε την ταυτότητα</h3><p>Όνομα, λογότυπο, υπηρεσίες, barbers, ωράρια και κανόνες του shop σου.</p></div>
+        <div><span>02</span><h3>Ο πελάτης κλείνει</h3><p>Ανοίγει τη δική σου εφαρμογή και βρίσκει το σωστό service και το σωστό slot.</p></div>
+        <div><span>03</span><h3>Εσύ έχεις τον έλεγχο</h3><p>Διαχειρίζεσαι live όλη την ημέρα και βλέπεις τι πραγματικά συμβαίνει στο μαγαζί.</p></div>
+      </div>
+    </section>
 
-      <section class="section" id="faq">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Straight answers</p>
-            <h2>Σχεδιασμένο για να είναι ξεκάθαρο.</h2>
-          </div>
-        </div>
-        <div class="faq">
-          <details>
-            <summary>Είναι marketplace όπως το eBarber;</summary>
-            <p>Όχι. Το Barberin είναι εφαρμογή αποκλειστικά για το δικό σου κατάστημα. Οι πελάτες σου δεν βλέπουν λίστα με ανταγωνιστές.</p>
-          </details>
-          <details>
-            <summary>Πληρώνω ανά ραντεβού;</summary>
-            <p>Όχι. Η συνδρομή είναι σταθερή ανά κατάστημα, χωρίς προμήθεια ανά appointment.</p>
-          </details>
-          <details>
-            <summary>Μπορώ να έχω περισσότερα shops;</summary>
-            <p>Ναι. Ο owner έχει ένα registration και κάθε shop λειτουργεί με ξεχωριστή ρύθμιση και συνδρομή.</p>
-          </details>
-          <details>
-            <summary>Χρειάζομαι τεχνικές γνώσεις;</summary>
-            <p>Όχι. Αναλαμβάνουμε το αρχικό setup, το branding και την καθοδήγηση μέχρι να είναι έτοιμο να λειτουργήσει.</p>
-          </details>
-        </div>
-      </section>
+    <section class="section feature-section" id="features">
+      <div class="section-heading">
+        <p class="eyebrow">BUILT FOR THE REAL DAY</p>
+        <h2>Ό,τι χρειάζεται ένα σύγχρονο barbershop.</h2>
+      </div>
+      <div class="feature-list">
+        <div class="feature-row"><span>01</span><div><h3>Ραντεβού χωρίς τριβή</h3><p>Online και manual appointments, διάρκεια υπηρεσιών, barber-specific πρόγραμμα, live slots, rescheduling και blocked dates.</p></div><b>↗</b></div>
+        <div class="feature-row"><span>02</span><div><h3>Η ομάδα σου, με τους κανόνες σου</h3><p>Services Management, ανάθεση υπηρεσιών ανά barber, εβδομαδιαίο πρόγραμμα και ειδικές αργίες ή διακοπές.</p></div><b>↗</b></div>
+        <div class="feature-row"><span>03</span><div><h3>Ενημέρωση τη στιγμή που χρειάζεται</h3><p>Push και in-app notifications για confirm, reschedule, completed, no-show και cancel.</p></div><b>↗</b></div>
+        <div class="feature-row"><span>04</span><div><h3>Η επιχείρηση σε καθαρή εικόνα</h3><p>Revenue, completion rate, demand, customer intelligence, barber performance, financial clarity και operational alerts.</p></div><b>↗</b></div>
+      </div>
+    </section>
 
-      <section class="section" id="contact">
-        <div class="contact-section">
-          <div class="contact-copy">
-            <p class="eyebrow">Start with a conversation</p>
-            <h2>Θέλεις το δικό σου barbershop app;</h2>
-            <p>
-              Πες μας λίγα πράγματα για το κατάστημά σου. Θα επικοινωνήσουμε μαζί
-              σου για να δούμε το brand, την ομάδα και το setup που χρειάζεσαι.
-            </p>
-            <div class="contact-meta">
-              <span>Email</span>
-              <a href="mailto:dsourras@gmail.com">dsourras@gmail.com</a>
-              <span>Απαντάμε μέσα σε μία εργάσιμη ημέρα.</span>
-            </div>
-          </div>
-          <form class="contact-form" id="interest-form">
-            <label>
-              <span class="eyebrow">Όνομα</span>
-              <input name="name" required autocomplete="name" placeholder="Το όνομά σου" />
-            </label>
-            <label>
-              <span class="eyebrow">Κατάστημα</span>
-              <input name="shop" required placeholder="Όνομα barbershop" />
-            </label>
-            <label>
-              <span class="eyebrow">Email</span>
-              <input name="email" required type="email" autocomplete="email" placeholder="you@example.com" />
-            </label>
-            <label>
-              <span class="eyebrow">Τηλέφωνο</span>
-              <input name="phone" autocomplete="tel" placeholder="+30 ..." />
-            </label>
-            <label class="full">
-              <span class="eyebrow">Τι χρειάζεσαι;</span>
-              <textarea name="message" placeholder="Πόσους barbers έχει το κατάστημα; Τι θέλεις να βλέπει ο πελάτης;"></textarea>
-            </label>
-            <button class="button primary" type="submit">Αποστολή ενδιαφέροντος</button>
-          </form>
-        </div>
-      </section>
+    <section class="section gallery">
+      <div class="section-heading">
+        <p class="eyebrow">IN THE APP</p>
+        <h2>Η εμπειρία όπως θα τη δει ο πελάτης και όπως θα τη διαχειριστείς εσύ.</h2>
+      </div>
+      <div class="gallery-grid">
+        <figure><img src="./the_cut_society_home_mock.png" alt="The Cut Society customer home"><figcaption>Customer home / επόμενη επίσκεψη</figcaption></figure>
+        <figure><img src="./the_cut_society_book_mock.png" alt="The Cut Society services"><figcaption>Booking / υπηρεσίες και slots</figcaption></figure>
+        <figure><img src="./barberin_owner_mock.png" alt="Barberin overview"><figcaption>Owner overview / live εικόνα</figcaption></figure>
+        <figure><img src="./barberin_reports_mock.png" alt="Barberin reports"><figcaption>Reports / καθαρή εικόνα απόδοσης</figcaption></figure>
+      </div>
+    </section>
 
-      <footer class="site-footer">
-        <span>© 2026 Barberin. Built for independent barbershops.</span>
-        <div class="footer-links">
-          <a href="./privacy.html">Privacy Policy</a>
-          <a href="./terms.html">Terms</a>
-          <a href="./delete-account.html">Delete Account</a>
-          <a href="mailto:dsourras@gmail.com">Support</a>
-        </div>
-      </footer>
-    </main>
+    <section class="section pricing-section" id="pricing">
+      <div class="section-heading narrow">
+        <p class="eyebrow">SIMPLE, SERIOUS, CLEAR</p>
+        <h2>Μία επένδυση στη δική σου σχέση με τον πελάτη.</h2>
+      </div>
+      <div class="pricing-line"><div><span>Μηνιαία συνδρομή</span><strong>29,99€<small>/μήνα</small></strong></div><div><span>Ετήσια συνδρομή</span><strong>299,99€<small>/έτος</small></strong></div><div><span>Setup &amp; branding</span><strong>Με παρουσίαση<small>για το δικό σου shop</small></strong></div></div>
+    </section>
 
-    <script>
-      document.getElementById("interest-form").addEventListener("submit", function (event) {
-        event.preventDefault();
-        var form = new FormData(event.currentTarget);
-        var subject = encodeURIComponent("Barberin - αίτημα ενδιαφέροντος");
-        var body = encodeURIComponent(
-          "Όνομα: " + form.get("name") + "\n" +
-          "Κατάστημα: " + form.get("shop") + "\n" +
-          "Email: " + form.get("email") + "\n" +
-          "Τηλέφωνο: " + form.get("phone") + "\n\n" +
-          "Μήνυμα:\n" + form.get("message")
-        );
-        window.location.href = "mailto:dsourras@gmail.com?subject=" + subject + "&body=" + body;
-      });
-    </script>
-  </body>
+    <section class="section faq-section" id="faq">
+      <div class="section-heading narrow"><p class="eyebrow">QUESTIONS, ANSWERED</p><h2>Όσα χρειάζεται να ξέρεις πριν ξεκινήσεις.</h2></div>
+      <div class="faq-list">
+        <details><summary>Τι ακριβώς αποκτά το shop μου;</summary><p>Μια branded customer εφαρμογή για τους πελάτες σου και το Barberin owner app για τη διαχείριση της καθημερινής λειτουργίας, με το δικό σου όνομα και τις δικές σου ρυθμίσεις.</p></details>
+        <details><summary>Η customer εφαρμογή έχει το όνομα και το logo του καταστήματος;</summary><p>Ναι. Η εμπειρία, η παρουσίαση των υπηρεσιών και τα βασικά στοιχεία της εφαρμογής προσαρμόζονται στο brand του shop σου.</p></details>
+        <details><summary>Τι κάνει ο πελάτης μέσα στην εφαρμογή;</summary><p>Βλέπει υπηρεσίες και barbers, επιλέγει διαθέσιμη ημέρα και ώρα, κλείνει ραντεβού, βλέπει τα ραντεβού του και λαμβάνει ενημερώσεις για κάθε αλλαγή.</p></details>
+        <details><summary>Τι κάνει ο owner μέσα στο Barberin;</summary><p>Βλέπει το πρόγραμμα live, δημιουργεί manual appointments, αλλάζει ραντεβού, διαχειρίζεται την ομάδα και τις υπηρεσίες και έχει reports για την πορεία του shop.</p></details>
+        <details><summary>Μπορώ να ορίσω διαφορετικό πρόγραμμα ανά barber;</summary><p>Ναι. Το πρόγραμμα, η διαθεσιμότητα, τα slots και οι υπηρεσίες μπορούν να ακολουθούν τη λειτουργία κάθε barber.</p></details>
+        <details><summary>Μπορώ να κλείσω μια ολόκληρη ημέρα ή περίοδο;</summary><p>Ναι. Υπάρχουν κλειστές ημέρες, ελληνικές αργίες και διακοπές, με δυνατότητα για μεμονωμένη ημερομηνία ή διάστημα.</p></details>
+        <details><summary>Οι υπηρεσίες είναι έτοιμες ή μπορώ να τις αλλάξω;</summary><p>Το shop επιλέγει τις ενεργές υπηρεσίες, προσθέτει custom υπηρεσίες και, προαιρετικά, ορίζει ποιες υπηρεσίες προσφέρει κάθε barber.</p></details>
+        <details><summary>Υπάρχουν χρεώσεις ανά ραντεβού;</summary><p>Η συνδρομή είναι για τη χρήση της υπηρεσίας. Δεν σχεδιάζεται ως χρέωση ανά ραντεβού.</p></details>
+        <details><summary>Μπορώ να έχω περισσότερα από ένα shop;</summary><p>Ναι. Κάθε shop μπορεί να έχει τη δική του εφαρμογή και τη δική του συνδρομή, με κεντρική διαχείριση από το ίδιο owner registration.</p></details>
+        <details><summary>Πώς εμφανίζεται η εφαρμογή στα stores;</summary><p>Η εφαρμογή μπορεί να οργανωθεί με το brand του shop σου και διατίθεται σύμφωνα με τις διαδικασίες του App Store και του Google Play.</p></details>
+        <details><summary>Χρειάζομαι τεχνικές γνώσεις;</summary><p>Όχι. Συζητάμε τη λειτουργία του shop, ετοιμάζουμε το setup και σου παραδίδουμε ένα περιβάλλον που μπορείς να χρησιμοποιείς καθημερινά από το κινητό.</p></details>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+      <div><p class="eyebrow">READY WHEN YOU ARE</p><h2>Το επόμενο ραντεβού μπορεί να ξεκινά από το δικό σου app.</h2><p>Πες μας λίγα πράγματα για το shop σου και θα σου δείξουμε πώς μπορεί να στηθεί.</p></div>
+      <a class="button primary" href="mailto:dsourras@gmail.com?subject=Barberin%20presentation">Στείλε αίτημα παρουσίασης</a>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span>© 2026 Barberin</span><span>Το shop σου. Η δική σου εμπειρία.</span><nav><a href="./privacy.html">Πολιτική απορρήτου</a><a href="./terms.html">Όροι</a><a href="./delete-account.html">Διαγραφή λογαριασμού</a></nav></footer>
+</body>
 </html>
