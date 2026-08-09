@@ -203,11 +203,100 @@
     </section>
 
     <section class="contact-section" id="contact">
-      <div><p class="eyebrow">READY WHEN YOU ARE</p><h2>Το επόμενο ραντεβού μπορεί να ξεκινά από το δικό σου app.</h2><p>Πες μας λίγα πράγματα για το barber shop σου και θα σου δείξουμε πώς μπορεί να στηθεί.</p></div>
-      <a class="button primary" href="mailto:dsourras@gmail.com?subject=Barberin%20presentation">Στείλε αίτημα παρουσίασης</a>
+      <div class="contact-copy">
+        <p class="eyebrow">READY WHEN YOU ARE</p>
+        <h2>Το επόμενο ραντεβού μπορεί να ξεκινά από το δικό σου app.</h2>
+        <p>Πες μας λίγα πράγματα για το barber shop σου και θα σου δείξουμε πώς μπορεί να στηθεί.</p>
+        <p class="contact-note">Απαντάμε προσωπικά και προσαρμόζουμε την παρουσίαση στη λειτουργία του καταστήματός σου.</p>
+      </div>
+      <form class="contact-form" id="contact-form">
+        <div class="form-grid">
+          <label class="field">
+            <span>Όνομα *</span>
+            <input name="fullName" type="text" autocomplete="name" required>
+          </label>
+          <label class="field">
+            <span>Barber shop *</span>
+            <input name="shopName" type="text" autocomplete="organization" required>
+          </label>
+        </div>
+        <div class="form-grid">
+          <label class="field">
+            <span>Email *</span>
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label class="field">
+            <span>Τηλέφωνο</span>
+            <input name="phone" type="tel" autocomplete="tel">
+          </label>
+        </div>
+        <div class="form-grid">
+          <label class="field">
+            <span>Καταστήματα</span>
+            <select name="shopCount">
+              <option value="1">1 κατάστημα</option>
+              <option value="2-3">2–3 καταστήματα</option>
+              <option value="4+">4 ή περισσότερα</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Προτιμώ επικοινωνία με</span>
+            <select name="preferredContact">
+              <option value="email">Email</option>
+              <option value="phone">Τηλέφωνο</option>
+              <option value="either">Ό,τι σας εξυπηρετεί</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span>Πες μας τι χρειάζεσαι *</span>
+          <textarea name="message" rows="4" required></textarea>
+        </label>
+        <label class="contact-trap" aria-hidden="true">
+          <span>Website</span>
+          <input name="companyWebsite" type="text" tabindex="-1" autocomplete="off">
+        </label>
+        <div class="form-actions">
+          <button class="button primary" type="submit">Στείλε αίτημα παρουσίασης</button>
+          <p class="form-status" id="contact-status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
     </section>
   </main>
 
   <footer class="site-footer"><span>© 2026 BARBERIN</span><span>Το barber shop σου. Η δική σου εμπειρία.</span><nav><a href="./privacy.html">Πολιτική απορρήτου</a><a href="./terms.html">Όροι</a><a href="./delete-account.html">Διαγραφή λογαριασμού</a></nav></footer>
+  <script>
+    const contactForm = document.getElementById("contact-form");
+    const contactStatus = document.getElementById("contact-status");
+    const contactEndpoint = "https://europe-west1-barbero-88d00.cloudfunctions.net/barberoSubmitContactRequest";
+
+    contactForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitButton = contactForm.querySelector("button[type=submit]");
+      submitButton.disabled = true;
+      submitButton.textContent = "Αποστολή…";
+      contactStatus.textContent = "";
+      contactStatus.dataset.state = "";
+
+      try {
+        const response = await fetch(contactEndpoint, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(Object.fromEntries(new FormData(contactForm))),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.message || "request-failed");
+        contactForm.reset();
+        contactStatus.textContent = "Το αίτημά σου καταχωρήθηκε. Θα επικοινωνήσουμε σύντομα.";
+        contactStatus.dataset.state = "success";
+      } catch (error) {
+        contactStatus.textContent = "Κάτι δεν πήγε καλά. Δοκίμασε ξανά σε λίγο.";
+        contactStatus.dataset.state = "error";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Στείλε αίτημα παρουσίασης";
+      }
+    });
+  </script>
 </body>
 </html>
