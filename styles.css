@@ -140,8 +140,9 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .pricing-line > div { padding:29px 24px 31px 0; border-right:1px solid var(--line); }
 .pricing-line > div:not(:first-child) { padding-left:24px; }
 .pricing-line > div:last-child { border-right:0; }
-.pricing-line span { display:block; color:var(--muted); font-size:11px; }
-.pricing-line strong { display:block; margin-top:15px; font:600 28px "Roboto",sans-serif; letter-spacing:-1px; }
+.pricing-plan-name { display:block; color:var(--ink); font-size:16px; font-weight:600; letter-spacing:-.25px; }
+.pricing-plan-type { margin-top:4px; color:var(--muted); font-size:11px; font-weight:500; letter-spacing:.7px; text-transform:uppercase; }
+.pricing-line strong { display:block; margin-top:17px; font:600 28px "Roboto",sans-serif; letter-spacing:-1px; }
 .pricing-line small { display:block; margin-top:6px; color:var(--muted); font:400 11px "Roboto",sans-serif; letter-spacing:0; }
 .faq-section { border-top:1px solid var(--line); }
 .faq-list { border-top:1px solid var(--ink); }
