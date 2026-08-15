@@ -158,6 +158,7 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .pricing-line small { display:block; margin-top:6px; color:var(--muted); font:400 11px "Roboto",sans-serif; letter-spacing:0; }
 .pricing-original { display:block; color:var(--muted); font-size:15px; font-weight:400; text-decoration:line-through; letter-spacing:0; }
 .pricing-offer { display:block; margin-top:3px; }
+.pricing-benefit { margin-top:12px; color:var(--ink); font-size:12px; font-weight:600; }
 .faq-section { border-top:1px solid var(--line); }
 .faq-list { border-top:1px solid var(--ink); }
 details { border-bottom:1px solid var(--line); }
