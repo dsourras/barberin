@@ -98,6 +98,12 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .section-heading { max-width:800px; margin-bottom:62px; }
 .section-heading > p:last-child { max-width:590px; margin:22px 0 0; color:var(--muted); font-size:16px; }
 .section-heading.narrow { max-width:690px; }
+.app-map { display:grid; grid-template-columns:1fr 1fr; margin:0 0 24px; border-top:1px solid var(--ink); border-bottom:1px solid var(--line); }
+.app-map > div { padding:22px 28px 24px 0; }
+.app-map > div + div { padding-left:28px; border-left:1px solid var(--line); }
+.app-map-label, .story-kicker { display:block; color:var(--gold); font-size:10px; font-weight:800; letter-spacing:1.7px; }
+.app-map strong { display:block; margin-top:14px; font-size:18px; letter-spacing:-.4px; }
+.app-map p { max-width:420px; margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.55; }
 .app-story { display:grid; grid-template-columns:1fr 1fr; gap:96px; align-items:center; padding:54px 0; border-top:1px solid var(--line); }
 .app-story.reverse { border-bottom:1px solid var(--line); }
 .story-visual { display:flex; justify-content:center; }
@@ -106,6 +112,7 @@ h1 { max-width:650px; margin:0; font-size:clamp(42px,4.3vw,63px); letter-spacing
 .large-shot figcaption { margin-top:15px; color:var(--muted); font-size:10px; letter-spacing:.8px; text-transform:uppercase; }
 .story-copy { max-width:500px; }
 .story-number { color:var(--gold); font:600 12px "Roboto",sans-serif; }
+.story-kicker { margin-bottom:18px; }
 .story-copy h3 { margin:18px 0 16px; font-size:32px; letter-spacing:-1.4px; }
 .story-copy > p { margin:0; color:var(--muted); font-size:15px; line-height:1.65; }
 .line-list { list-style:none; margin:28px 0 0; padding:0; }
@@ -213,6 +220,9 @@ details p { max-width:720px; margin:-5px 0 21px; color:var(--muted); font-size:1
   .section { padding:78px 0; }
   .app-story, .app-story.reverse { grid-template-columns:1fr; gap:42px; padding:42px 0; }
   .app-story.reverse .story-visual { order:-1; }
+  .app-map { grid-template-columns:1fr; }
+  .app-map > div, .app-map > div + div { padding:20px 0; border-left:0; }
+  .app-map > div + div { border-top:1px solid var(--line); }
   .story-copy h3 { font-size:28px; }
   .compare-head, .compare-row { grid-template-columns:1fr; gap:7px; padding:18px 0; }
   .compare-head strong { display:none; }
