@@ -2,17 +2,38 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isShopMember(shopId) {
+      return isSignedIn() &&
+        request.auth.token.barberinShopAccess != null &&
+        (request.auth.token.barberinShopAccess[shopId] == 'owner' ||
+          request.auth.token.barberinShopAccess[shopId] == 'staff' ||
+          request.auth.token.barberinShopAccess[shopId] == 'customer');
+    }
+
+    function isShopOwnerOrStaff(shopId) {
+      return isSignedIn() &&
+        request.auth.token.barberinShopAccess != null &&
+        (request.auth.token.barberinShopAccess[shopId] == 'owner' ||
+          request.auth.token.barberinShopAccess[shopId] == 'staff');
+    }
+
     match /shops/{shopId}/owner/{userId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isShopOwnerOrStaff(shopId) ||
+        (isShopMember(shopId) && request.auth.uid == userId);
+      allow write: if false;
     }
     match /shops/{shopId}/customers/{userId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isShopOwnerOrStaff(shopId) ||
+        (isShopMember(shopId) && request.auth.uid == userId);
+      allow write: if false;
     }
     match /shops/{shopId}/barbers/{barberId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == shopId;
+      allow read: if isShopMember(shopId);
+      allow write: if false;
     }
   }
 }

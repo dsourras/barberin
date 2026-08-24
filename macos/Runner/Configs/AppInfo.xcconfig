@@ -4,11 +4,15 @@
 // future. If not, the values below would default to using the project name when this becomes a
 // 'flutter create' template.
 
+// Local.xcconfig is intentionally untracked. It contains only machine/account-specific
+// Xcode settings such as the Google OAuth client identifiers.
+#include? "Local.xcconfig"
+
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = barbero
+PRODUCT_NAME = Barberin
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.barbero
+PRODUCT_BUNDLE_IDENTIFIER = com.barberin.app.macos
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Barberin. All rights reserved.

@@ -5,10 +5,11 @@ class BarberHomePage extends StatelessWidget {
     super.key,
     required this.onOpenSchedule,
     required this.onOpenProgram,
+    required this.onQuickAdd,
     required this.onOpenNotifications,
-    required this.currentAthensTime,
     required this.selectedDate,
     required this.ownerFirstName,
+    required this.shopName,
     required this.appointments,
     required this.customerPhotoUrlForAppointment,
     required this.onOpenCustomer,
@@ -18,10 +19,11 @@ class BarberHomePage extends StatelessWidget {
 
   final VoidCallback onOpenSchedule;
   final VoidCallback onOpenProgram;
+  final VoidCallback onQuickAdd;
   final VoidCallback onOpenNotifications;
-  final DateTime currentAthensTime;
   final DateTime selectedDate;
   final String ownerFirstName;
+  final String shopName;
   final List<Appointment> appointments;
   final String Function(Appointment appointment) customerPhotoUrlForAppointment;
   final ValueChanged<Appointment> onOpenCustomer;
@@ -30,27 +32,25 @@ class BarberHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final bookedAppointments = appointments
         .where((appointment) => appointment.isBooked)
         .toList();
-    final appointmentCount = bookedAppointments.length;
-    final totalMinutes = bookedAppointments.fold<int>(
-      0,
-      (sum, item) => sum + item.minutes,
-    );
     final totalRevenue = bookedAppointments.fold<int>(
       0,
       (sum, item) => sum + item.price,
     );
+    final currentWeek = _homeWeekSnapshot(
+      selectedDate: selectedDate,
+      appointments: appointments,
+    );
+    final previousWeek = _homeWeekSnapshot(
+      selectedDate: selectedDate.subtract(const Duration(days: 7)),
+      appointments: appointments,
+    );
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF121212), Color(0xFF090909)],
-        ),
-      ),
+      color: scheme.surface,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
@@ -58,60 +58,90 @@ class BarberHomePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HomeTopBar(
-                currentAthensTime: currentAthensTime,
                 selectedDate: selectedDate,
                 ownerFirstName: ownerFirstName,
+                shopName: shopName,
                 onOpenProgram: onOpenProgram,
                 onOpenNotifications: onOpenNotifications,
               ),
               const SizedBox(height: 18),
-              const Text(
-                '\u03a3\u0397\u039c\u0395\u03a1\u0391',
+              Text(
+                'ΕΠΙΣΚΟΠΗΣΗ',
                 style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1.2,
-                  color: Color(0xFFDADADA),
+                  fontSize: 10,
+                  letterSpacing: 1.5,
+                  color: context.barberinTextSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
                     child: HomeStatCard(
-                      value: '$appointmentCount',
-                      caption:
-                          '\u03a1\u0391\u039d\u03a4\u0395\u0392\u039f\u03a5',
+                      value: '€$totalRevenue',
+                      caption: 'Έσοδα',
+                      icon: Icons.payments_outlined,
+                      delta: _homePercentDelta(
+                        currentWeek.revenue,
+                        previousWeek.revenue,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: HomeStatCard(
-                      value:
-                          '${(totalMinutes / 60).toStringAsFixed(totalMinutes % 60 == 0 ? 0 : 1)}h',
-                      caption:
-                          '\u03a3\u03a5\u039d\u039f\u039b\u0399\u039a\u0395\u03a3 \u03a9\u03a1\u0395\u03a3',
+                      value: '${currentWeek.appointments}',
+                      caption: 'Ραντεβού',
+                      icon: Icons.calendar_month_outlined,
+                      delta: _homePercentDelta(
+                        currentWeek.appointments,
+                        previousWeek.appointments,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: HomeStatCard(
-                      value: '\u20AC$totalRevenue',
-                      caption:
-                          '\u0395\u039a\u03a4\u0399\u039c\u03a9\u039c\u0395\u039d\u0391 \u0395\u03a3\u039f\u0394\u0391',
+                      value: '${currentWeek.newClients}',
+                      caption: 'Νέοι πελάτες',
+                      icon: Icons.person_add_alt_1_outlined,
+                      delta: _homePercentDelta(
+                        currentWeek.newClients,
+                        previousWeek.newClients,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: HomeStatCard(
+                      value: '${currentWeek.rebookRate.round()}%',
+                      caption: 'Επιστροφές',
+                      icon: Icons.refresh_rounded,
+                      delta: _homePercentDelta(
+                        currentWeek.rebookRate.round(),
+                        previousWeek.rebookRate.round(),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
-              const Text(
-                '\u0395\u03a0\u039f\u039c\u0395\u039d\u0391 \u03a1\u0391\u039d\u03a4\u0395\u0392\u039f\u03a5',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1.2,
-                  color: Color(0xFFDADADA),
-                  fontWeight: FontWeight.w600,
-                ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ',
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                        color: context.barberinTextSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  ManualAppointmentAction(onPressed: onQuickAdd),
+                ],
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -122,23 +152,21 @@ class BarberHomePage extends StatelessWidget {
                       const _EmptyDayCard()
                     else
                       ...appointments.map(
-                        (appointment) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: AppointmentCard(
-                            appointment: appointment,
-                            customerPhotoUrl:
-                                customerPhotoUrlForAppointment(appointment),
-                            onTap: appointment.isBooked
-                                ? () => onOpenCustomer(appointment)
-                                : null,
-                            onLongPress: () {
-                              if (appointment.isBooked) {
-                                onManageAppointment(appointment);
-                                return;
-                              }
-                              onQuickAddForSlot(appointment);
-                            },
+                        (appointment) => AppointmentCard(
+                          appointment: appointment,
+                          customerPhotoUrl: customerPhotoUrlForAppointment(
+                            appointment,
                           ),
+                          onTap: () {
+                            if (appointment.isBooked) {
+                              onManageAppointment(appointment);
+                              return;
+                            }
+                            onQuickAddForSlot(appointment);
+                          },
+                          onLongPress: appointment.isBooked
+                              ? () => onOpenCustomer(appointment)
+                              : null,
                         ),
                       ),
                   ],
@@ -154,106 +182,119 @@ class BarberHomePage extends StatelessWidget {
 
 class _HomeTopBar extends StatelessWidget {
   const _HomeTopBar({
-    required this.currentAthensTime,
     required this.selectedDate,
     required this.ownerFirstName,
+    required this.shopName,
     required this.onOpenProgram,
     required this.onOpenNotifications,
   });
 
-  final DateTime currentAthensTime;
   final DateTime selectedDate;
   final String ownerFirstName;
+  final String shopName;
   final VoidCallback onOpenProgram;
   final VoidCallback onOpenNotifications;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final scheme = Theme.of(context).colorScheme;
+    final greetingName = ownerFirstName.trim();
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppHamburgerMenu(),
-        const SizedBox(width: 14),
-        Expanded(
-          child: GestureDetector(
-            onTap: onOpenProgram,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${greekGreeting(currentAthensTime)}, $ownerFirstName',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFF5ECDD),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  greekDateLabel(selectedDate),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF969696),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        ValueListenableBuilder<List<BarberoNotificationItem>>(
-          valueListenable: barberoNotifications,
-          builder: (context, notifications, child) {
-            final unreadCount =
-                notifications.where((item) => !item.read).length;
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: onOpenNotifications,
-                child: SizedBox(
-                  width: 46,
-                  height: 46,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Center(
-                        child: Icon(
-                          Icons.notifications_none_rounded,
-                          color: Color(0xFFD1A45C),
-                          size: 20,
-                        ),
-                      ),
-                      if (unreadCount > 0)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFD1A45C),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            constraints: const BoxConstraints(minWidth: 18),
-                            child: Text(
-                              unreadCount > 9 ? '9+' : '$unreadCount',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Color(0xFF111111),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
+        Row(
+          children: [
+            const AppHamburgerMenu(),
+            const SizedBox(width: 8),
+            const BrandWordmark(width: 124),
+            const Spacer(),
+            ValueListenableBuilder<List<BarberoNotificationItem>>(
+              valueListenable: barberoNotifications,
+              builder: (context, notifications, child) {
+                final unreadCount = notifications
+                    .where((item) => !item.read)
+                    .length;
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: onOpenNotifications,
+                    child: SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Center(
+                            child: Icon(
+                              Icons.notifications_none_rounded,
+                              color: scheme.onSurface,
+                              size: 20,
                             ),
                           ),
-                        ),
-                    ],
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: scheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: scheme.surface,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${greekGreeting(athensNow())}${greetingName.isEmpty ? '' : ', $greetingName'}',
+          style: TextStyle(fontSize: 12, color: context.barberinTextSecondary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Αυτά συμβαίνουν σήμερα στο',
+          style: TextStyle(fontSize: 11, color: context.barberinTextSecondary),
+        ),
+        const SizedBox(height: 2),
+        GestureDetector(
+          onTap: onOpenProgram,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  shopName,
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w600,
+                    color: context.barberinTextPrimary,
                   ),
                 ),
               ),
-            );
-          },
+              Icon(
+                Icons.chevron_right_rounded,
+                color: context.barberinTextSecondary,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          barberinDateLabel(selectedDate),
+          style: TextStyle(fontSize: 11, color: context.barberinTextSecondary),
         ),
       ],
     );
@@ -261,60 +302,189 @@ class _HomeTopBar extends StatelessWidget {
 }
 
 class HomeStatCard extends StatelessWidget {
-  const HomeStatCard({super.key, required this.value, required this.caption});
+  const HomeStatCard({
+    super.key,
+    required this.value,
+    required this.caption,
+    this.icon,
+    this.delta = '',
+  });
 
   final String value;
   final String caption;
+  final IconData? icon;
+  final String delta;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final displayValue = value.replaceFirst('\u03b2\u201a\u00ac', 'EUR ');
     return Container(
-      height: 76,
+      height: 116,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1C1A18), Color(0xFF131313)],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3A3127)),
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outline),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 16,
-            offset: Offset(0, 8),
+            color: Color(0x18000000),
+            blurRadius: 12,
+            offset: Offset(0, 6),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.fromLTRB(9, 9, 8, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFF2E3C8),
-              ),
+            Icon(
+              icon ?? Icons.insights_outlined,
+              size: 16,
+              color: Theme.of(context).colorScheme.primary,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             Text(
               caption,
-              maxLines: 2,
-              style: const TextStyle(
-                fontSize: 8.5,
-                color: Color(0xFFC7B18A),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w500,
+                color: context.barberinTextSecondary,
                 height: 1.2,
               ),
             ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  displayValue,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: context.barberinTextPrimary,
+                  ),
+                ),
+              ),
+            ),
+            if (delta.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(
+                delta,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: delta.startsWith('-')
+                      ? const Color(0xFFB45353)
+                      : const Color(0xFF3F8F5B),
+                ),
+              ),
+              Text(
+                'σε σχέση με την προηγούμενη εβδομάδα',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: context.barberinTextSecondary,
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+class _HomeWeekSnapshot {
+  const _HomeWeekSnapshot({
+    required this.revenue,
+    required this.appointments,
+    required this.newClients,
+    required this.rebookRate,
+  });
+
+  final int revenue;
+  final int appointments;
+  final int newClients;
+  final double rebookRate;
+}
+
+_HomeWeekSnapshot _homeWeekSnapshot({
+  required DateTime selectedDate,
+  required List<Appointment> appointments,
+}) {
+  final start = DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+  ).subtract(const Duration(days: 6));
+  final end = start.add(const Duration(days: 7));
+  final weekAppointments = appointments
+      .where((appointment) {
+        final date = DateTime.tryParse(appointment.date.trim());
+        return date != null &&
+            !appointment.isBlocked &&
+            !appointment.isCancelled &&
+            !appointment.isNoShow &&
+            !date.isBefore(start) &&
+            date.isBefore(end);
+      })
+      .toList(growable: false);
+  final firstVisitByCustomer = <String, DateTime>{};
+  for (final appointment in appointments) {
+    final date = DateTime.tryParse(appointment.date.trim());
+    final key = _homeCustomerKey(appointment);
+    if (date == null || key.isEmpty) continue;
+    final firstVisit = firstVisitByCustomer[key];
+    if (firstVisit == null || date.isBefore(firstVisit)) {
+      firstVisitByCustomer[key] = date;
+    }
+  }
+  final newClients = firstVisitByCustomer.values
+      .where((date) => !date.isBefore(start) && date.isBefore(end))
+      .length;
+  final completed = weekAppointments
+      .where((appointment) => appointment.isCompleted)
+      .length;
+  return _HomeWeekSnapshot(
+    revenue: weekAppointments.fold(0, (sum, item) => sum + item.price),
+    appointments: weekAppointments.length,
+    newClients: newClients,
+    rebookRate: weekAppointments.isEmpty
+        ? 0
+        : completed / weekAppointments.length * 100,
+  );
+}
+
+String _homeCustomerKey(Appointment appointment) {
+  final uid = appointment.customerUid.trim();
+  if (uid.isNotEmpty) return 'uid:$uid';
+  final email = appointment.customerEmail.trim().toLowerCase();
+  if (email.isNotEmpty) return 'email:$email';
+  final phone = appointment.customerPhone.trim();
+  if (phone.isNotEmpty) return 'phone:$phone';
+  final name = appointment.name.trim().toLowerCase();
+  return name.isEmpty ? '' : 'name:$name';
+}
+
+String _homePercentDelta(num current, num previous) {
+  if (previous == 0) return current == 0 ? '0%' : '+100%';
+  final percent = ((current - previous) / previous * 100).round();
+  return '${percent >= 0 ? '+' : ''}$percent%';
+}
+
+String _homeAppointmentDateLabel(String rawDate) {
+  final date = DateTime.tryParse(rawDate.trim());
+  if (date == null) return rawDate.trim();
+  return barberinDateLabel(date);
 }
 
 class AppointmentCard extends StatelessWidget {
@@ -333,228 +503,218 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = context.barberinIsLight;
     final isBooked = appointment.isBooked;
     final barberName = appointment.barberName.trim();
-    final barberAccent = [
-      const Color(0xFFB98A52),
-      const Color(0xFF8F6A45),
-      const Color(0xFF6E7E63),
-    ][barberName.isEmpty ? 0 : barberName.hashCode.abs() % 3];
     final isMultiService =
         isBooked &&
         (appointment.service.contains('&') ||
             appointment.service.contains('+'));
     final isSingleServiceBooked = isBooked && !isMultiService;
-    final baseGradientColors = isMultiService
-        ? const [Color(0xFF8C6738), Color(0xFF6F5534)]
-        : isSingleServiceBooked
-        ? const [Color(0xFFA88452), Color(0xFF87653A)]
-        : const [Color(0xFF101113), Color(0xFF101113)];
-    final cardGradientColors = barberName.isNotEmpty
-        ? [
-            Color.alphaBlend(
-              barberAccent.withValues(alpha: 0.18),
-              baseGradientColors[0],
-            ),
-            Color.alphaBlend(
-              barberAccent.withValues(alpha: 0.10),
-              baseGradientColors[1],
-            ),
-          ]
-        : baseGradientColors;
-    final baseBorderColor = isMultiService
-        ? const Color(0xFF9E7A44)
-        : isSingleServiceBooked
-        ? const Color(0xFFC39A5D)
-        : const Color(0xFF2E3135);
-    final cardBorderColor = barberName.isNotEmpty
-        ? Color.alphaBlend(
-            barberAccent.withValues(alpha: 0.28),
-            baseBorderColor,
-          )
-        : baseBorderColor;
-    final statusTone = switch (appointment.status) {
-      'pending' => const Color(0xFFD1A45C),
-      'confirmed' => const Color(0xFF7DB37D),
-      'completed' => const Color(0xFF7AA6D1),
-      'cancelled' => const Color(0xFFE08A7A),
-      'no_show' => const Color(0xFFB08AE0),
-      _ => const Color(0xFF7DB37D),
-    };
+    final statusTone = barberinAppointmentTone(
+      appointment.status,
+      isAvailable: !isBooked,
+    );
+    final statusForeground = barberinAppointmentForeground(
+      appointment.status,
+      isAvailable: !isBooked,
+    );
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: cardGradientColors,
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: cardBorderColor),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 14,
-              offset: Offset(0, 8),
-            ),
-          ],
+          border: Border(bottom: BorderSide(color: context.barberinBorder)),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 42,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    appointment.time,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isBooked
-                          ? const Color(0xFFF1E8D8)
-                          : const Color(0xFFD2D7DE),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isBooked
-                          ? const Color(0xFF618C52)
-                          : const Color(0xFF4A4F55),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            CustomerAvatarBadge(
-              photoUrl: customerPhotoUrl,
-              size: 42,
-              placeholderIcon: isBooked
-                  ? Icons.person_outline_rounded
-                  : Icons.schedule_rounded,
-              gradientColors: isMultiService
-                  ? const [Color(0xFF44311E), Color(0xFF202020)]
-                  : isSingleServiceBooked
-                  ? const [Color(0xFF5B4326), Color(0xFF2B2115)]
-                  : const [Color(0xFF25292E), Color(0xFF15181B)],
-              borderColor: isMultiService
-                  ? const Color(0xFFC49A5C)
-                  : isSingleServiceBooked
-                  ? const Color(0xFFD0A86A)
-                  : const Color(0xFF3B4046),
-              iconColor: isMultiService
-                  ? const Color(0xFFF0E5D1)
-                  : isSingleServiceBooked
-                  ? const Color(0xFFF8EBD4)
-                  : const Color(0xFF8E959E),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    appointment.name,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: isBooked
-                          ? const Color(0xFFF5ECDD)
-                          : const Color(0xFFD8DCE2),
-                    ),
-                  ),
-                  if (isBooked) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusTone.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: statusTone.withValues(alpha: 0.45),
-                        ),
-                      ),
-                      child: Text(
-                        appointment.statusLabel,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: statusTone,
-                        ),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          color: statusTone.withValues(alpha: isLight ? 0.20 : 0.22),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 64,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      appointment.time,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isLight
+                            ? context.barberinTextPrimary
+                            : isBooked
+                            ? const Color(0xFFF1E8D8)
+                            : const Color(0xFFD2D7DE),
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 2),
-                  Text(
-                    appointment.service,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: isMultiService
-                          ? const Color(0xFFF2E3C8)
-                          : isSingleServiceBooked
-                          ? const Color(0xFFF1DFC0)
-                          : const Color(0xFF7F8790),
-                    ),
-                  ),
-                  if (isBooked && barberName.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
-                      'Barber: $barberName',
+                      _homeAppointmentDateLabel(appointment.date),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 10.2,
+                        fontSize: 9,
                         fontWeight: FontWeight.w600,
-                        color: isMultiService || isSingleServiceBooked
-                            ? const Color(0xFFF6E9D1)
-                            : const Color(0xFFD7D0C6),
+                        color: isLight
+                            ? context.barberinTextSecondary
+                            : isBooked
+                            ? const Color(0xFFDCCDB8)
+                            : const Color(0xFF9BA2AB),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusForeground,
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: isMultiService
-                    ? const Color(0xFF705434)
+              const SizedBox(width: 8),
+              CustomerAvatarBadge(
+                photoUrl: customerPhotoUrl,
+                size: 42,
+                placeholderIcon: isBooked
+                    ? Icons.person_outline_rounded
+                    : Icons.schedule_rounded,
+                gradientColors: isLight
+                    ? [
+                        statusTone.withValues(alpha: 0.16),
+                        context.barberinSurfaceAlt,
+                      ]
+                    : isMultiService
+                    ? const [Color(0xFF44311E), Color(0xFF202020)]
                     : isSingleServiceBooked
-                    ? const Color(0xFF775634)
-                    : const Color(0xFF181B1F),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isMultiService
-                      ? const Color(0xFFBF955A)
-                      : isSingleServiceBooked
-                      ? const Color(0xFFD6AD73)
-                      : const Color(0xFF3A3F45),
+                    ? const [Color(0xFF5B4326), Color(0xFF2B2115)]
+                    : const [Color(0xFF25292E), Color(0xFF15181B)],
+                borderColor: isLight
+                    ? statusForeground.withValues(alpha: 0.38)
+                    : isMultiService
+                    ? const Color(0xFFC49A5C)
+                    : isSingleServiceBooked
+                    ? const Color(0xFFD0A86A)
+                    : const Color(0xFF3B4046),
+                iconColor: isLight
+                    ? statusForeground
+                    : isMultiService
+                    ? const Color(0xFFF0E5D1)
+                    : isSingleServiceBooked
+                    ? const Color(0xFFF8EBD4)
+                    : const Color(0xFF8E959E),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      appointment.name,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: isLight
+                            ? context.barberinTextPrimary
+                            : isBooked
+                            ? const Color(0xFFF5ECDD)
+                            : const Color(0xFFD8DCE2),
+                      ),
+                    ),
+                    if (isBooked) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusTone.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: statusForeground.withValues(alpha: 0.58),
+                          ),
+                        ),
+                        child: Text(
+                          appointment.statusLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: statusForeground,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 2),
+                    Text(
+                      appointment.service,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: isLight
+                            ? context.barberinTextSecondary
+                            : isMultiService
+                            ? const Color(0xFFF2E3C8)
+                            : isSingleServiceBooked
+                            ? const Color(0xFFF1DFC0)
+                            : const Color(0xFF7F8790),
+                      ),
+                    ),
+                    if (isBooked && barberName.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'barber: $barberName',
+                        style: TextStyle(
+                          fontSize: 10.2,
+                          fontWeight: FontWeight.w600,
+                          color: isLight
+                              ? context.barberinTextSecondary
+                              : isMultiService || isSingleServiceBooked
+                              ? const Color(0xFFF6E9D1)
+                              : const Color(0xFFD7D0C6),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              child: Text(
-                appointment.duration,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                  color: isBooked
-                      ? const Color(0xFFE6DED1)
-                      : const Color(0xFFC4CBD2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isLight
+                      ? statusTone.withValues(alpha: 0.12)
+                      : isMultiService
+                      ? statusTone.withValues(alpha: 0.16)
+                      : statusTone.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isLight
+                        ? statusForeground.withValues(alpha: 0.5)
+                        : statusForeground.withValues(alpha: 0.48),
+                  ),
+                ),
+                child: Text(
+                  appointment.duration,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: isLight
+                        ? context.barberinTextPrimary
+                        : isBooked
+                        ? const Color(0xFFE6DED1)
+                        : const Color(0xFFC4CBD2),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -603,11 +763,7 @@ class CustomerAvatarBadge extends StatelessWidget {
                 );
               },
             )
-          : Icon(
-              placeholderIcon,
-              color: iconColor,
-              size: size * 0.42,
-            ),
+          : Icon(placeholderIcon, color: iconColor, size: size * 0.42),
     );
   }
 }
@@ -617,28 +773,29 @@ class _EmptyDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF121212),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF242424)),
+        border: Border.all(color: scheme.outline),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '\u0394\u03b5\u03bd \u03c5\u03c0\u03ac\u03c1\u03c7\u03bf\u03c5\u03bd \u03c0\u03c1\u03bf\u03b3\u03c1\u03b1\u03bc\u03bc\u03b1\u03c4\u03b9\u03c3\u03bc\u03ad\u03bd\u03b1 \u03c1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd \u03b3\u03b9\u03b1 \u03c4\u03b7\u03bd \u03c4\u03c1\u03ad\u03c7\u03bf\u03c5\u03c3\u03b1 \u03b7\u03bc\u03ad\u03c1\u03b1.',
+            'Δεν υπάρχουν προγραμματισμένα ραντεβού για σήμερα.',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFF5ECDD),
+              color: scheme.onSurface,
             ),
           ),
           SizedBox(height: 6),
           Text(
-            '\u0388\u03bd\u03b1 \u03bd\u03ad\u03bf \u03c1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd \u03b8\u03b1 \u03b5\u03bc\u03c6\u03b1\u03bd\u03b9\u03c3\u03c4\u03b5\u03af \u03b5\u03b4\u03ce \u03bc\u03cc\u03bb\u03b9\u03c2 \u03c0\u03c1\u03bf\u03c3\u03c4\u03b5\u03b8\u03b5\u03af \u03ba\u03ac\u03c0\u03bf\u03b9\u03b1 \u03bd\u03ad\u03b1 \u03ba\u03c1\u03ac\u03c4\u03b7\u03c3\u03b7.',
-            style: TextStyle(fontSize: 11, color: Color(0xFF8F8F8F)),
+            'Ένα νέο ραντεβού θα εμφανιστεί εδώ μόλις καταχωριστεί.',
+            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -651,18 +808,19 @@ class AvailabilityPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF171614), Color(0xFF111111)],
+          colors: [scheme.surfaceContainerHighest, scheme.surface],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2F2A22)),
+        border: Border.all(color: scheme.outline),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -670,7 +828,7 @@ class AvailabilityPanel extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFF2E3C8),
+              color: scheme.onSurface,
             ),
           ),
           SizedBox(height: 10),
@@ -686,7 +844,7 @@ class AvailabilityPanel extends StatelessWidget {
           ),
           SizedBox(height: 8),
           AvailabilityRow(
-            day: 'Barbers',
+            day: 'barber',
             time: '\u0395\u03c3\u03cd, \u039c\u03ac\u03c1\u03b9\u03bf\u03c2',
           ),
         ],
@@ -708,14 +866,17 @@ class AvailabilityRow extends StatelessWidget {
         Expanded(
           child: Text(
             day,
-            style: const TextStyle(fontSize: 10.5, color: Color(0xFF9F9F9F)),
+            style: TextStyle(
+              fontSize: 10.5,
+              color: context.barberinTextSecondary,
+            ),
           ),
         ),
         Text(
           time,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10.5,
-            color: Color(0xFFD6B179),
+            color: context.barberinAccent,
             fontWeight: FontWeight.w600,
           ),
         ),

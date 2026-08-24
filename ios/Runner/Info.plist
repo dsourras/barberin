@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>barberin</string>
+	<string>Barberin</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,6 +26,32 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Χρησιμοποιείται για τη φωτογραφία προφίλ και τα στοιχεία του καταστήματος.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Χρησιμοποιείται για την επιλογή φωτογραφίας προφίλ και λογοτύπου.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Χρησιμοποιείται για την αποθήκευση εικόνων που επιλέγετε μέσα στην εφαρμογή.</string>
+	<key>GIDClientID</key>
+	<string>228645493671-ec87t91t9nqfjadq8jktu10ue6qaunq3.apps.googleusercontent.com</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>google</string>
+		<string>com.googleusercontent.apps</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.228645493671-ec87t91t9nqfjadq8jktu10ue6qaunq3</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -49,6 +75,10 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

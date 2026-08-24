@@ -2,6 +2,10 @@
 **/Flutter/ephemeral/
 **/Pods/
 
+# Local Firebase/Google configuration is supplied at build time and must not be committed.
+firebase.defines.json
+Runner/Configs/Local.xcconfig
+
 # Xcode-related
 **/dgph
 **/xcuserdata/

@@ -8,31 +8,33 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:228645493671:android:2eb7e4d7ac4fe94671f482",
-        "android_client_info": {
-          "package_name": "com.atelier22.atelier22"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:228645493671:android:1988f47a70dbe19d71f482",
         "android_client_info": {
           "package_name": "com.barberin.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "228645493671-1md1uqqddbtfuc7t1outmomvvv213lbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barberin.app",
+            "certificate_hash": "2bc667b6cb4ee9e31901333c6639f1ba477bbad5"
+          }
+        },
+        {
+          "client_id": "228645493671-3uk3v27q9q229r9ercaa3mv0l79t2sqc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barberin.app",
+            "certificate_hash": "3fe32c8f08e0054a34db851fdb2f4d6c14357b01"
+          }
+        },
+        {
+          "client_id": "228645493671-3tk00g6hm1a1ekdj7bctfklk6pgsdp82.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
@@ -40,29 +42,21 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:228645493671:android:e293681e913a4d4c71f482",
-        "android_client_info": {
-          "package_name": "com.example.barbero"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBNUZAyPk34nlx3L9FIZw93ayFhsm0eVBk"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "228645493671-3tk00g6hm1a1ekdj7bctfklk6pgsdp82.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "228645493671-2kc81mh9tgpis6ctbotbolg9u08ao2ah.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.barberin.customer"
+              }
+            }
+          ]
         }
       }
     }
-  ],
-  "configuration_version": "1"
+  ]
 }

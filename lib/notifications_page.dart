@@ -1,7 +1,9 @@
 part of 'main.dart';
 
 class BarberoNotificationsPage extends StatefulWidget {
-  const BarberoNotificationsPage({super.key});
+  const BarberoNotificationsPage({super.key, this.onOpenAppointment});
+
+  final ValueChanged<BarberoNotificationItem>? onOpenAppointment;
 
   @override
   State<BarberoNotificationsPage> createState() =>
@@ -18,7 +20,7 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF090909),
+      backgroundColor: context.barberinBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
@@ -32,13 +34,13 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
                       onTap: () => Navigator.of(context).maybePop(),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 46,
                         height: 46,
                         child: Center(
                           child: Icon(
                             Icons.arrow_back_rounded,
-                            color: Color(0xFFD1A45C),
+                            color: Theme.of(context).colorScheme.primary,
                             size: 22,
                           ),
                         ),
@@ -46,11 +48,11 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Notifications',
+                      'Ειδοποιήσεις',
                       style: TextStyle(
-                        color: Color(0xFFF3E7D3),
+                        color: context.barberinTextPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
                       ),
@@ -68,14 +70,14 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF111111),
+                          color: context.barberinSurface,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF242424)),
+                          border: Border.all(color: context.barberinBorder),
                         ),
-                        child: const Text(
-                          'No notifications yet.',
+                        child: Text(
+                          'Δεν υπάρχουν ειδοποιήσεις ακόμη.',
                           style: TextStyle(
-                            color: Color(0xFFBFB7AA),
+                            color: context.barberinTextSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -85,35 +87,82 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
                       physics: const BouncingScrollPhysics(),
                       itemCount: notifications.length,
                       separatorBuilder: (context, index) =>
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 0),
                       itemBuilder: (context, index) {
                         final item = notifications[index];
-                        return Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: item.read
-                                ? const Color(0xFF111111)
-                                : const Color(0xFF18120B),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: item.read
-                                  ? const Color(0xFF242424)
-                                  : const Color(0xFF5B4326),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: item.appointmentId.isEmpty
+                                ? null
+                                : () => widget.onOpenAppointment?.call(item),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: context.barberinBorder,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.title,
-                                      style: const TextStyle(
-                                        color: Color(0xFFF3E7D3),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: item.read
+                                            ? Colors.transparent
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                        shape: BoxShape.circle,
                                       ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.title,
+                                          style: TextStyle(
+                                            color: context.barberinTextPrimary,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        if (item.body.trim().isNotEmpty) ...[
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            item.body,
+                                            style: TextStyle(
+                                              color:
+                                                  context.barberinTextSecondary,
+                                              fontSize: 12.5,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                        if (item.appointmentId.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            '\u03a0\u03ac\u03c4\u03b7\u03c3\u03b5 \u03b3\u03b9\u03b1 \u03bd\u03b1 \u03b1\u03bd\u03bf\u03af\u03be\u03b5\u03b9\u03c2 \u03c4\u03bf \u03c1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd',
+                                            style: TextStyle(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -121,25 +170,14 @@ class _BarberoNotificationsPageState extends State<BarberoNotificationsPage> {
                                     _barberoNotificationDateLabel(
                                       item.receivedAt,
                                     ),
-                                    style: const TextStyle(
-                                      color: Color(0xFF9E9588),
+                                    style: TextStyle(
+                                      color: context.barberinTextSecondary,
                                       fontSize: 11,
                                     ),
                                   ),
                                 ],
                               ),
-                              if (item.body.trim().isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  item.body,
-                                  style: const TextStyle(
-                                    color: Color(0xFFD7CCBC),
-                                    fontSize: 12.5,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ],
+                            ),
                           ),
                         );
                       },
@@ -165,9 +203,9 @@ String _barberoNotificationDateLabel(DateTime value) {
   final hour = local.hour.toString().padLeft(2, '0');
   final minute = local.minute.toString().padLeft(2, '0');
   if (sameDay) {
-    return '$hour:$minute';
+    return barberinUsesEnglish
+        ? 'Today, $hour:$minute'
+        : 'Σήμερα, $hour:$minute';
   }
-  final day = local.day.toString().padLeft(2, '0');
-  final month = local.month.toString().padLeft(2, '0');
-  return '$day/$month $hour:$minute';
+  return '${barberinDateLabel(local)}, $hour:$minute';
 }

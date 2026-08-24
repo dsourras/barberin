@@ -1,12 +1,45 @@
-﻿part of 'main.dart';
+part of 'main.dart';
 
-class AuthTopBar extends StatelessWidget {
-  const AuthTopBar({super.key, required this.onBack});
+class BrandWordmark extends StatelessWidget {
+  const BrandWordmark({super.key, required this.width, this.height});
 
-  final VoidCallback onBack;
+  final double width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SizedBox(
+      width: width,
+      height: height ?? width / 3.2,
+      child: Container(
+        padding: isDark
+            ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+            : EdgeInsets.zero,
+        decoration: isDark
+            ? BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              )
+            : null,
+        child: Image.asset(
+          'assets/images/barberin_wordmark_modern.png',
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+}
+
+class AuthTopBar extends StatelessWidget {
+  const AuthTopBar({super.key, required this.onBack, this.logoTopPadding = 0});
+
+  final VoidCallback onBack;
+  final double logoTopPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Material(
@@ -18,17 +51,22 @@ class AuthTopBar extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: const Color(0xFF141414),
+                color: scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF242424)),
+                border: Border.all(color: scheme.outline),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 16,
-                color: Color(0xFFD1A45C),
+                color: scheme.primary,
               ),
             ),
           ),
+        ),
+        const Spacer(),
+        Padding(
+          padding: EdgeInsets.only(top: logoTopPadding),
+          child: const BrandWordmark(width: 132),
         ),
       ],
     );
@@ -42,28 +80,17 @@ class BrandBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: size,
       height: size,
+      padding: EdgeInsets.symmetric(horizontal: size * .08),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        color: const Color(0xFF0D0D0D),
-        border: Border.all(color: const Color(0xFF3B2D1C)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-        ],
+        color: scheme.surface,
+        border: Border.all(color: scheme.outline),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Image.asset(
-          'assets/images/barbero_app_icon.png',
-          fit: BoxFit.cover,
-        ),
-      ),
+      child: Center(child: BrandWordmark(width: size * .84)),
     );
   }
 }
@@ -75,13 +102,14 @@ class Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF121212),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF262626)),
+        border: Border.all(color: scheme.outline),
         boxShadow: const [
           BoxShadow(
             color: Color(0x22000000),
@@ -109,17 +137,18 @@ class FeatureTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1713),
+            color: scheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF3E3224)),
+            border: Border.all(color: scheme.outline),
           ),
-          child: Icon(icon, color: const Color(0xFFD1A45C), size: 20),
+          child: Icon(icon, color: scheme.primary, size: 20),
         ),
         const SizedBox(width: 12),
         Column(
@@ -127,16 +156,16 @@ class FeatureTile extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFF5ECDD),
+                color: scheme.onSurface,
               ),
             ),
             const SizedBox(height: 3),
             Text(
               subtitle,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF8F8F8F)),
+              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -154,6 +183,8 @@ class AppTextField extends StatelessWidget {
     this.controller,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
+    this.large = false,
+    this.fieldHeight,
   });
 
   final String label;
@@ -162,65 +193,126 @@ class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType keyboardType;
   final bool obscureText;
+  final bool large;
+  final double? fieldHeight;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final largeFieldHeight = fieldHeight ?? 64;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            letterSpacing: 0.8,
-            color: Color(0xFFC6A56E),
+          style: TextStyle(
+            fontSize: large ? 12 : 11,
+            letterSpacing: large ? 0.5 : 0.8,
+            color: scheme.primary,
           ),
         ),
-        const SizedBox(height: 8),
-        Container(
-          height: 54,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0E0E0E),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF262626)),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: const Color(0xFF8A6A3C)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: controller == null
-                    ? Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFFF0E5D1),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : TextField(
-                        controller: controller,
-                        keyboardType: keyboardType,
-                        obscureText: obscureText,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFFF0E5D1),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: const InputDecoration(
-                          isCollapsed: true,
-                          border: InputBorder.none,
-                        ),
-                        cursorColor: Color(0xFFD1A45C),
+        SizedBox(height: large ? 6 : 8),
+        if (large)
+          SizedBox(
+            height: largeFieldHeight,
+            child: controller == null
+                ? InputDecorator(
+                    decoration: _appTextFieldDecoration(
+                      scheme: scheme,
+                      icon: icon,
+                      fieldHeight: largeFieldHeight,
+                    ),
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w500,
                       ),
-              ),
-            ],
+                    ),
+                  )
+                : TextField(
+                    controller: controller,
+                    keyboardType: keyboardType,
+                    obscureText: obscureText,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: scheme.onSurface,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: _appTextFieldDecoration(
+                      scheme: scheme,
+                      icon: icon,
+                      fieldHeight: largeFieldHeight,
+                    ),
+                    cursorColor: scheme.primary,
+                  ),
+          )
+        else
+          Container(
+            height: 54,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: context.barberinBorder)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: scheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: controller == null
+                      ? Text(
+                          value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : TextField(
+                          controller: controller,
+                          keyboardType: keyboardType,
+                          obscureText: obscureText,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          decoration: const InputDecoration(
+                            isCollapsed: true,
+                            border: InputBorder.none,
+                          ),
+                          cursorColor: scheme.primary,
+                        ),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
+}
+
+InputDecoration _appTextFieldDecoration({
+  required ColorScheme scheme,
+  required IconData icon,
+  required double fieldHeight,
+}) {
+  return InputDecoration(
+    filled: false,
+    prefixIcon: Icon(icon, size: 20, color: scheme.primary),
+    prefixIconConstraints: BoxConstraints(minWidth: 52, minHeight: fieldHeight),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+    border: UnderlineInputBorder(borderSide: BorderSide(color: scheme.outline)),
+    enabledBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: scheme.outline),
+    ),
+    focusedBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: scheme.primary, width: 1.4),
+    ),
+  );
 }
 
 class SectionLabel extends StatelessWidget {
@@ -230,13 +322,14 @@ class SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         letterSpacing: 1.1,
         fontWeight: FontWeight.w700,
-        color: Color(0xFFD1A45C),
+        color: scheme.primary,
       ),
     );
   }
@@ -254,14 +347,15 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD1A45C),
-          foregroundColor: const Color(0xFF0B0B0B),
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
@@ -288,23 +382,66 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFF3A3127)),
+          side: BorderSide(color: scheme.outline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: Color(0xFFF0E5D1),
+            color: scheme.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ManualAppointmentAction extends StatelessWidget {
+  const ManualAppointmentAction({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+          decoration: BoxDecoration(
+            color: scheme.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.32)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add_rounded, color: scheme.primary, size: 16),
+              const SizedBox(width: 5),
+              Text(
+                'Νέο ραντεβού',
+                style: TextStyle(
+                  color: scheme.onSurface,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -320,95 +457,55 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (Icons.home_outlined, '\u0391\u03c1\u03c7\u03b9\u03ba\u03ae'),
-      (
-        Icons.calendar_today_outlined,
-        '\u03a0\u03c1\u03cc\u03b3\u03c1\u03b1\u03bc\u03bc\u03b1',
-      ),
-      (
-        Icons.person_outline_rounded,
-        '\u03a0\u03b5\u03bb\u03ac\u03c4\u03b5\u03c2',
-      ),
-      (
-        Icons.bar_chart_outlined,
-        '\u0391\u03bd\u03b1\u03c6\u03bf\u03c1\u03ad\u03c2',
-      ),
+    final scheme = Theme.of(context).colorScheme;
+    const labels = [
+      'Επισκόπηση',
+      'Πρόγραμμα',
+      'Πελάτες',
+      'Αναφορές',
+      'Περισσότερα',
     ];
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
       decoration: BoxDecoration(
-        color: const Color(0xFF101010),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF242424)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x28000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => onTap(index),
-                child: SizedBox(
-                  height: 56,
-                  child: Center(
-                    child: NavItem(
-                      icon: item.$1,
-                      label: item.$2,
-                      active: currentIndex == index,
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: List.generate(labels.length, (index) {
+            final active = index == currentIndex;
+            return Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => onTap(index),
+                  child: SizedBox(
+                    height: 48,
+                    child: Center(
+                      child: Text(
+                        labels[index],
+                        style: TextStyle(
+                          color: active
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
+                          fontSize: 10,
+                          fontWeight: active
+                              ? FontWeight.w500
+                              : FontWeight.w400,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-class NavItem extends StatelessWidget {
-  const NavItem({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.active = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active ? const Color(0xFFD1A45C) : const Color(0xFF7C7C7C);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            color: color,
-          ),
+            );
+          }),
         ),
-      ],
+      ),
     );
   }
 }

@@ -9,50 +9,71 @@ class CustomerAdminRepository {
     return requireCurrentBarberoSession().shopId;
   }
 
+  Future<Map<String, String>> _authHeaders() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated shop user');
+    }
+    final idToken = await user.getIdToken();
+    if (idToken == null || idToken.trim().isEmpty) {
+      throw Exception('Missing authenticated shop token');
+    }
+    return <String, String>{'Authorization': 'Bearer $idToken'};
+  }
+
   Future<List<CustomerProfile>> loadCustomers() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/shops/$_currentShopId/customers.json'),
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Failed to load customers');
+    final dynamic decoded;
+    if (isBarberinWindows) {
+      decoded = await WindowsBackendAdapter.instance.loadClients(
+        _currentShopId,
+      );
+    } else {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/shops/$_currentShopId/customers.json'),
+        headers: await _authHeaders(),
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Failed to load customers');
+      }
+      if (response.body == 'null') {
+        return const <CustomerProfile>[];
+      }
+      decoded = jsonDecode(response.body);
     }
-    if (response.body == 'null') {
-      return const <CustomerProfile>[];
-    }
-    final decoded = jsonDecode(response.body);
     if (decoded is! Map<String, dynamic>) {
       return const <CustomerProfile>[];
     }
 
-    final customers = decoded.entries
-        .map((entry) {
-          final raw = entry.value;
-          if (raw is! Map) {
-            return null;
-          }
-          final data = Map<String, dynamic>.from(raw);
-          final fullName =
-              '${data['fullName'] ?? data['name'] ?? ''}'.trim();
-          if (fullName.isEmpty) {
-            return null;
-          }
-          return CustomerProfile(
-            uid: entry.key,
-            name: fullName,
-            phone: '${data['phone'] ?? ''}'.trim(),
-            email: '${data['email'] ?? ''}'.trim(),
-            photoUrl: '${data['photoUrl'] ?? ''}'.trim(),
-            preferences: _customerPreferencesFromRaw(data['preferences']),
-            notes: '${data['notes'] ?? ''}'.trim(),
-            history: const <VisitRecord>[],
+    final customers =
+        decoded.entries
+            .map((entry) {
+              final raw = entry.value;
+              if (raw is! Map) {
+                return null;
+              }
+              final data = Map<String, dynamic>.from(raw);
+              final fullName = '${data['fullName'] ?? data['name'] ?? ''}'
+                  .trim();
+              if (fullName.isEmpty) {
+                return null;
+              }
+              return CustomerProfile(
+                uid: entry.key,
+                name: fullName,
+                phone: '${data['phone'] ?? ''}'.trim(),
+                email: '${data['email'] ?? ''}'.trim(),
+                photoUrl: '${data['photoUrl'] ?? ''}'.trim(),
+                preferences: _customerPreferencesFromRaw(data['preferences']),
+                notes: '${data['notes'] ?? ''}'.trim(),
+                history: const <VisitRecord>[],
+              );
+            })
+            .whereType<CustomerProfile>()
+            .toList()
+          ..sort(
+            (left, right) =>
+                left.name.toLowerCase().compareTo(right.name.toLowerCase()),
           );
-        })
-        .whereType<CustomerProfile>()
-        .toList()
-      ..sort(
-        (left, right) =>
-            left.name.toLowerCase().compareTo(right.name.toLowerCase()),
-      );
     return customers;
   }
 
@@ -119,10 +140,7 @@ class CustomerAdminRepository {
     final response = await http.post(
       Uri.parse('$_functionsBaseUrl/barberoRepairCorruptedRecords'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'idToken': idToken,
-        'shopId': _currentShopId,
-      }),
+      body: jsonEncode({'idToken': idToken, 'shopId': _currentShopId}),
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -134,7 +152,8 @@ class CustomerAdminRepository {
       throw Exception('Invalid repair response');
     }
     return RepairSummary(
-      repairedAppointments: (decoded['repairedAppointments'] as num?)?.toInt() ?? 0,
+      repairedAppointments:
+          (decoded['repairedAppointments'] as num?)?.toInt() ?? 0,
       repairedCustomers: (decoded['repairedCustomers'] as num?)?.toInt() ?? 0,
       repairedBarbers: (decoded['repairedBarbers'] as num?)?.toInt() ?? 0,
       changedPaths: (decoded['changedPaths'] as num?)?.toInt() ?? 0,
@@ -187,13 +206,13 @@ List<_DuplicateCustomerCandidate> _buildDuplicateCustomerCandidates(
 
       String? reason;
       if (normalizeName(left.name) == normalizeName(right.name)) {
-        reason = 'Same name';
+        reason = 'Ίδιο όνομα';
       } else if (left.phone.trim().isNotEmpty &&
           left.phone.trim() == right.phone.trim()) {
-        reason = 'Same phone';
+        reason = 'Ίδιο τηλέφωνο';
       } else if (left.email.trim().isNotEmpty &&
           left.email.trim().toLowerCase() == right.email.trim().toLowerCase()) {
-        reason = 'Same email';
+        reason = 'Ίδιο email';
       }
 
       if (reason == null) continue;
@@ -212,9 +231,9 @@ List<_DuplicateCustomerCandidate> _buildDuplicateCustomerCandidates(
   }
 
   duplicates.sort(
-    (left, right) => left.primary.name
-        .toLowerCase()
-        .compareTo(right.primary.name.toLowerCase()),
+    (left, right) => left.primary.name.toLowerCase().compareTo(
+      right.primary.name.toLowerCase(),
+    ),
   );
   return duplicates;
 }
@@ -248,7 +267,7 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to load customers.')),
+        const SnackBar(content: Text('Δεν ήταν δυνατή η φόρτωση των πελατών.')),
       );
     } finally {
       if (mounted) {
@@ -264,12 +283,14 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
       if (!mounted) return;
       setState(() => _lastRepairSummary = summary);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Repair completed.')),
+        const SnackBar(content: Text('Η επιδιόρθωση ολοκληρώθηκε.')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to repair old records.')),
+        const SnackBar(
+          content: Text('Δεν ήταν δυνατή η επιδιόρθωση των παλιών εγγραφών.'),
+        ),
       );
     } finally {
       if (mounted) {
@@ -291,16 +312,19 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
       );
       if (!mounted) return;
       setState(() {
-        _customers =
-            _customers.where((customer) => customer.uid.trim() != merge.uid.trim()).toList();
+        _customers = _customers
+            .where((customer) => customer.uid.trim() != merge.uid.trim())
+            .toList();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Merged into ${keep.name}.')),
+        SnackBar(content: Text('Συγχωνεύτηκε με τον πελάτη ${keep.name}.')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to merge duplicate customers.')),
+        const SnackBar(
+          content: Text('Δεν ήταν δυνατή η συγχώνευση διπλών πελατών.'),
+        ),
       );
     }
   }
@@ -309,7 +333,7 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
   Widget build(BuildContext context) {
     final duplicates = _buildDuplicateCustomerCandidates(_customers);
     return Scaffold(
-      backgroundColor: const Color(0xFF090909),
+      backgroundColor: context.barberinBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -318,21 +342,21 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
             children: [
               AuthTopBar(onBack: () => Navigator.of(context).pop()),
               const SizedBox(height: 24),
-              const Text(
-                'Admin tools',
+              Text(
+                'Εργαλεία διαχειριστή',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFF5ECDD),
+                  color: context.barberinTextPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Repair old records and clean duplicate customer data.',
+              Text(
+                'Επιδιόρθωση παλιών εγγραφών και καθαρισμός διπλών δεδομένων πελατών.',
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: Color(0xFFAAA097),
+                  color: context.barberinTextSecondary,
                 ),
               ),
               const SizedBox(height: 18),
@@ -345,30 +369,32 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SectionLabel('Repair old records'),
+                            const SectionLabel('Επιδιόρθωση παλιών εγγραφών'),
                             const SizedBox(height: 10),
-                            const Text(
-                              'This repairs old corrupted text fields and refreshes broken service labels from service keys.',
+                            Text(
+                              'Επιδιορθώνει παλιά κατεστραμμένα πεδία κειμένου και ανανεώνει τις λανθασμένες ονομασίες υπηρεσιών.',
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 1.5,
-                                color: Color(0xFFB1A69A),
+                                color: context.barberinTextSecondary,
                               ),
                             ),
                             const SizedBox(height: 14),
                             PrimaryButton(
                               label: _repairing
-                                  ? 'Repairing...'
-                                  : 'Repair corrupted records',
-                              onPressed: _repairing ? () {} : _repairCorruptedRecords,
+                                  ? 'Επιδιόρθωση...'
+                                  : 'Επιδιόρθωση κατεστραμμένων εγγραφών',
+                              onPressed: _repairing
+                                  ? () {}
+                                  : _repairCorruptedRecords,
                             ),
                             if (_lastRepairSummary != null) ...[
                               const SizedBox(height: 12),
                               Text(
-                                'Appointments: ${_lastRepairSummary!.repairedAppointments}  Customers: ${_lastRepairSummary!.repairedCustomers}  Barbers: ${_lastRepairSummary!.repairedBarbers}',
-                                style: const TextStyle(
+                                'Ραντεβού: ${_lastRepairSummary!.repairedAppointments}  Πελάτες: ${_lastRepairSummary!.repairedCustomers}  barber: ${_lastRepairSummary!.repairedBarbers}',
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFFE8E0D2),
+                                  color: context.barberinTextPrimary,
                                 ),
                               ),
                             ],
@@ -380,107 +406,105 @@ class _AdminToolsPageState extends State<AdminToolsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SectionLabel('Duplicate customers'),
+                            const SectionLabel('Διπλοί πελάτες'),
                             const SizedBox(height: 10),
                             if (_loadingCustomers)
-                              const Center(
+                              Center(
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFFD1A45C),
+                                  color: context.barberinAccent,
                                 ),
                               )
                             else if (duplicates.isEmpty)
-                              const Text(
-                                'No duplicate customers detected right now.',
+                              Text(
+                                'Δεν εντοπίστηκαν διπλοί πελάτες αυτή τη στιγμή.',
                                 style: TextStyle(
                                   fontSize: 12.5,
-                                  color: Color(0xFFB1A69A),
+                                  color: context.barberinTextSecondary,
                                 ),
                               )
                             else
                               ...duplicates.map(
-                                (candidate) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF111111),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: const Color(0xFF242424),
+                                (candidate) => Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: context.barberinBorder,
                                       ),
                                     ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          candidate.reason,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFFD1A45C),
-                                          ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        candidate.reason,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: context.barberinAccent,
                                         ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          '${candidate.primary.name}  |  ${candidate.primary.phone}',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFFF0E5D1),
-                                          ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        '${candidate.primary.name}  |  ${candidate.primary.phone}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: context.barberinTextPrimary,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${candidate.secondary.name}  |  ${candidate.secondary.phone}',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFFF0E5D1),
-                                          ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${candidate.secondary.name}  |  ${candidate.secondary.phone}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: context.barberinTextPrimary,
                                         ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: OutlinedButton(
-                                                onPressed: () => _mergeDuplicate(
-                                                  candidate,
-                                                  true,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () => _mergeDuplicate(
+                                                candidate,
+                                                true,
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: const Color(
+                                                  0xFFF0E5D1,
                                                 ),
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor:
-                                                      const Color(0xFFF0E5D1),
-                                                  side: const BorderSide(
-                                                    color: Color(0xFF3A3A3A),
-                                                  ),
-                                                ),
-                                                child: const Text(
-                                                  'Keep first',
+                                                side: const BorderSide(
+                                                  color: Color(0xFF3A3A3A),
                                                 ),
                                               ),
+                                              child: Text('Διατήρηση πρώτου'),
                                             ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: OutlinedButton(
-                                                onPressed: () => _mergeDuplicate(
-                                                  candidate,
-                                                  false,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () => _mergeDuplicate(
+                                                candidate,
+                                                false,
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: const Color(
+                                                  0xFFF0E5D1,
                                                 ),
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor:
-                                                      const Color(0xFFF0E5D1),
-                                                  side: const BorderSide(
-                                                    color: Color(0xFF3A3A3A),
-                                                  ),
-                                                ),
-                                                child: const Text(
-                                                  'Keep second',
+                                                side: const BorderSide(
+                                                  color: Color(0xFF3A3A3A),
                                                 ),
                                               ),
+                                              child: Text('Διατήρηση δεύτερου'),
                                             ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

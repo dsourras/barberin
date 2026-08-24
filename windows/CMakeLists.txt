@@ -1,10 +1,15 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(barbero LANGUAGES CXX)
+project(barberin LANGUAGES CXX)
+
+# The Firebase C++ SDK bundled by FlutterFire still declares compatibility
+# with CMake 3.5. Keep the modern project minimum above while allowing the
+# vendored SDK to configure with current CMake releases.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "barbero")
+set(BINARY_NAME "Barberin")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

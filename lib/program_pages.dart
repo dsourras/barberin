@@ -1,6 +1,6 @@
 part of 'main.dart';
 
-class ProgramPage extends StatelessWidget {
+class ProgramPage extends StatefulWidget {
   const ProgramPage({
     super.key,
     required this.selectedDate,
@@ -9,6 +9,7 @@ class ProgramPage extends StatelessWidget {
     required this.onNextDay,
     required this.onPickDate,
     required this.onQuickAdd,
+    this.onQuickAddForSlot,
     required this.customerPhotoUrlForEntry,
     required this.onOpenCustomer,
     required this.onManageAppointment,
@@ -20,20 +21,300 @@ class ProgramPage extends StatelessWidget {
   final VoidCallback onNextDay;
   final VoidCallback onPickDate;
   final VoidCallback onQuickAdd;
+  final ValueChanged<ProgramEntry>? onQuickAddForSlot;
   final String Function(ProgramEntry entry) customerPhotoUrlForEntry;
   final ValueChanged<ProgramEntry> onOpenCustomer;
   final ValueChanged<ProgramEntry> onManageAppointment;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF121212), Color(0xFF090909)],
-        ),
+  State<ProgramPage> createState() => _ProgramPageState();
+}
+
+class _ProgramPageState extends State<ProgramPage> {
+  bool _showAvailableSlots = true;
+  String _statusFilter = 'all';
+  String? _barberFilter;
+
+  List<String> get _barberNames {
+    final names = widget.entries
+        .where((entry) => !entry.isBreak && entry.barberName.trim().isNotEmpty)
+        .map((entry) => entry.barberName.trim())
+        .toSet()
+        .toList();
+    names.sort();
+    return names;
+  }
+
+  List<ProgramEntry> get _visibleEntries {
+    return widget.entries.where((entry) {
+      if (entry.isBreak) {
+        return true;
+      }
+      if (entry.isAvailable) {
+        return _showAvailableSlots &&
+            (_statusFilter == 'all' || _statusFilter == 'available');
+      }
+      if (_statusFilter == 'available') {
+        return false;
+      }
+      if (_statusFilter != 'all' && entry.status != _statusFilter) {
+        return false;
+      }
+      if (_barberFilter != null && entry.barberName.trim() != _barberFilter) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
+
+  bool get _hasActiveFilters =>
+      !_showAvailableSlots || _statusFilter != 'all' || _barberFilter != null;
+
+  Future<void> _openFilters() async {
+    var showAvailableSlots = _showAvailableSlots;
+    var statusFilter = _statusFilter;
+    var barberFilter = _barberFilter;
+    var applied = false;
+    final barberNames = _barberNames;
+    const statusOptions = [
+      ('all', '\u038c\u03bb\u03b1'),
+      ('pending', '\u03a3\u03b5 \u03b1\u03bd\u03b1\u03bc\u03bf\u03bd\u03ae'),
+      (
+        'confirmed',
+        '\u0395\u03c0\u03b9\u03b2\u03b5\u03b2\u03b1\u03b9\u03c9\u03bc\u03ad\u03bd\u03b1',
       ),
+      (
+        'completed',
+        '\u039f\u03bb\u03bf\u03ba\u03bb\u03b7\u03c1\u03c9\u03bc\u03ad\u03bd\u03b1',
+      ),
+      ('cancelled', '\u0391\u03ba\u03c5\u03c1\u03c9\u03bc\u03ad\u03bd\u03b1'),
+      ('no_show', 'Δεν εμφανίστηκε'),
+      ('available', '\u0394\u03b9\u03b1\u03b8\u03ad\u03c3\u03b9\u03bc\u03b1'),
+    ];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.barberinSurface,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '\u03a6\u03af\u03bb\u03c4\u03c1\u03b1',
+                            style: TextStyle(
+                              color: context.barberinTextPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: context.barberinTextSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        '\u0394\u03b9\u03b1\u03b8\u03ad\u03c3\u03b9\u03bc\u03b1 slots',
+                        style: TextStyle(
+                          color: context.barberinTextPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '\u0395\u03bc\u03c6\u03ac\u03bd\u03b9\u03c3\u03b7 \u03c4\u03c9\u03bd \u03ba\u03b5\u03bd\u03ce\u03bd \u03c3\u03c4\u03bf\u03bd \u03c1\u03bf\u03ae',
+                        style: TextStyle(
+                          color: context.barberinTextSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                      value: showAvailableSlots,
+                      activeThumbColor: Theme.of(context).colorScheme.primary,
+                      onChanged: (value) =>
+                          setSheetState(() => showAvailableSlots = value),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '\u039a\u03b1\u03c4\u03ac\u03c3\u03c4\u03b1\u03c3\u03b7',
+                      style: TextStyle(
+                        color: context.barberinTextSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: statusOptions.map((option) {
+                        final selected = statusFilter == option.$1;
+                        return ChoiceChip(
+                          label: Text(option.$2),
+                          selected: selected,
+                          onSelected: (_) => setSheetState(() {
+                            statusFilter = option.$1;
+                            if (option.$1 == 'available') {
+                              showAvailableSlots = true;
+                            }
+                          }),
+                          selectedColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.16),
+                          labelStyle: TextStyle(
+                            color: selected
+                                ? Theme.of(context).colorScheme.primary
+                                : context.barberinTextSecondary,
+                            fontSize: 11,
+                            fontWeight: selected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                          side: BorderSide(color: context.barberinBorder),
+                          backgroundColor: context.barberinSurface,
+                        );
+                      }).toList(),
+                    ),
+                    if (barberNames.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        'Barber',
+                        style: TextStyle(
+                          color: context.barberinTextSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String?>(
+                        initialValue: barberFilter,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: barberinTranslate(
+                            '\u038c\u03bb\u03bf\u03b9 \u03bf\u03b9 barber',
+                          ),
+                          labelStyle: TextStyle(
+                            color: context.barberinTextSecondary,
+                            fontSize: 12,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: context.barberinBorder,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        items: [
+                          DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text(
+                              '\u038c\u03bb\u03bf\u03b9 \u03bf\u03b9 barber',
+                              style: TextStyle(
+                                color: context.barberinTextPrimary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          ...barberNames.map(
+                            (name) => DropdownMenuItem<String?>(
+                              value: name,
+                              child: Text(
+                                name,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: context.barberinTextPrimary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) =>
+                            setSheetState(() => barberFilter = value),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              setState(() {
+                                _showAvailableSlots = true;
+                                _statusFilter = 'all';
+                                _barberFilter = null;
+                              });
+                              Navigator.of(sheetContext).pop();
+                            },
+                            child: const Text(
+                              '\u039a\u03b1\u03b8\u03b1\u03c1\u03b9\u03c3\u03bc\u03cc\u03c2',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              applied = true;
+                              Navigator.of(sheetContext).pop();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary,
+                            ),
+                            child: const Text(
+                              '\u0395\u03c6\u03b1\u03c1\u03bc\u03bf\u03b3\u03ae',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (applied && mounted) {
+      setState(() {
+        _showAvailableSlots = showAvailableSlots;
+        _statusFilter = statusFilter;
+        _barberFilter = barberFilter;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleEntries = _visibleEntries;
+    return Container(
+      color: context.barberinBackground,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
@@ -41,65 +322,59 @@ class ProgramPage extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  const _ProgramTopBar(),
+                  _ProgramTopBar(
+                    onOpenFilters: _openFilters,
+                    hasActiveFilter: _hasActiveFilters,
+                  ),
                   const SizedBox(height: 12),
                   _ProgramDateBar(
-                    selectedDate: selectedDate,
-                    onPreviousDay: onPreviousDay,
-                    onNextDay: onNextDay,
-                    onPickDate: onPickDate,
+                    selectedDate: widget.selectedDate,
+                    onPreviousDay: widget.onPreviousDay,
+                    onNextDay: widget.onNextDay,
+                    onPickDate: widget.onPickDate,
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: ListView.separated(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: entries.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final entry = entries[index];
-                        if (entry.isBreak) {
-                          return _BreakTimelineRow(hour: entry.hour);
-                        }
-                        return _ProgramTimelineCard(
-                          entry: entry,
-                          customerPhotoUrl: customerPhotoUrlForEntry(entry),
-                          onTap: () => onOpenCustomer(entry),
-                          onLongPress: () => onManageAppointment(entry),
-                        );
-                      },
-                    ),
+                    child: visibleEntries.isEmpty
+                        ? Center(
+                            child: Text(
+                              '\u0394\u03b5\u03bd \u03b2\u03c1\u03ad\u03b8\u03b7\u03ba\u03b1\u03bd \u03c1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd \u03ae \u03b4\u03b9\u03b1\u03b8\u03ad\u03c3\u03b9\u03bc\u03b1 slots.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: context.barberinTextSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: visibleEntries.length,
+                            itemBuilder: (context, index) {
+                              final entry = visibleEntries[index];
+                              if (entry.isBreak) {
+                                return _BreakTimelineRow(hour: entry.hour);
+                              }
+                              return _ProgramTimelineCard(
+                                entry: entry,
+                                customerPhotoUrl: widget
+                                    .customerPhotoUrlForEntry(entry),
+                                onTap: entry.isAvailable
+                                    ? widget.onQuickAddForSlot == null
+                                          ? widget.onQuickAdd
+                                          : () =>
+                                                widget.onQuickAddForSlot!(entry)
+                                    : () => widget.onManageAppointment(entry),
+                                onLongPress:
+                                    entry.isAvailable ||
+                                        entry.blocked ||
+                                        entry.name.trim().isEmpty
+                                    ? null
+                                    : () => widget.onOpenCustomer(entry),
+                              );
+                            },
+                          ),
                   ),
                 ],
-              ),
-              Positioned(
-                right: 4,
-                bottom: 18,
-                child: GestureDetector(
-                  onTap: onQuickAdd,
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFD1A45C), Color(0xFF8E6637)],
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x33000000),
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: Color(0xFF0D0D0D),
-                      size: 30,
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
@@ -137,44 +412,37 @@ class _CustomersListPageState extends State<CustomersListPage> {
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim().toLowerCase();
-    final filteredCustomers =
-        widget.customers.where((customer) {
-          if (query.isEmpty) {
-            return true;
-          }
-          return customer.name.trim().toLowerCase().contains(query) ||
-              customer.phone.trim().toLowerCase().contains(query) ||
-              customer.email.trim().toLowerCase().contains(query);
-        }).toList();
+    final filteredCustomers = widget.customers.where((customer) {
+      if (query.isEmpty) {
+        return true;
+      }
+      return customer.name.trim().toLowerCase().contains(query) ||
+          customer.phone.trim().toLowerCase().contains(query) ||
+          customer.email.trim().toLowerCase().contains(query);
+    }).toList();
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF121212), Color(0xFF090909)],
-        ),
-      ),
+      color: context.barberinBackground,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  AppHamburgerMenu(),
-                  Spacer(),
+                  const AppHamburgerMenu(),
+                  const Spacer(),
                   Text(
-                    '\u03a0\u0395\u039b\u0391\u03a4\u0395\u03a3',
+                    'ΠΕΛΑΤΕΣ',
                     style: TextStyle(
                       fontSize: 13,
                       letterSpacing: .9,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFFE9E1D2),
+                      color: context.barberinTextPrimary,
                     ),
                   ),
-                  Spacer(),
-                  SizedBox(width: 22),
+                  const Spacer(),
+                  const SizedBox(width: 22),
                 ],
               ),
               const SizedBox(height: 18),
@@ -182,15 +450,15 @@ class _CustomersListPageState extends State<CustomersListPage> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF111315),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF2A2C2F)),
+                  border: Border(
+                    bottom: BorderSide(color: context.barberinBorder),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.search_rounded,
-                      color: Color(0xFFD1A45C),
+                      color: Theme.of(context).colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
@@ -198,15 +466,19 @@ class _CustomersListPageState extends State<CustomersListPage> {
                       child: TextField(
                         controller: _searchController,
                         onChanged: (_) => setState(() {}),
-                        style: const TextStyle(
-                          color: Color(0xFFF2E3C8),
+                        style: TextStyle(
+                          color: context.barberinTextPrimary,
                           fontSize: 13,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Search customer',
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          hintText: barberinTranslate('Αναζήτηση πελατών'),
                           hintStyle: TextStyle(
-                            color: Color(0xFF8F8A82),
+                            color: context.barberinTextSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -221,13 +493,13 @@ class _CustomersListPageState extends State<CustomersListPage> {
                             _searchController.clear();
                             setState(() {});
                           },
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: 36,
                             height: 36,
                             child: Center(
                               child: Icon(
                                 Icons.close_rounded,
-                                color: Color(0xFFB9B1A5),
+                                color: context.barberinTextSecondary,
                                 size: 18,
                               ),
                             ),
@@ -245,13 +517,14 @@ class _CustomersListPageState extends State<CustomersListPage> {
                         physics: const BouncingScrollPhysics(),
                         itemCount: filteredCustomers.length,
                         separatorBuilder: (context, index) =>
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 0),
                         itemBuilder: (context, index) {
                           final customer = filteredCustomers[index];
                           return _CustomerListTile(
                             customer: customer,
                             onTap: () => widget.onOpenCustomer(customer),
-                            onLongPress: () => widget.onManageCustomer(customer),
+                            onLongPress: () =>
+                                widget.onManageCustomer(customer),
                           );
                         },
                       ),
@@ -276,16 +549,9 @@ class CustomerProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCallablePhone =
-        customer.phone.trim().isNotEmpty;
+    final hasCallablePhone = customer.phone.trim().isNotEmpty;
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF121212), Color(0xFF090909)],
-        ),
-      ),
+      color: context.barberinBackground,
       child: SafeArea(
         child: DefaultTextStyle.merge(
           style: const TextStyle(decoration: TextDecoration.none),
@@ -299,21 +565,21 @@ class CustomerProfilePage extends StatelessWidget {
                     showBack
                         ? GestureDetector(
                             onTap: () => Navigator.of(context).maybePop(),
-                            child: const Icon(
+                            child: Icon(
                               Icons.arrow_back_rounded,
-                              color: Color(0xFFD1A45C),
+                              color: Theme.of(context).colorScheme.primary,
                               size: 22,
                             ),
                           )
                         : const AppHamburgerMenu(),
                     const Spacer(),
-                    const Text(
-                      '\u03a0\u0395\u039b\u0391\u03a4\u0397\u03a3',
+                    Text(
+                      'ΠΕΛΑΤΗΣ',
                       style: TextStyle(
                         fontSize: 13,
                         letterSpacing: .9,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFFE9E1D2),
+                        color: context.barberinTextPrimary,
                       ),
                     ),
                     const Spacer(),
@@ -333,12 +599,13 @@ class CustomerProfilePage extends StatelessWidget {
                             height: 180,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: const RadialGradient(
-                                colors: [Color(0xFF3C3023), Color(0xFF171717)],
+                              gradient: RadialGradient(
+                                colors: [
+                                  context.barberinAccentSoft,
+                                  context.barberinSurfaceAlt,
+                                ],
                               ),
-                              border: Border.all(
-                                color: const Color(0xFF7E5F35),
-                              ),
+                              border: Border.all(color: context.barberinBorder),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: customer.photoUrl.isNotEmpty
@@ -346,27 +613,31 @@ class CustomerProfilePage extends StatelessWidget {
                                     customer.photoUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
+                                      return Icon(
                                         Icons.person_rounded,
                                         size: 82,
-                                        color: Color(0xFFF2E3C8),
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       );
                                     },
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.person_rounded,
                                     size: 82,
-                                    color: Color(0xFFF2E3C8),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           customer.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFF5ECDD),
+                            color: context.barberinTextPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -377,16 +648,16 @@ class CustomerProfilePage extends StatelessWidget {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF111111),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFF242424)),
+                            border: Border(
+                              bottom: BorderSide(color: context.barberinBorder),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.call_rounded,
                                 size: 16,
-                                color: Color(0xFFD1A45C),
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -394,9 +665,9 @@ class CustomerProfilePage extends StatelessWidget {
                                   hasCallablePhone
                                       ? customer.phone
                                       : '\u0394\u03b5\u03bd \u03c5\u03c0\u03ac\u03c1\u03c7\u03b5\u03b9 \u03c4\u03b7\u03bb\u03ad\u03c6\u03c9\u03bd\u03bf',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFFD5CEC4),
+                                    color: context.barberinTextPrimary,
                                   ),
                                 ),
                               ),
@@ -414,18 +685,22 @@ class CustomerProfilePage extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: hasCallablePhone
-                                            ? const Color(0xFF3A3127)
-                                            : const Color(0xFF2A2A2A),
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : context.barberinBorder,
                                       ),
                                       color: hasCallablePhone
-                                          ? const Color(0xFF171717)
-                                          : const Color(0xFF121212),
+                                          ? context.barberinAccentSoft
+                                          : context.barberinSurfaceAlt,
                                     ),
                                     child: Icon(
                                       Icons.phone_forwarded_rounded,
                                       color: hasCallablePhone
-                                          ? const Color(0xFFF0E5D1)
-                                          : const Color(0xFF6D6D6D),
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                          : context.barberinTextSecondary,
                                       size: 18,
                                     ),
                                   ),
@@ -443,26 +718,26 @@ class CustomerProfilePage extends StatelessWidget {
                               vertical: 12,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF111111),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFF242424),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: context.barberinBorder,
+                                ),
                               ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.alternate_email_rounded,
                                   size: 16,
-                                  color: Color(0xFFD1A45C),
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
                                     customer.email,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: Color(0xFFD5CEC4),
+                                      color: context.barberinTextPrimary,
                                     ),
                                   ),
                                 ),
@@ -475,11 +750,11 @@ class CustomerProfilePage extends StatelessWidget {
                           title:
                               '\u03a0\u03a1\u039f\u03a4\u0399\u039c\u0397\u03a3\u0395\u0399\u03a3',
                           child: customer.preferences.isEmpty
-                              ? const Text(
+                              ? Text(
                                   '\u0394\u03b5\u03bd \u03c5\u03c0\u03ac\u03c1\u03c7\u03bf\u03c5\u03bd \u03b1\u03ba\u03cc\u03bc\u03b1 \u03c0\u03c1\u03bf\u03c4\u03b9\u03bc\u03ae\u03c3\u03b5\u03b9\u03c2.',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFFD0C7BB),
+                                    color: context.barberinTextSecondary,
                                   ),
                                 )
                               : SizedBox(
@@ -490,30 +765,29 @@ class CustomerProfilePage extends StatelessWidget {
                                       physics: const BouncingScrollPhysics(),
                                       itemCount: customer.preferences.length,
                                       separatorBuilder: (context, index) =>
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 0),
                                       itemBuilder: (context, index) {
-                                        final item = customer.preferences[index];
+                                        final item =
+                                            customer.preferences[index];
                                         return Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
                                             vertical: 10,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF171717),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            border: Border.all(
-                                              color: const Color(0xFF303030),
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: context.barberinBorder,
+                                              ),
                                             ),
                                           ),
                                           child: Text(
                                             item,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 11.5,
                                               height: 1.4,
-                                              color: Color(0xFFE8E0D2),
+                                              color:
+                                                  context.barberinTextPrimary,
                                             ),
                                           ),
                                         );
@@ -527,11 +801,11 @@ class CustomerProfilePage extends StatelessWidget {
                           title:
                               '\u0399\u03a3\u03a4\u039f\u03a1\u0399\u039a\u039f \u0395\u03a0\u0399\u03a3\u039a\u0395\u03a8\u0395\u03a9\u039d',
                           child: customer.history.isEmpty
-                              ? const Text(
+                              ? Text(
                                   '\u0394\u03b5\u03bd \u03c5\u03c0\u03ac\u03c1\u03c7\u03b5\u03b9 \u03b1\u03ba\u03cc\u03bc\u03b1 \u03b9\u03c3\u03c4\u03bf\u03c1\u03b9\u03ba\u03cc \u03c1\u03b1\u03bd\u03c4\u03b5\u03b2\u03bf\u03cd.',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFFD0C7BB),
+                                    color: context.barberinTextSecondary,
                                   ),
                                 )
                               : SizedBox(
@@ -544,7 +818,10 @@ class CustomerProfilePage extends StatelessWidget {
                                         physics: const BouncingScrollPhysics(),
                                         itemCount: customer.history.length,
                                         separatorBuilder: (context, index) =>
-                                            const SizedBox(height: 8),
+                                            Divider(
+                                              height: 1,
+                                              color: context.barberinBorder,
+                                            ),
                                         itemBuilder: (context, index) {
                                           final visit = customer.history[index];
                                           return Row(
@@ -552,12 +829,16 @@ class CustomerProfilePage extends StatelessWidget {
                                               Expanded(
                                                 flex: 3,
                                                 child: Text(
-                                                  visit.date,
+                                                  barberinDateLabelFromRaw(
+                                                    visit.date,
+                                                  ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
                                                     fontSize: 11,
-                                                    color: Color(0xFFE8E0D2),
+                                                    color: context
+                                                        .barberinTextPrimary,
                                                   ),
                                                 ),
                                               ),
@@ -567,19 +848,22 @@ class CustomerProfilePage extends StatelessWidget {
                                                 child: Text(
                                                   visit.service,
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
                                                     fontSize: 11,
-                                                    color: Color(0xFFD0C7BB),
+                                                    color: context
+                                                        .barberinTextSecondary,
                                                   ),
                                                 ),
                                               ),
                                               const SizedBox(width: 8),
                                               Text(
                                                 '\u20ac${visit.price}',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 11,
-                                                  color: Color(0xFFE8E0D2),
+                                                  color: context
+                                                      .barberinTextPrimary,
                                                 ),
                                               ),
                                             ],
@@ -597,10 +881,10 @@ class CustomerProfilePage extends StatelessWidget {
                                 '\u03a3\u0397\u039c\u0395\u0399\u03a9\u03a3\u0395\u0399\u03a3',
                             child: Text(
                               customer.notes,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 height: 1.5,
-                                color: Color(0xFFD0C7BB),
+                                color: context.barberinTextSecondary,
                               ),
                             ),
                           ),
@@ -635,11 +919,9 @@ class _CustomerListTile extends StatelessWidget {
       onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF111111),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF242424)),
+          border: Border(bottom: BorderSide(color: context.barberinBorder)),
         ),
         child: Row(
           children: [
@@ -650,9 +932,12 @@ class _CustomerListTile extends StatelessWidget {
                 photoUrl: customer.photoUrl,
                 size: 46,
                 placeholderIcon: Icons.person_rounded,
-                gradientColors: const [Color(0xFF3C3023), Color(0xFF171717)],
-                borderColor: const Color(0xFF7E5F35),
-                iconColor: const Color(0xFFF2E3C8),
+                gradientColors: [
+                  context.barberinAccentSoft,
+                  context.barberinSurfaceAlt,
+                ],
+                borderColor: context.barberinBorder,
+                iconColor: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -662,26 +947,49 @@ class _CustomerListTile extends StatelessWidget {
                 children: [
                   Text(
                     customer.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFF5ECDD),
+                      color: context.barberinTextPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    customer.phone,
-                    style: const TextStyle(
+                    customer.history.isEmpty
+                        ? 'Δεν υπάρχουν επισκέψεις ακόμη'
+                        : 'Τελευταία επίσκεψη ${barberinDateLabelFromRaw(customer.history.first.date)}',
+                    style: TextStyle(
                       fontSize: 11.5,
-                      color: Color(0xFFB9B1A5),
+                      color: context.barberinTextSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${customer.history.length}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: context.barberinTextPrimary,
+                  ),
+                ),
+                Text(
+                  'Επισκέψεις',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: context.barberinTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 10),
+            Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFFD1A45C),
+              color: Theme.of(context).colorScheme.primary,
               size: 22,
             ),
           ],
@@ -700,16 +1008,16 @@ class _EmptyCustomersCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111),
+        color: context.barberinSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF242424)),
+        border: Border.all(color: context.barberinBorder),
       ),
-      child: const Text(
+      child: Text(
         '\u0394\u03b5\u03bd \u03c5\u03c0\u03ac\u03c1\u03c7\u03bf\u03c5\u03bd \u03b1\u03ba\u03cc\u03bc\u03b1 \u03c0\u03b5\u03bb\u03ac\u03c4\u03b5\u03c2 \u03c3\u03c4\u03b7 \u03bb\u03af\u03c3\u03c4\u03b1.',
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: Color(0xFFE8E0D2),
+          color: context.barberinTextPrimary,
         ),
       ),
     );
@@ -726,11 +1034,9 @@ class _ProfilePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF242424)),
+        border: Border(bottom: BorderSide(color: context.barberinBorder)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,11 +1046,11 @@ class _ProfilePanel extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     letterSpacing: 1,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFE8E0D2),
+                    color: context.barberinTextPrimary,
                   ),
                 ),
               ),
@@ -759,25 +1065,38 @@ class _ProfilePanel extends StatelessWidget {
 }
 
 class _ProgramTopBar extends StatelessWidget {
-  const _ProgramTopBar();
+  const _ProgramTopBar({
+    required this.onOpenFilters,
+    required this.hasActiveFilter,
+  });
+
+  final VoidCallback onOpenFilters;
+  final bool hasActiveFilter;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        AppHamburgerMenu(),
-        Spacer(),
+        const AppHamburgerMenu(),
+        const Spacer(),
         Text(
-          '\u0397\u039c\u0395\u03a1\u039f\u039b\u039f\u0393\u0399\u039f',
+          'ΠΡΟΓΡΑΜΜΑ',
           style: TextStyle(
             fontSize: 13,
             letterSpacing: .9,
             fontWeight: FontWeight.w500,
-            color: Color(0xFFE9E1D2),
+            color: context.barberinTextPrimary,
           ),
         ),
-        Spacer(),
-        Icon(Icons.tune_rounded, color: Color(0xFFD1A45C), size: 21),
+        const Spacer(),
+        _TouchIconButton(
+          onTap: onOpenFilters,
+          icon: Icons.tune_rounded,
+          color: hasActiveFilter
+              ? Theme.of(context).colorScheme.primary
+              : context.barberinTextSecondary,
+          size: 21,
+        ),
       ],
     );
   }
@@ -802,39 +1121,44 @@ class _ProgramDateBar extends StatelessWidget {
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF111315),
+        color: context.barberinSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF2A2C2F)),
+        border: Border.all(color: context.barberinBorder),
       ),
       child: Row(
         children: [
           _TouchIconButton(
             onTap: onPreviousDay,
             icon: Icons.chevron_left_rounded,
-            color: const Color(0xFFF0E5D1),
+            color: context.barberinTextPrimary,
             size: 22,
           ),
-          const Spacer(),
-          Text(
-            greekDateLabel(selectedDate),
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFE9E1D2),
+          Expanded(
+            child: Center(
+              child: Text(
+                barberinDateLabel(selectedDate),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: context.barberinTextPrimary,
+                ),
+              ),
             ),
           ),
-          const Spacer(),
           _TouchIconButton(
             onTap: onNextDay,
             icon: Icons.chevron_right_rounded,
-            color: const Color(0xFFF0E5D1),
+            color: context.barberinTextPrimary,
             size: 22,
           ),
           const SizedBox(width: 10),
           _TouchIconButton(
             onTap: onPickDate,
             icon: Icons.calendar_today_outlined,
-            color: const Color(0xFFD1A45C),
+            color: Theme.of(context).colorScheme.primary,
             size: 18,
           ),
         ],
@@ -890,198 +1214,166 @@ class _ProgramTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = context.barberinIsLight;
+    final isAvailable = entry.isAvailable;
     final barberName = entry.barberName.trim();
-    final barberAccent = [
-      const Color(0xFFB98A52),
-      const Color(0xFF8F6A45),
-      const Color(0xFF6E7E63),
-    ][barberName.isEmpty ? 0 : barberName.hashCode.abs() % 3];
-    final baseGradientColors = entry.highlighted
-        ? const [Color(0xFF8C6738), Color(0xFF6F5534)]
-        : const [Color(0xFFA88452), Color(0xFF87653A)];
-    final cardGradientColors = barberName.isNotEmpty
-        ? [
-            Color.alphaBlend(
-              barberAccent.withValues(alpha: 0.18),
-              baseGradientColors[0],
-            ),
-            Color.alphaBlend(
-              barberAccent.withValues(alpha: 0.10),
-              baseGradientColors[1],
-            ),
-          ]
-        : baseGradientColors;
     final isBlocked = entry.blocked;
-    final baseBorderColor = entry.highlighted
-        ? const Color(0xFF9E7A44)
-        : const Color(0xFFC39A5D);
-    final cardBorderColor = barberName.isNotEmpty
-        ? Color.alphaBlend(
-            barberAccent.withValues(alpha: 0.28),
-            baseBorderColor,
-          )
-        : baseBorderColor;
-    final statusTone = switch (entry.status) {
-      'pending' => const Color(0xFFD1A45C),
-      'confirmed' => const Color(0xFF7DB37D),
-      'completed' => const Color(0xFF7AA6D1),
-      'cancelled' => const Color(0xFFE08A7A),
-      'no_show' => const Color(0xFFB08AE0),
-      _ => const Color(0xFF7DB37D),
-    };
-    final statusLabel = switch (entry.status) {
-      'pending' => 'Pending',
-      'confirmed' => 'Confirmed',
-      'completed' => 'Completed',
-      'cancelled' => 'Cancelled',
-      'no_show' => 'No-show',
-      _ => 'Confirmed',
-    };
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 40,
-          child: Text(
-            entry.hour,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFFE8E0D2),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: GestureDetector(
-            onTap: isBlocked ? null : onTap,
-            onLongPress: onLongPress,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: cardGradientColors,
+    final statusTone = barberinAppointmentTone(
+      entry.status,
+      isAvailable: isAvailable || isBlocked,
+    );
+    final statusForeground = barberinAppointmentForeground(
+      entry.status,
+      isAvailable: isAvailable || isBlocked,
+    );
+    final statusLabel = isAvailable
+        ? 'Διαθέσιμο slot'
+        : switch (entry.status) {
+            'pending' => 'Σε αναμονή',
+            'confirmed' => 'Επιβεβαιωμένο',
+            'completed' => 'Ολοκληρωμένο',
+            'cancelled' => 'Ακυρωμένο',
+            'no_show' => 'Δεν εμφανίστηκε',
+            _ => 'Επιβεβαιωμένο',
+          };
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.barberinBorder)),
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+        color: statusTone.withValues(alpha: isLight ? 0.20 : 0.22),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 40,
+              child: Text(
+                entry.hour,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.barberinTextSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: cardBorderColor),
               ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: CustomerAvatarBadge(
-                      photoUrl: isBlocked ? '' : customerPhotoUrl,
-                      size: 36,
-                      placeholderIcon: Icons.person_rounded,
-                      gradientColors: const [
-                        Color(0xFF44311E),
-                        Color(0xFF202020),
-                      ],
-                      borderColor: const Color(0xFFC49A5C),
-                      iconColor: const Color(0xFFF0E5D1),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: isBlocked ? null : onTap,
+                onLongPress: onLongPress,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: CustomerAvatarBadge(
+                        photoUrl: isBlocked ? '' : customerPhotoUrl,
+                        size: 36,
+                        placeholderIcon: isAvailable
+                            ? Icons.schedule_rounded
+                            : Icons.person_rounded,
+                        gradientColors: isLight
+                            ? [
+                                statusTone.withValues(alpha: 0.16),
+                                context.barberinSurfaceAlt,
+                              ]
+                            : const [Color(0xFF44311E), Color(0xFF202020)],
+                        borderColor: isLight
+                            ? statusForeground.withValues(alpha: 0.38)
+                            : const Color(0xFFC49A5C),
+                        iconColor: isLight
+                            ? Theme.of(context).colorScheme.primary
+                            : const Color(0xFFF0E5D1),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isBlocked ? 'Blocked slot' : entry.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: statusTone.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: statusTone.withValues(alpha: 0.45),
-                            ),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: statusTone,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isBlocked && entry.blockReason.trim().isNotEmpty
-                              ? entry.blockReason
-                              : entry.service,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: entry.highlighted
-                                ? const Color(0xFFF2E3C8)
-                                : const Color(0xFFF1DFC0),
-                          ),
-                        ),
-                        if (barberName.isNotEmpty) ...[
-                          const SizedBox(height: 2),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            'Barber: $barberName',
+                            isBlocked ? 'Κλειστό slot' : entry.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 10.2,
+                            style: TextStyle(
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFF6E9D1),
+                              color: context.barberinTextPrimary,
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusTone.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: statusForeground.withValues(alpha: 0.58),
+                              ),
+                            ),
+                            child: Text(
+                              statusLabel,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: statusForeground,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isBlocked && entry.blockReason.trim().isNotEmpty
+                                ? entry.blockReason
+                                : entry.service,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: isLight
+                                  ? context.barberinTextSecondary
+                                  : entry.highlighted
+                                  ? const Color(0xFFF2E3C8)
+                                  : const Color(0xFFF1DFC0),
+                            ),
+                          ),
+                          if (barberName.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'barber: $barberName',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10.2,
+                                fontWeight: FontWeight.w600,
+                                color: context.barberinTextSecondary,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 38,
-                    height: 28,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: entry.highlighted
-                          ? const Color(0xFF705434)
-                          : const Color(0xFF775634),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: entry.highlighted
-                            ? const Color(0xFFBF955A)
-                            : const Color(0xFFD6AD73),
                       ),
                     ),
-                    child: Text(
+                    const SizedBox(width: 8),
+                    Text(
                       entry.duration,
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: TextStyle(
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFF5ECDD),
+                        color: context.barberinTextSecondary,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -1099,30 +1391,34 @@ class _BreakTimelineRow extends StatelessWidget {
           width: 40,
           child: Text(
             hour,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFFE8E0D2),
+              color: context.barberinTextSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
         const SizedBox(width: 8),
-        const Expanded(
+        Expanded(
           child: Row(
             children: [
-              Expanded(child: Divider(color: Color(0xFF494949), thickness: .7)),
+              Expanded(
+                child: Divider(color: context.barberinBorder, thickness: .7),
+              ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
                   '\u0394\u0399\u0391\u039b\u0395\u0399\u039c\u039c\u0391',
                   style: TextStyle(
                     fontSize: 10.5,
                     letterSpacing: .8,
-                    color: Color(0xFF787878),
+                    color: context.barberinTextSecondary,
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: Color(0xFF494949), thickness: .7)),
+              Expanded(
+                child: Divider(color: context.barberinBorder, thickness: .7),
+              ),
             ],
           ),
         ),

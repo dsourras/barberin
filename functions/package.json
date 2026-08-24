@@ -1,19 +1,22 @@
 {
-  "name": "atelier22-functions",
+  "name": "barbero-functions",
   "private": true,
   "main": "index.js",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "scripts": {
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
+    "test:e2e": "node e2e/barberin.e2e.test.js",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
   "dependencies": {
-    "firebase-admin": "^13.6.0",
-    "firebase-functions": "^6.5.0"
+    "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.2",
+    "googleapis": "^174.0.1",
+    "nodemailer": "^9.0.5"
   }
 }

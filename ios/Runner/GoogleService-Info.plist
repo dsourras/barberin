@@ -8,6 +8,12 @@
 	<string>228645493671</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
+	<key>CLIENT_ID</key>
+	<string>228645493671-ec87t91t9nqfjadq8jktu10ue6qaunq3.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.228645493671-ec87t91t9nqfjadq8jktu10ue6qaunq3</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>228645493671-1md1uqqddbtfuc7t1outmomvvv213lbj.apps.googleusercontent.com</string>
 	<key>BUNDLE_ID</key>
 	<string>com.barberin.app</string>
 	<key>PROJECT_ID</key>

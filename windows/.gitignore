@@ -1,4 +1,5 @@
 flutter/ephemeral/
+firebase.defines.json
 
 # Visual Studio user-specific files.
 *.suo

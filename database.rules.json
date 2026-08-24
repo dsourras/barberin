@@ -1,0 +1,39 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "notificationOutbox": {
+      ".indexOn": ["status", "nextAttemptAt", "lockExpiresAt"]
+    },
+    "notificationInbox": {
+      ".indexOn": ["createdAt"]
+    },
+    "notificationCleanupIndex": {
+      ".indexOn": ["cleanupAt"]
+    },
+    "billingSyncIndex": {
+      ".indexOn": ["nextCheckAt"]
+    },
+    "storageMembershipIndex": {
+      ".indexOn": ["accessUntilMillis"]
+    },
+    "appointmentReminderIndex": {
+      ".indexOn": ["nextCheckAt"]
+    },
+    "customerAppProvisioningQueue": {
+      ".indexOn": ["updatedAt"]
+    },
+    "shops": {
+      "$shopId": {
+        ".read": "auth != null && auth.token.barberinShopAccess != null && (auth.token.barberinShopAccess[$shopId] == 'owner' || auth.token.barberinShopAccess[$shopId] == 'staff') && data.child('billing').child('accessUntilMillis').isNumber() && data.child('billing').child('accessUntilMillis').val() > now",
+        ".write": false,
+        "notificationTokens": {
+          "$tokenId": {
+            ".write": "auth != null && (data.parent().parent().child('ownerUserUid').val() == auth.uid || (auth.token.barberinShopAccess != null && auth.token.barberinShopAccess[$shopId] == 'owner'))",
+            ".validate": "newData.hasChildren(['token', 'platform', 'updatedAt']) && newData.child('token').isString() && newData.child('platform').isString() && newData.child('updatedAt').isString()"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,10 +1,7 @@
 part of 'main.dart';
 
 class _LegalSection extends StatelessWidget {
-  const _LegalSection({
-    required this.title,
-    required this.body,
-  });
+  const _LegalSection({required this.title, required this.body});
 
   final String title;
   final String body;
@@ -18,19 +15,19 @@ class _LegalSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFFF2E3C8),
+              color: context.barberinTextPrimary,
             ),
           ),
           const SizedBox(height: 10),
           Text(
             body,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13.5,
               height: 1.55,
-              color: Color(0xFFE8DCC9),
+              color: context.barberinTextSecondary,
             ),
           ),
         ],
@@ -40,10 +37,7 @@ class _LegalSection extends StatelessWidget {
 }
 
 class _LegalPageScaffold extends StatelessWidget {
-  const _LegalPageScaffold({
-    required this.title,
-    required this.sections,
-  });
+  const _LegalPageScaffold({required this.title, required this.sections});
 
   final String title;
   final List<Widget> sections;
@@ -51,10 +45,10 @@ class _LegalPageScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0E0E0E),
+      backgroundColor: context.barberinBackground,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
-        foregroundColor: const Color(0xFFF2E3C8),
+        backgroundColor: context.barberinBackground,
+        foregroundColor: context.barberinTextPrimary,
         title: Text(title),
       ),
       body: ListView(
@@ -63,9 +57,9 @@ class _LegalPageScaffold extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: const Color(0xFF151515),
+              color: context.barberinSurface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF2A2A2A)),
+              border: Border.all(color: context.barberinBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,67 +78,67 @@ class BarberoPrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _LegalPageScaffold(
-      title: 'Privacy Policy',
+      title: 'Πολιτική απορρήτου',
       sections: [
         _LegalSection(
-          title: '1. Scope',
+          title: '1. Πεδίο εφαρμογής',
           body:
-              'This Privacy Policy explains how Barbero collects, uses, stores, and safeguards information when barber shop owners, managers, barbers, assistants, and authorized staff use the Barbero software platform. Barbero is a business management application used to operate barber shops, manage appointments, manage teams, review client history, configure services and pricing, monitor reports, and support day-to-day business workflows.',
+              'Η παρούσα Πολιτική απορρήτου εξηγεί πώς το Barberin συλλέγει, χρησιμοποιεί, αποθηκεύει και προστατεύει πληροφορίες όταν ιδιοκτήτες καταστημάτων, υπεύθυνοι, barber, βοηθοί και εξουσιοδοτημένο προσωπικό χρησιμοποιούν την πλατφόρμα λογισμικού Barberin. Το Barberin είναι εφαρμογή επιχειρησιακής διαχείρισης για τη λειτουργία καταστημάτων, τη διαχείριση ραντεβού και ομάδων, την προβολή ιστορικού πελατών, τη ρύθμιση υπηρεσιών και τιμών, την παρακολούθηση αναφορών και την υποστήριξη της καθημερινής λειτουργίας.',
         ),
         _LegalSection(
-          title: '2. Categories of Data We Process',
+          title: '2. Κατηγορίες δεδομένων που επεξεργαζόμαστε',
           body:
-              'Barbero may process account data such as names, email addresses, phone numbers, profile images, authentication identifiers, and role assignments. It may also process shop data such as shop name, schedule settings, pricing, barber profiles, service specialties, blocked slots, operational notes, reports, and notification tokens. In addition, Barbero may process customer-related information entered by the shop, including appointment history, selected services, preferences, notes, phone numbers, email addresses, and profile images where the shop chooses to store them.',
+              'Το Barberin μπορεί να επεξεργάζεται δεδομένα λογαριασμού, όπως ονόματα, διευθύνσεις ηλεκτρονικού ταχυδρομείου, αριθμούς τηλεφώνου, εικόνες προφίλ, αναγνωριστικά ταυτοποίησης και αναθέσεις ρόλων. Μπορεί επίσης να επεξεργάζεται δεδομένα καταστήματος, όπως όνομα καταστήματος, ρυθμίσεις προγράμματος, τιμές, προφίλ barber, ειδικότητες υπηρεσιών, κλειστά slot, λειτουργικές σημειώσεις, αναφορές και διακριτικά ειδοποιήσεων. Επιπλέον, μπορεί να επεξεργάζεται πληροφορίες πελατών που καταχωρίζει το κατάστημα, όπως ιστορικό ραντεβού, επιλεγμένες υπηρεσίες, προτιμήσεις, σημειώσεις, τηλέφωνα, διευθύνσεις ηλεκτρονικού ταχυδρομείου και εικόνες προφίλ, όταν το κατάστημα επιλέγει να τις αποθηκεύει.',
         ),
         _LegalSection(
-          title: '3. Why We Use Data',
+          title: '3. Γιατί χρησιμοποιούμε τα δεδομένα',
           body:
-              'We use data to provide the software service, authenticate users, distinguish owners from invited crew members, synchronize shop records across devices, support scheduling and booking logic, enable appointment lifecycle actions, deliver operational notifications, generate analytics and revenue reporting, help shops review customer preferences, and maintain the security and integrity of the platform.',
+              'Χρησιμοποιούμε δεδομένα για την παροχή της υπηρεσίας λογισμικού, την ταυτοποίηση χρηστών, τη διάκριση ιδιοκτητών από προσκεκλημένα μέλη της ομάδας, τον συγχρονισμό δεδομένων καταστήματος μεταξύ συσκευών, την υποστήριξη του προγράμματος και των κρατήσεων, τις ενέργειες του κύκλου ζωής των ραντεβού, την αποστολή επιχειρησιακών ειδοποιήσεων, τη δημιουργία αναλύσεων και αναφορών εσόδων, την προβολή προτιμήσεων πελατών και τη διατήρηση της ασφάλειας και της ακεραιότητας της πλατφόρμας.',
         ),
         _LegalSection(
-          title: '4. Customer Data Managed by Shops',
+          title: '4. Δεδομένα πελατών που διαχειρίζονται τα καταστήματα',
           body:
-              'Barbero is a software tool for businesses. Shop owners and their authorized crew members are responsible for the customer information they enter, review, or maintain in the application. Where Barbero processes customer information on behalf of a shop, that shop remains responsible for ensuring that it has the appropriate right, notice, or legal basis to use that information for appointment scheduling, communication, and client relationship management.',
+              'Το Barberin είναι εργαλείο λογισμικού για επιχειρήσεις. Οι ιδιοκτήτες καταστημάτων και τα εξουσιοδοτημένα μέλη της ομάδας τους είναι υπεύθυνα για τις πληροφορίες πελατών που καταχωρίζουν, ελέγχουν ή διατηρούν στην εφαρμογή. Όταν το Barberin επεξεργάζεται πληροφορίες πελατών για λογαριασμό καταστήματος, το κατάστημα παραμένει υπεύθυνο να διασφαλίζει ότι διαθέτει το κατάλληλο δικαίωμα, την απαιτούμενη ενημέρωση ή τη νόμιμη βάση για τη χρήση αυτών των πληροφοριών.',
         ),
         _LegalSection(
-          title: '5. Notifications and Device Tokens',
+          title: '5. Ειδοποιήσεις και διακριτικά συσκευών',
           body:
-              'Barbero may store device notification tokens so that the application can send operational alerts such as new bookings, updates to appointments, cancellations, reminders, or crew-related actions. These tokens are used only to deliver service-related notifications associated with the relevant account or shop workflow.',
+              'Το Barberin μπορεί να αποθηκεύει διακριτικά ειδοποιήσεων συσκευής, ώστε η εφαρμογή να στέλνει επιχειρησιακές ειδοποιήσεις, όπως νέες κρατήσεις, ενημερώσεις ραντεβού, ακυρώσεις, υπενθυμίσεις ή ενέργειες που αφορούν την ομάδα. Τα διακριτικά χρησιμοποιούνται μόνο για την αποστολή ειδοποιήσεων της υπηρεσίας που συνδέονται με τον αντίστοιχο λογαριασμό ή τη λειτουργία του καταστήματος.',
         ),
         _LegalSection(
-          title: '6. Data Sharing and Service Providers',
+          title: '6. Κοινοποίηση δεδομένων και πάροχοι υπηρεσιών',
           body:
-              'Barbero relies on infrastructure and cloud services used to operate the application, including authentication, cloud functions, storage, databases, and messaging tools. Data may therefore be processed by technology providers acting as hosting, infrastructure, communications, or support providers for the purpose of delivering the service. We do not sell customer or shop data as part of the normal operation of the software.',
+              'Το Barberin βασίζεται σε υποδομές και υπηρεσίες νέφους για τη λειτουργία της εφαρμογής, όπως ταυτοποίηση, λειτουργίες νέφους, αποθήκευση, βάσεις δεδομένων και εργαλεία μηνυμάτων. Επομένως, δεδομένα μπορεί να υποβάλλονται σε επεξεργασία από τεχνολογικούς παρόχους φιλοξενίας, υποδομής, επικοινωνιών ή υποστήριξης για την παροχή της υπηρεσίας. Δεν πωλούμε δεδομένα πελατών ή καταστημάτων στο πλαίσιο της κανονικής λειτουργίας του λογισμικού.',
         ),
         _LegalSection(
-          title: '7. Data Retention',
+          title: '7. Διατήρηση δεδομένων',
           body:
-              'We retain live operational data for as long as the relevant shop account remains active and the information is needed for scheduling, customer management, reporting, support, security, or legal compliance. When an owner requests deletion of a shop account, live shop data may be removed from active paths and placed into a restricted deleted archive node for controlled retention, audit, dispute handling, fraud prevention, restoration review, or legal compliance. When a crew member deletes an account, the user account access is removed while limited historical business records may remain in anonymized or operational form to preserve appointment history and reporting integrity.',
+              'Διατηρούμε ενεργά λειτουργικά δεδομένα όσο ο αντίστοιχος λογαριασμός καταστήματος παραμένει ενεργός και οι πληροφορίες χρειάζονται για πρόγραμμα, διαχείριση πελατών, αναφορές, υποστήριξη, ασφάλεια ή νομική συμμόρφωση. Όταν ο ιδιοκτήτης ζητήσει διαγραφή λογαριασμού καταστήματος, τα ενεργά δεδομένα μπορεί να αφαιρεθούν από τις ενεργές διαδρομές και να τοποθετηθούν σε περιορισμένο αρχείο διαγραφής για ελεγχόμενη διατήρηση, έλεγχο, διαχείριση διαφορών, πρόληψη απάτης, έλεγχο ανάκτησης ή νομική συμμόρφωση. Όταν μέλος της ομάδας διαγράφει λογαριασμό, αφαιρείται η πρόσβαση του χρήστη, ενώ περιορισμένα ιστορικά επιχειρησιακά αρχεία μπορεί να παραμείνουν σε ανώνυμη ή λειτουργική μορφή για τη διατήρηση του ιστορικού ραντεβού και της ακρίβειας των αναφορών.',
         ),
         _LegalSection(
-          title: '8. Security',
+          title: '8. Ασφάλεια',
           body:
-              'We use reasonable technical and organizational measures designed to protect account and business data, including authentication controls, database security rules, role-based access logic, and controlled backend operations. No system can guarantee absolute security, and users are responsible for protecting their devices, credentials, and internal access permissions.',
+              'Χρησιμοποιούμε εύλογα τεχνικά και οργανωτικά μέτρα για την προστασία δεδομένων λογαριασμού και επιχείρησης, όπως ελέγχους ταυτοποίησης, κανόνες ασφάλειας βάσης δεδομένων, πρόσβαση βάσει ρόλων και ελεγχόμενες λειτουργίες υποδομής. Κανένα σύστημα δεν μπορεί να εγγυηθεί απόλυτη ασφάλεια και οι χρήστες είναι υπεύθυνοι για την προστασία των συσκευών, των διαπιστευτηρίων και των εσωτερικών δικαιωμάτων πρόσβασης.',
         ),
         _LegalSection(
-          title: '9. Account Deletion',
+          title: '9. Διαγραφή λογαριασμού',
           body:
-              'If an owner deletes a Barbero account, the live shop environment may be removed from active use, including crew records, appointments, customers, schedules, and related operational content, subject to limited archived retention where required for security, audit, recovery review, or legal reasons. If a crew member deletes an account, only that individual account access is removed, while the shop may retain limited non-login historical records connected to past operations.',
+              'Αν ο ιδιοκτήτης διαγράψει λογαριασμό Barberin, το ενεργό περιβάλλον του καταστήματος μπορεί να αφαιρεθεί από την ενεργή χρήση, μαζί με αρχεία ομάδας, ραντεβού, πελατών, προγραμμάτων και σχετικό λειτουργικό περιεχόμενο, με περιορισμένη αρχειοθετημένη διατήρηση όπου απαιτείται για ασφάλεια, έλεγχο, ανάκτηση ή νομικούς λόγους. Αν μέλος της ομάδας διαγράψει λογαριασμό, αφαιρείται μόνο η πρόσβαση του συγκεκριμένου λογαριασμού, ενώ το κατάστημα μπορεί να διατηρεί περιορισμένα ιστορικά αρχεία χωρίς δυνατότητα σύνδεσης.',
         ),
         _LegalSection(
-          title: '10. International Processing',
+          title: '10. Διεθνής επεξεργασία',
           body:
-              'Because Barbero uses cloud infrastructure and remote technical services, information may be processed in jurisdictions other than the physical location of the shop or end user. Where this occurs, reasonable safeguards and provider commitments may be relied upon to support secure processing and service continuity.',
+              'Επειδή το Barberin χρησιμοποιεί υποδομή νέφους και απομακρυσμένες τεχνικές υπηρεσίες, οι πληροφορίες μπορεί να υποβάλλονται σε επεξεργασία σε δικαιοδοσίες διαφορετικές από τη φυσική τοποθεσία του καταστήματος ή του τελικού χρήστη. Όπου συμβαίνει αυτό, μπορούν να εφαρμόζονται εύλογες εγγυήσεις και δεσμεύσεις παρόχων για την υποστήριξη ασφαλούς επεξεργασίας και συνέχειας της υπηρεσίας.',
         ),
         _LegalSection(
-          title: '11. Changes to this Policy',
+          title: '11. Αλλαγές στην παρούσα πολιτική',
           body:
-              'We may update this Privacy Policy from time to time to reflect service improvements, operational changes, legal requirements, or security practices. The latest in-app version should be treated as the current operational policy text for the software deployment.',
+              'Μπορεί να ενημερώνουμε την παρούσα Πολιτική απορρήτου από καιρό σε καιρό, ώστε να αντικατοπτρίζει βελτιώσεις υπηρεσίας, λειτουργικές αλλαγές, νομικές απαιτήσεις ή πρακτικές ασφάλειας. Η πιο πρόσφατη έκδοση μέσα στην εφαρμογή θεωρείται το ισχύον λειτουργικό κείμενο πολιτικής για την έκδοση του λογισμικού.',
         ),
         _LegalSection(
-          title: '12. Contact',
+          title: '12. Επικοινωνία',
           body:
-              'Questions about Barbero privacy practices, business account data, or account deletion requests should be directed to the business or support contact responsible for the Barbero deployment and customer relationship.',
+              'Ερωτήσεις σχετικά με τις πρακτικές απορρήτου του Barberin, τα δεδομένα επιχειρησιακών λογαριασμών ή αιτήματα διαγραφής λογαριασμού πρέπει να απευθύνονται στην επιχείρηση ή στην επαφή υποστήριξης που είναι υπεύθυνη για την έκδοση του Barberin και τη σχέση με τον πελάτη.',
         ),
       ],
     );
@@ -157,67 +151,67 @@ class BarberoTermsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _LegalPageScaffold(
-      title: 'Terms & Conditions',
+      title: 'Όροι και προϋποθέσεις',
       sections: [
         _LegalSection(
-          title: '1. Service Description',
+          title: '1. Περιγραφή υπηρεσίας',
           body:
-              'Barbero is a software service provided to barber shops and similar businesses for appointment scheduling, team administration, service configuration, pricing management, customer management, reporting, and related operational workflows. The application is intended for business use by authorized owners and invited staff.',
+              'Το Barberin είναι υπηρεσία λογισμικού για καταστήματα barber και παρόμοιες επιχειρήσεις, με σκοπό τον προγραμματισμό ραντεβού, τη διαχείριση ομάδας, τη ρύθμιση υπηρεσιών, τη διαχείριση τιμών και πελατών, τις αναφορές και τις σχετικές λειτουργικές διαδικασίες. Η εφαρμογή προορίζεται για επιχειρησιακή χρήση από εξουσιοδοτημένους ιδιοκτήτες και προσκεκλημένο προσωπικό.',
         ),
         _LegalSection(
-          title: '2. Business Accounts and Roles',
+          title: '2. Επιχειρησιακοί λογαριασμοί και ρόλοι',
           body:
-              'The person who registers a new shop account is treated as the owner account unless otherwise configured by the system. Owners may invite crew members such as senior barbers, barbers, or assistants and assign role-based permissions. Crew users must only access a shop through a valid invitation or authorized assignment. Creating false shops, fake identities, or unauthorized access paths is prohibited.',
+              'Το άτομο που εγγράφει νέο λογαριασμό καταστήματος θεωρείται λογαριασμός ιδιοκτήτη, εκτός αν το σύστημα έχει ρυθμιστεί διαφορετικά. Οι ιδιοκτήτες μπορούν να προσκαλούν μέλη ομάδας, όπως ανώτερους barber, barber ή βοηθούς, και να αναθέτουν δικαιώματα βάσει ρόλου. Τα μέλη της ομάδας πρέπει να αποκτούν πρόσβαση σε κατάστημα μόνο μέσω έγκυρης πρόσκλησης ή εξουσιοδοτημένης ανάθεσης. Απαγορεύεται η δημιουργία ψευδών καταστημάτων, πλαστών ταυτοτήτων ή μη εξουσιοδοτημένων διαδρομών πρόσβασης.',
         ),
         _LegalSection(
-          title: '3. Account Responsibility',
+          title: '3. Ευθύνη λογαριασμού',
           body:
-              'Users are responsible for maintaining the confidentiality of their credentials, ensuring that devices are used securely, and restricting access to authorized people only. Shop owners are responsible for the internal management of permissions and for the lawful use of customer and staff data entered into the system.',
+              'Οι χρήστες είναι υπεύθυνοι για την εμπιστευτικότητα των διαπιστευτηρίων τους, την ασφαλή χρήση των συσκευών και τον περιορισμό της πρόσβασης μόνο σε εξουσιοδοτημένα άτομα. Οι ιδιοκτήτες καταστημάτων είναι υπεύθυνοι για την εσωτερική διαχείριση των δικαιωμάτων και τη νόμιμη χρήση των δεδομένων πελατών και προσωπικού που καταχωρίζονται στο σύστημα.',
         ),
         _LegalSection(
-          title: '4. Acceptable Use',
+          title: '4. Αποδεκτή χρήση',
           body:
-              'Users may not use the service to violate law, infringe privacy rights, impersonate others, disrupt the platform, reverse engineer protected service components where prohibited, upload unlawful content, or misuse appointment workflows for spam, harassment, fraud, or misleading commercial activity.',
+              'Οι χρήστες δεν επιτρέπεται να χρησιμοποιούν την υπηρεσία για παραβίαση νόμου, προσβολή δικαιωμάτων απορρήτου, πλαστοπροσωπία, διακοπή της πλατφόρμας, αντίστροφη μηχανική προστατευμένων στοιχείων όπου απαγορεύεται, μεταφόρτωση παράνομου περιεχομένου ή κακή χρήση των ροών ραντεβού για ανεπιθύμητα μηνύματα, παρενόχληση, απάτη ή παραπλανητική εμπορική δραστηριότητα.',
         ),
         _LegalSection(
-          title: '5. Operational Data',
+          title: '5. Λειτουργικά δεδομένα',
           body:
-              'Shops are responsible for the accuracy of the business information, schedules, prices, service durations, customer details, and crew details they maintain. Barbero may rely on the data provided by the shop to process bookings, reporting, availability, and notifications. Incorrect input may affect booking accuracy, historical data quality, and reporting output.',
+              'Τα καταστήματα είναι υπεύθυνα για την ακρίβεια των επιχειρησιακών πληροφοριών, των προγραμμάτων, των τιμών, των διάρκειων υπηρεσιών, των στοιχείων πελατών και των στοιχείων ομάδας που διατηρούν. Το Barberin μπορεί να βασίζεται στα δεδομένα του καταστήματος για την επεξεργασία κρατήσεων, αναφορών, διαθεσιμότητας και ειδοποιήσεων. Εσφαλμένη καταχώριση μπορεί να επηρεάσει την ακρίβεια των κρατήσεων, την ποιότητα των ιστορικών δεδομένων και την έξοδο των αναφορών.',
         ),
         _LegalSection(
-          title: '6. Availability and Changes',
+          title: '6. Διαθεσιμότητα και αλλαγές',
           body:
-              'We may modify, improve, suspend, or discontinue features, workflows, or infrastructure components from time to time in order to maintain the service, improve reliability, address abuse, comply with law, or evolve the product. We do not guarantee uninterrupted operation at every moment, although the service is intended to support routine day-to-day business use.',
+              'Μπορεί κατά διαστήματα να τροποποιούμε, να βελτιώνουμε, να αναστέλλουμε ή να διακόπτουμε λειτουργίες, ροές ή στοιχεία υποδομής, ώστε να συντηρούμε την υπηρεσία, να βελτιώνουμε την αξιοπιστία, να αντιμετωπίζουμε κακή χρήση, να συμμορφωνόμαστε με τον νόμο ή να εξελίσσουμε το προϊόν. Δεν εγγυόμαστε αδιάλειπτη λειτουργία κάθε στιγμή, αν και η υπηρεσία προορίζεται να υποστηρίζει την καθημερινή επιχειρησιακή χρήση.',
         ),
         _LegalSection(
-          title: '7. Fees and Commercial Relationship',
+          title: '7. Χρεώσεις και εμπορική σχέση',
           body:
-              'Where the software is sold, licensed, subscribed to, or otherwise provided commercially to a shop, the applicable commercial agreement, invoice, proposal, or subscription arrangement governs pricing, payment terms, implementation scope, and service package details. These in-app terms operate together with that commercial relationship.',
+              'Όταν το λογισμικό πωλείται, αδειοδοτείται, παρέχεται με συνδρομή ή παρέχεται εμπορικά σε κατάστημα με άλλο τρόπο, η ισχύουσα εμπορική συμφωνία, το τιμολόγιο, η πρόταση ή η ρύθμιση συνδρομής καθορίζει τις τιμές, τους όρους πληρωμής, το πεδίο υλοποίησης και τις λεπτομέρειες του πακέτου υπηρεσιών. Οι παρόντες όροι μέσα στην εφαρμογή ισχύουν μαζί με αυτή την εμπορική σχέση.',
         ),
         _LegalSection(
-          title: '8. Intellectual Property',
+          title: '8. Πνευματική ιδιοκτησία',
           body:
-              'The Barbero software, interface, workflows, code, visual assets, service structure, and supporting materials remain the intellectual property of the software provider or its licensors, except for business content and customer information entered by the shop. No ownership of the software itself transfers to the shop unless expressly agreed in writing.',
+              'Το λογισμικό Barberin, το περιβάλλον, οι ροές, ο κώδικας, τα οπτικά στοιχεία, η δομή υπηρεσιών και το υποστηρικτικό υλικό παραμένουν πνευματική ιδιοκτησία του παρόχου λογισμικού ή των δικαιοπαρόχων του, με εξαίρεση το επιχειρησιακό περιεχόμενο και τις πληροφορίες πελατών που καταχωρίζει το κατάστημα. Δεν μεταβιβάζεται στο κατάστημα κυριότητα του ίδιου του λογισμικού, εκτός αν συμφωνηθεί ρητά γραπτώς.',
         ),
         _LegalSection(
-          title: '9. Termination and Deletion',
+          title: '9. Τερματισμός και διαγραφή',
           body:
-              'An owner may request account deletion from within the application. When that occurs, live shop data may be removed from active service and may be retained in a restricted deleted archive for security, dispute, legal, or restoration review purposes. Crew members may delete only their own Barbero access, while the shop may retain limited historical operational records. We may also suspend or terminate access in cases of misuse, security risk, non-payment, fraud, unlawful conduct, or material violation of these terms.',
+              'Ο ιδιοκτήτης μπορεί να ζητήσει διαγραφή λογαριασμού μέσα από την εφαρμογή. Όταν συμβαίνει αυτό, τα ενεργά δεδομένα του καταστήματος μπορεί να αφαιρεθούν από την ενεργή υπηρεσία και να διατηρηθούν σε περιορισμένο αρχείο διαγραφής για λόγους ασφάλειας, διαφορών, νομικού ελέγχου ή ελέγχου ανάκτησης. Τα μέλη της ομάδας μπορούν να διαγράψουν μόνο τη δική τους πρόσβαση στο Barberin, ενώ το κατάστημα μπορεί να διατηρεί περιορισμένα ιστορικά λειτουργικά αρχεία. Μπορεί επίσης να αναστείλουμε ή να τερματίσουμε την πρόσβαση σε περίπτωση κακής χρήσης, κινδύνου ασφάλειας, μη πληρωμής, απάτης, παράνομης συμπεριφοράς ή ουσιώδους παραβίασης των παρόντων όρων.',
         ),
         _LegalSection(
-          title: '10. Limitation of Liability',
+          title: '10. Περιορισμός ευθύνης',
           body:
-              'To the maximum extent permitted by applicable law, the software is provided on an as-available basis and the provider is not liable for indirect, incidental, special, consequential, exemplary, or lost-profit damages arising from use of the service, data entry errors, appointment issues, third-party outages, or unauthorized access caused by user-side credential or device compromise. Direct liability, if any, should be limited to the amount paid for the relevant service period unless a separate written agreement states otherwise.',
+              'Στον μέγιστο βαθμό που επιτρέπει το εφαρμοστέο δίκαιο, το λογισμικό παρέχεται όπως είναι διαθέσιμο και ο πάροχος δεν ευθύνεται για έμμεσες, παρεπόμενες, ειδικές, επακόλουθες, παραδειγματικές ζημίες ή απώλεια κερδών που προκύπτουν από τη χρήση της υπηρεσίας, σφάλματα καταχώρισης, ζητήματα ραντεβού, διακοπές τρίτων ή μη εξουσιοδοτημένη πρόσβαση λόγω παραβίασης διαπιστευτηρίων ή συσκευής από την πλευρά του χρήστη. Η άμεση ευθύνη, εφόσον υπάρχει, περιορίζεται στο ποσό που καταβλήθηκε για τη σχετική περίοδο υπηρεσίας, εκτός αν ξεχωριστή γραπτή συμφωνία ορίζει διαφορετικά.',
         ),
         _LegalSection(
-          title: '11. Compliance and Legal Review',
+          title: '11. Συμμόρφωση και νομικός έλεγχος',
           body:
-              'Shops remain responsible for ensuring that their use of the platform, their notices to customers, their cancellation practices, their communications, and their internal data handling comply with the laws and regulations applicable to their business. Where a shop requires jurisdiction-specific documentation, legal review should be obtained before relying on the in-app text as a final legal document.',
+              'Τα καταστήματα παραμένουν υπεύθυνα να διασφαλίζουν ότι η χρήση της πλατφόρμας, οι ενημερώσεις προς πελάτες, οι πρακτικές ακύρωσης, οι επικοινωνίες και η εσωτερική διαχείριση δεδομένων συμμορφώνονται με τους νόμους και τους κανονισμούς που ισχύουν για την επιχείρησή τους. Όταν ένα κατάστημα χρειάζεται έγγραφα ειδικά για τη δικαιοδοσία του, πρέπει να λαμβάνει νομικό έλεγχο πριν βασιστεί στο κείμενο της εφαρμογής ως τελικό νομικό έγγραφο.',
         ),
         _LegalSection(
-          title: '12. Updates to the Terms',
+          title: '12. Ενημερώσεις των όρων',
           body:
-              'These Terms & Conditions may be updated from time to time to reflect operational, technical, commercial, or legal changes. Continued use of the software after an update constitutes acceptance of the updated terms, unless a separate written agreement provides otherwise.',
+              'Οι παρόντες όροι και προϋποθέσεις μπορεί να ενημερώνονται κατά διαστήματα, ώστε να αντικατοπτρίζουν λειτουργικές, τεχνικές, εμπορικές ή νομικές αλλαγές. Η συνέχιση της χρήσης του λογισμικού μετά από ενημέρωση αποτελεί αποδοχή των ενημερωμένων όρων, εκτός αν ξεχωριστή γραπτή συμφωνία ορίζει διαφορετικά.',
         ),
       ],
     );
