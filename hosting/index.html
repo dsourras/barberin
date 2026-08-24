@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Barberin Legal</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090909;
+        --panel: #151515;
+        --text: #f3e7d3;
+        --muted: #bfb7aa;
+        --accent: #d1a45c;
+        --border: #2a241b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Roboto, Arial, sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(209, 164, 92, 0.14), transparent 32%),
+          linear-gradient(180deg, #121212 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      main {
+        width: min(920px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      .card {
+        background: rgba(21, 21, 21, 0.92);
+        border: 1px solid rgba(209, 164, 92, 0.14);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      h2 {
+        margin-top: 28px;
+        font-size: 18px;
+        color: var(--accent);
+      }
+
+      p,
+      li {
+        color: var(--muted);
+        line-height: 1.72;
+        font-size: 15px;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      .eyebrow {
+        margin-bottom: 10px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .sub {
+        margin-top: 12px;
+      }
+
+      .links {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <div class="eyebrow">Barberin</div>
+        <h1>Privacy Policy</h1>
+        <p class="sub">
+          Effective date: May 22, 2026
+        </p>
+
+        <p>
+          Barberin is a barbershop management platform for shop owners, staff, and
+          customer booking applications. This Privacy Policy explains what information
+          we collect, how we use it, and how we protect it when you use Barberin and
+          connected customer apps such as branded shop booking applications.
+        </p>
+
+        <h2>Information We Collect</h2>
+        <ul>
+          <li>Account information such as name, email address, phone number, and role.</li>
+          <li>Shop information such as shop name, address, business settings, schedules, and services.</li>
+          <li>Appointment information such as booking date, time, barber, service, notes, and status changes.</li>
+          <li>Customer information such as name, phone number, email address, appointment history, and profile photo if provided.</li>
+          <li>Device and notification data such as push notification tokens required to deliver reminders and operational updates.</li>
+          <li>Billing and subscription metadata required to verify and manage paid plans. Payments are processed by Google Play and Apple, not directly by Barberin. The full raw verification response is not stored in the app database; a protected server-side store credential may be retained to synchronize entitlement status.</li>
+        </ul>
+
+        <h2>How We Use Information</h2>
+        <ul>
+          <li>To create and manage owner, crew, and customer accounts.</li>
+          <li>To operate bookings, schedules, reminders, cancellations, and rescheduling flows.</li>
+          <li>To provide reports, analytics, financial clarity, customer intelligence, and sustainability insights.</li>
+          <li>To send push notifications and in-app notifications about appointments and account activity.</li>
+          <li>To maintain service security, prevent abuse, and improve reliability.</li>
+          <li>To manage subscriptions, trial access, and entitlement status.</li>
+        </ul>
+
+        <h2>How Information Is Stored</h2>
+        <p>
+          Barberin uses Firebase services, including Firebase Authentication,
+          Realtime Database, Cloud Functions, Cloud Storage, and Firebase Cloud Messaging,
+          to provide core functionality. Data is stored and processed through these services
+          in accordance with Google's infrastructure and security practices.
+        </p>
+
+        <h2>Sharing of Information</h2>
+        <p>
+          We do not sell personal information. Information is shared only as required to operate
+          the service, including with infrastructure and billing providers such as Google Play,
+          Apple App Store, Firebase, and other technical providers needed to run the platform.
+        </p>
+
+        <h2>Photos and Uploaded Content</h2>
+        <p>
+          If owners, crew members, or customers upload profile photos or related images, those files
+          are stored only to support profile and business functionality inside the platform.
+        </p>
+
+        <h2>Retention and Deletion</h2>
+        <p>
+          Data is retained while an account or shop remains active, or for as long as needed to operate
+          the service, comply with legal obligations, resolve disputes, and enforce agreements. Users may
+          request account and associated data deletion through the
+          <a href="delete-account.html">public account deletion form</a>.
+        </p>
+
+        <h2>Children</h2>
+        <p>
+          Barberin is not directed to children under 13 as a standalone service. If a shop offers services
+          for children, booking data is processed only as part of normal appointment management for the parent
+          or guardian and the shop.
+        </p>
+
+        <h2>Your Rights</h2>
+        <p>
+          Depending on your location, you may have rights to access, correct, update, or delete your personal
+          information. You may also have rights related to data portability or objection to certain processing.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          For privacy or support questions, contact:
+          <a href="mailto:oryn.barberin@gmail.com">oryn.barberin@gmail.com</a>
+        </p>
+
+        <div class="links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="delete-account.html">Request account deletion</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.barberin.customer",
+      "sha256_cert_fingerprints": [
+        "59:E5:B0:11:8C:AB:B0:46:63:9F:73:2E:C6:52:4C:40:2E:AD:5F:22:43:F1:36:A7:A1:D3:A1:FD:49:A8:04:C2"
+      ]
+    }
+  }
+]

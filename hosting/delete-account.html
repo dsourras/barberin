@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Request deletion of your Barberin account and associated data" />
+    <title>Barberin Account Deletion</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f5ef;
+        --panel: #fffdf8;
+        --text: #102b35;
+        --muted: #63777b;
+        --border: #d8e2df;
+        --accent: #1b5b70;
+        --accent-soft: #eaf4f5;
+        --error: #9a3030;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, #eaf4f5 0, transparent 42%), var(--bg);
+        color: var(--text);
+      }
+      main { width: min(720px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 64px; }
+      .panel { background: var(--panel); border: 1px solid var(--border); padding: 30px; box-shadow: 0 24px 70px rgba(16, 43, 53, .08); }
+      .eyebrow { margin-bottom: 12px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(30px, 6vw, 48px); line-height: 1.04; letter-spacing: -.04em; }
+      h2 { margin: 30px 0 8px; font-size: 18px; }
+      p, li { color: var(--muted); line-height: 1.65; }
+      ul { padding-left: 20px; }
+      form { margin-top: 28px; }
+      label { display: block; margin: 18px 0 7px; font-size: 14px; font-weight: 650; }
+      input, select, textarea {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 13px 14px;
+        background: #fff;
+        color: var(--text);
+        font: inherit;
+      }
+      textarea { min-height: 120px; resize: vertical; }
+      input:focus, select:focus, textarea:focus { outline: 2px solid rgba(27, 91, 112, .2); border-color: var(--accent); }
+      .check { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; }
+      .check input { width: auto; margin-top: 4px; }
+      .check label { margin: 0; font-weight: 400; }
+      button { margin-top: 24px; border: 0; padding: 13px 18px; background: var(--accent); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: wait; }
+      .status { min-height: 24px; margin-top: 18px; font-weight: 650; }
+      .status.error { color: var(--error); }
+      .status.success { color: var(--accent); }
+      .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+      .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="eyebrow">Barberin privacy controls</div>
+        <h1>Request account deletion</h1>
+        <p>
+          Use this form if you cannot access the Barberin app. We will review the request,
+          verify ownership of the account, and delete the account and associated personal data
+          where legally permitted. You can also use the in-app delete option when available.
+        </p>
+
+        <h2>Before you submit</h2>
+        <ul>
+          <li>Use the email address connected to your Barberin account.</li>
+          <li>Deleting an owner account may also remove its shop data, staff links, and appointments.</li>
+          <li>Some information may be retained when required by law, fraud prevention, or dispute resolution.</li>
+        </ul>
+
+        <form id="deletion-form">
+          <div class="honeypot" aria-hidden="true">
+            <label>Company website<input name="companyWebsite" tabindex="-1" autocomplete="off" /></label>
+          </div>
+          <label for="email">Account email *</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+
+          <label for="fullName">Full name</label>
+          <input id="fullName" name="fullName" autocomplete="name" maxlength="100" />
+
+          <label for="accountType">Account type</label>
+          <select id="accountType" name="accountType">
+            <option value="">Select if known</option>
+            <option value="owner">Shop owner</option>
+            <option value="crew">Barber or crew member</option>
+            <option value="customer">Customer</option>
+            <option value="unknown">Not sure</option>
+          </select>
+
+          <label for="message">Additional details</label>
+          <textarea id="message" name="message" maxlength="1000" placeholder="Optional shop name or details that help us identify your account"></textarea>
+
+          <div class="check">
+            <input id="confirmed" name="confirmed" type="checkbox" value="true" required />
+            <label for="confirmed">I confirm that I am requesting deletion of my own Barberin account and associated personal data.</label>
+          </div>
+
+          <button id="submit" type="submit">Submit deletion request</button>
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+        </form>
+
+        <div class="links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="mailto:oryn.barberin@gmail.com">Privacy support email</a>
+        </div>
+      </section>
+    </main>
+    <script>
+      const endpoint = "https://europe-west1-barbero-88d00.cloudfunctions.net/barberoSubmitAccountDeletionRequest";
+      const form = document.getElementById("deletion-form");
+      const submit = document.getElementById("submit");
+      const status = document.getElementById("status");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submit.disabled = true;
+        status.className = "status";
+        status.textContent = "Submitting your request...";
+        const payload = Object.fromEntries(new FormData(form).entries());
+        payload.confirmed = document.getElementById("confirmed").checked;
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || result.ok !== true) {
+            throw new Error(result.message || "request-failed");
+          }
+          form.reset();
+          status.className = "status success";
+          status.textContent = "Your deletion request was received. We will contact you if verification is needed.";
+        } catch (error) {
+          status.className = "status error";
+          status.textContent = "We could not submit the request. Please email oryn.barberin@gmail.com instead.";
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

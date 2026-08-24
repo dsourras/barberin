@@ -1,0 +1,3120 @@
+{
+    "source":  "GeoNames populated places cross-checked against ELSTAT 2021 census threshold",
+    "minPopulation":  10000,
+    "cities":  [
+                   {
+                       "canonical":  "Αγία Βαρβάρα",
+                       "aliases":  [
+                                       "Αγία Βαρβάρα",
+                                       "Agía Varvára",
+                                       "Agia Varvara",
+                                       "Agia Barbara",
+                                       "Ayia Varvara",
+                                       "Ayía Varvára"
+                                   ],
+                       "population":  26550
+                   },
+                   {
+                       "canonical":  "Αγία Παρασκευή",
+                       "aliases":  [
+                                       "Αγία Παρασκευή",
+                                       "Agía Paraskeví",
+                                       "Agia Paraskevi",
+                                       "Agia Paraskeue",
+                                       "Ayia Paraskevi",
+                                       "Ayía Paraskeví"
+                                   ],
+                       "population":  59704
+                   },
+                   {
+                       "canonical":  "Άγιοι Ανάργυροι",
+                       "aliases":  [
+                                       "Άγιοι Ανάργυροι",
+                                       "Ágioi Anárgyroi",
+                                       "Agioi Anargyroi"
+                                   ],
+                       "population":  34168
+                   },
+                   {
+                       "canonical":  "Άγιος Αθανάσιος",
+                       "aliases":  [
+                                       "Άγιος Αθανάσιος",
+                                       "Ágios Athanásios",
+                                       "Agios Athanasios",
+                                       "Ayios Athanasios",
+                                       "Kavakli",
+                                       "Kavaklievo",
+                                       "Kavaklí",
+                                       "Áyios Athanásios",
+                                       "Καβακλί",
+                                       "Каваклиево"
+                                   ],
+                       "population":  13026
+                   },
+                   {
+                       "canonical":  "Άγιος Γεώργιος Κερατσινίου",
+                       "aliases":  [
+                                       "Άγιος Γεώργιος Κερατσινίου",
+                                       "Keratsíni",
+                                       "Keratsini",
+                                       "Agios Georgios Keratsiniou",
+                                       "Ayios Yeoryios",
+                                       "Ayios Yeoryios Keratsiniou",
+                                       "Hagios Georgios Keratsiniou",
+                                       "Keratsinion",
+                                       "Keratsiniou",
+                                       "Keratsiníou",
+                                       "Keratsínion",
+                                       "Tseratsinion",
+                                       "Áyios Yeóryios",
+                                       "Κερατσίνι",
+                                       "Κερατσίνιον",
+                                       "Τσερατσίνιον"
+                                   ],
+                       "population":  77077
+                   },
+                   {
+                       "canonical":  "Άγιος Δημήτριος",
+                       "aliases":  [
+                                       "Άγιος Δημήτριος",
+                                       "Agios Dimitrios",
+                                       "Ayios Dhimitrios",
+                                       "Brakhami",
+                                       "Brakhámi",
+                                       "Áyios Dhimítrios"
+                                   ],
+                       "population":  71294
+                   },
+                   {
+                       "canonical":  "Άγιος Ιωάννης Ρέντης",
+                       "aliases":  [
+                                       "Άγιος Ιωάννης Ρέντης",
+                                       "Agios Ioannis Rentis",
+                                       "Rentis",
+                                       "Ρέντης"
+                                   ],
+                       "population":  15411
+                   },
+                   {
+                       "canonical":  "Άγιος Νικόλαος",
+                       "aliases":  [
+                                       "Άγιος Νικόλαος",
+                                       "Ágios Nikólaos",
+                                       "Agios Nikolaos",
+                                       "Aghios Nicolaos",
+                                       "Aghios Nikolaos",
+                                       "Agios Nikolaos Lasithiou",
+                                       "Agios-Nikolaos",
+                                       "Ayios Nikolaos",
+                                       "Lato-Kamara",
+                                       "Áyios Nikólaos",
+                                       "Άγιος Νικόλαος Λασιθίου",
+                                       "Агиос-Николаос"
+                                   ],
+                       "population":  11421
+                   },
+                   {
+                       "canonical":  "Αγρίνιο",
+                       "aliases":  [
+                                       "Αγρίνιο",
+                                       "Agrínio",
+                                       "Agrinio",
+                                       "AGQ",
+                                       "Agrinion",
+                                       "Agrinium",
+                                       "Agrínion",
+                                       "Αγρίνιον",
+                                       "Агринион"
+                                   ],
+                       "population":  46899
+                   },
+                   {
+                       "canonical":  "Αθήνα",
+                       "aliases":  [
+                                       "Αθήνα",
+                                       "Athens",
+                                       "ATH",
+                                       "Afina",
+                                       "Afini",
+                                       "Afiny",
+                                       "An Aithin",
+                                       "Ateena",
+                                       "Atehny",
+                                       "Aten",
+                                       "Atena",
+                                       "Atenai",
+                                       "Atenas",
+                                       "Atene",
+                                       "Atenes",
+                                       "Ateni",
+                                       "Ateno",
+                                       "Atenoj",
+                                       "Ateny",
+                                       "Athen",
+                                       "Athena",
+                                       "Athenae",
+                                       "Athenai",
+                                       "Athene",
+                                       "Athenes",
+                                       "Atheny",
+                                       "Athina",
+                                       "Athinai",
+                                       "Athinia",
+                                       "Athènes",
+                                       "Athén",
+                                       "Athénes",
+                                       "Athény",
+                                       "Athína",
+                                       "Athínai",
+                                       "Atina",
+                                       "Atény",
+                                       "Atēnas",
+                                       "Atėnai",
+                                       "Atʻenkʻ",
+                                       "Kota Athena",
+                                       "Lungsod ng Athina",
+                                       "Lungsod ng Athína",
+                                       "atene",
+                                       "atene si",
+                                       "ateni",
+                                       "athensa",
+                                       "athyna",
+                                       "atn",
+                                       "etens",
+                                       "xethens",
+                                       "ya dian",
+                                       "Αθήναι",
+                                       "Αθηνα",
+                                       "Αθηναι",
+                                       "Атина",
+                                       "Атэны",
+                                       "Афины",
+                                       "Афіни",
+                                       "Аѳины",
+                                       "Աթենք",
+                                       "Աթէնք",
+                                       "אתונה",
+                                       "آتن",
+                                       "أثينا",
+                                       "ئافېنا",
+                                       "ܐܬܝܢܐ",
+                                       "अथेन्स",
+                                       "ஏதென்ஸ்",
+                                       "เอเธนส์",
+                                       "ათენი",
+                                       "Ἀθῆναι",
+                                       "アテネ",
+                                       "雅典",
+                                       "아테네",
+                                       "아테네 시"
+                                   ],
+                       "population":  664046
+                   },
+                   {
+                       "canonical":  "Αιγάλεω",
+                       "aliases":  [
+                                       "Αιγάλεω",
+                                       "Aigáleo",
+                                       "Aigaleo",
+                                       "Aegaleo",
+                                       "Egaleo"
+                                   ],
+                       "population":  69946
+                   },
+                   {
+                       "canonical":  "Αίγιο",
+                       "aliases":  [
+                                       "Αίγιο",
+                                       "Aígio",
+                                       "Aigio",
+                                       "Aegion",
+                                       "Aegium",
+                                       "Aighion",
+                                       "Aigion",
+                                       "Aiyion",
+                                       "Aígion",
+                                       "Aíyion",
+                                       "Egion",
+                                       "Ehjo",
+                                       "Vostitsa",
+                                       "Vostitza",
+                                       "Vostizza",
+                                       "Vostítsa",
+                                       "Αίγιον",
+                                       "Αἴγιον",
+                                       "Βοστίτσα",
+                                       "Эйо"
+                                   ],
+                       "population":  20422
+                   },
+                   {
+                       "canonical":  "Αλεξάνδρεια",
+                       "aliases":  [
+                                       "Αλεξάνδρεια",
+                                       "Alexándreia",
+                                       "Alexandreia",
+                                       "Alexandria",
+                                       "Alexándria",
+                                       "Gida",
+                                       "Gidha",
+                                       "Gidhas",
+                                       "Gidhá",
+                                       "Gidhás",
+                                       "Yidha",
+                                       "Yidhas",
+                                       "Yidhá",
+                                       "Yidhás"
+                                   ],
+                       "population":  13665
+                   },
+                   {
+                       "canonical":  "Αλεξανδρούπολη",
+                       "aliases":  [
+                                       "Αλεξανδρούπολη",
+                                       "Alexandroupoli",
+                                       "AXD",
+                                       "Alejandropolis",
+                                       "Alejandrópolis",
+                                       "Aleksandrupolis",
+                                       "Alessandropoli",
+                                       "Alexandhroupolis",
+                                       "Alexandhroúpolis",
+                                       "Alexandropolis",
+                                       "Alexandroupolis",
+                                       "Alexandroúpoli",
+                                       "Alexandroúpolis",
+                                       "Dedeagac",
+                                       "Dedeagach",
+                                       "Dedeagatch",
+                                       "Dedeağaç",
+                                       "Dedéagach",
+                                       "alyksandrwbwly",
+                                       "Αλεξανδρούπολις",
+                                       "Александруполис",
+                                       "Дедеагач",
+                                       "أليكساندروبولي"
+                                   ],
+                       "population":  52979
+                   },
+                   {
+                       "canonical":  "Άλιμος",
+                       "aliases":  [
+                                       "Άλιμος",
+                                       "Álimos",
+                                       "Alimos",
+                                       "Kalamaki",
+                                       "Kalamakion",
+                                       "Kalamáki",
+                                       "Kalamákion",
+                                       "Καλαμάκι",
+                                       "Καλαμάκιον"
+                                   ],
+                       "population":  41720
+                   },
+                   {
+                       "canonical":  "Αμαλιάδα",
+                       "aliases":  [
+                                       "Αμαλιάδα",
+                                       "Amaliáda",
+                                       "Amaliada",
+                                       "Amalias",
+                                       "Amaliás",
+                                       "Αμαλιάς"
+                                   ],
+                       "population":  16763
+                   },
+                   {
+                       "canonical":  "Ανατολή",
+                       "aliases":  [
+                                       "Ανατολή",
+                                       "Anatolí",
+                                       "Anatoli"
+                                   ],
+                       "population":  12119
+                   },
+                   {
+                       "canonical":  "Άνω Λιόσια",
+                       "aliases":  [
+                                       "Άνω Λιόσια",
+                                       "Áno Liósia",
+                                       "Ano Liosia"
+                                   ],
+                       "population":  33565
+                   },
+                   {
+                       "canonical":  "Άργος",
+                       "aliases":  [
+                                       "Άργος",
+                                       "Árgos",
+                                       "Argos",
+                                       "Argas",
+                                       "Argo",
+                                       "Ciutat d\u0027Argos",
+                                       "a er ge si",
+                                       "Аргос",
+                                       "ארגוס",
+                                       "阿尔戈斯"
+                                   ],
+                       "population":  22209
+                   },
+                   {
+                       "canonical":  "Αργυρούπολη",
+                       "aliases":  [
+                                       "Αργυρούπολη",
+                                       "Argyroúpoli",
+                                       "Argyroupoli",
+                                       "Argyroupolis",
+                                       "Aryiroupolis",
+                                       "Aryiroúpolis"
+                                   ],
+                       "population":  34097
+                   },
+                   {
+                       "canonical":  "Αρριανά",
+                       "aliases":  [
+                                       "Αρριανά",
+                                       "Arrianá",
+                                       "Arriana",
+                                       "Kozlukebir",
+                                       "Kuzlu Kebir",
+                                       "Kuzlú Kebír"
+                                   ],
+                       "population":  14905
+                   },
+                   {
+                       "canonical":  "Άρτα",
+                       "aliases":  [
+                                       "Άρτα",
+                                       "Árta",
+                                       "Arta",
+                                       "arta",
+                                       "Арта",
+                                       "آرتا"
+                                   ],
+                       "population":  21895
+                   },
+                   {
+                       "canonical":  "Αρτέμιδα",
+                       "aliases":  [
+                                       "Αρτέμιδα",
+                                       "Artémida",
+                                       "Artemida",
+                                       "Άρτεμη",
+                                       "Artemi",
+                                       "Artemis",
+                                       "Loutsa",
+                                       "Loútsa",
+                                       "Ártemis",
+                                       "Άρτεμις",
+                                       "Λούτσα"
+                                   ],
+                       "population":  21924
+                   },
+                   {
+                       "canonical":  "Αρχαία Ολυμπία",
+                       "aliases":  [
+                                       "Αρχαία Ολυμπία",
+                                       "Archaía Olympía",
+                                       "Archaia Olympia",
+                                       "Ancient Olympia",
+                                       "Arkhaia Olimbia",
+                                       "Arkhaía Olimbía",
+                                       "Olimbia Arkhaia",
+                                       "Olimbía Arkhaía",
+                                       "Olimpija",
+                                       "Olymbia",
+                                       "Olymbía",
+                                       "Olympia",
+                                       "Olympie",
+                                       "Ολυμπια",
+                                       "Олимпия"
+                                   ],
+                       "population":  11153
+                   },
+                   {
+                       "canonical":  "Ασπρόπυργος",
+                       "aliases":  [
+                                       "Ασπρόπυργος",
+                                       "Asprópyrgos",
+                                       "Aspropyrgos",
+                                       "Aspropirgos",
+                                       "Asprópirgos",
+                                       "Kalivia",
+                                       "Kalivia Khasias",
+                                       "Kalyvia Chasias",
+                                       "Kalívia",
+                                       "Kalívia Khasiás",
+                                       "Καλύβια Χασιάς"
+                                   ],
+                       "population":  30251
+                   },
+                   {
+                       "canonical":  "Αχαρνές",
+                       "aliases":  [
+                                       "Αχαρνές",
+                                       "Acharnés",
+                                       "Acharnes",
+                                       "Acharnae",
+                                       "Acharnai",
+                                       "Acharne",
+                                       "Akharnai",
+                                       "Akharnaí",
+                                       "Menidhi",
+                                       "Menidhion",
+                                       "Menidi",
+                                       "Menidion",
+                                       "Menioi",
+                                       "Menídhi",
+                                       "Menídhion",
+                                       "Meníoi",
+                                       "Αχαρναί",
+                                       "Μενίδι",
+                                       "Μενίδιον"
+                                   ],
+                       "population":  99346
+                   },
+                   {
+                       "canonical":  "Βάρη",
+                       "aliases":  [
+                                       "Βάρη",
+                                       "Vári",
+                                       "Vari"
+                                   ],
+                       "population":  16717
+                   },
+                   {
+                       "canonical":  "Βέροια",
+                       "aliases":  [
+                                       "Βέροια",
+                                       "Véroia",
+                                       "Veroia",
+                                       "Ber",
+                                       "Beroia",
+                                       "Verija",
+                                       "Verroia",
+                                       "Vérroia",
+                                       "Бер",
+                                       "Верия"
+                                   ],
+                       "population":  44464
+                   },
+                   {
+                       "canonical":  "Βόλος",
+                       "aliases":  [
+                                       "Βόλος",
+                                       "Volos",
+                                       "Bolus",
+                                       "Iolcus",
+                                       "VOL",
+                                       "Volo",
+                                       "Vólos",
+                                       "Wolos",
+                                       "wwlws",
+                                       "Волос",
+                                       "וולוס"
+                                   ],
+                       "population":  86048
+                   },
+                   {
+                       "canonical":  "Βούλα",
+                       "aliases":  [
+                                       "Βούλα",
+                                       "Voúla",
+                                       "Voula",
+                                       "Vule",
+                                       "Вуле"
+                                   ],
+                       "population":  28364
+                   },
+                   {
+                       "canonical":  "Βριλήσσια",
+                       "aliases":  [
+                                       "Βριλήσσια",
+                                       "Vrilissia"
+                                   ],
+                       "population":  30741
+                   },
+                   {
+                       "canonical":  "Βύρωνας",
+                       "aliases":  [
+                                       "Βύρωνας",
+                                       "Výronas",
+                                       "Vyronas",
+                                       "Βύρων",
+                                       "Viron",
+                                       "Vyron",
+                                       "Víron"
+                                   ],
+                       "population":  61308
+                   },
+                   {
+                       "canonical":  "Γάζι",
+                       "aliases":  [
+                                       "Γάζι",
+                                       "Gázi",
+                                       "Gazi",
+                                       "Gazion",
+                                       "Gázion",
+                                       "Γάζιον"
+                                   ],
+                       "population":  12606
+                   },
+                   {
+                       "canonical":  "Γαλάτσι",
+                       "aliases":  [
+                                       "Γαλάτσι",
+                                       "Galátsi",
+                                       "Galatsi",
+                                       "Galatsion",
+                                       "Galátsion",
+                                       "Γαλάτσιον"
+                                   ],
+                       "population":  59345
+                   },
+                   {
+                       "canonical":  "Γέρακας",
+                       "aliases":  [
+                                       "Γέρακας",
+                                       "Gérakas",
+                                       "Gerakas"
+                                   ],
+                       "population":  29939
+                   },
+                   {
+                       "canonical":  "Γιαννιτσά",
+                       "aliases":  [
+                                       "Γιαννιτσά",
+                                       "Giannitsá",
+                                       "Giannitsa",
+                                       "Enidze Vardar",
+                                       "Janica",
+                                       "Pazar",
+                                       "Yannitsa",
+                                       "Yenitsa",
+                                       "Yenitsá",
+                                       "Yiannitsa",
+                                       "Yiannitsá",
+                                       "Ениџе Вардар",
+                                       "Пазар",
+                                       "Яница"
+                                   ],
+                       "population":  27817
+                   },
+                   {
+                       "canonical":  "Γιάννουλη",
+                       "aliases":  [
+                                       "Γιάννουλη",
+                                       "Giánnouli",
+                                       "Giannouli",
+                                       "Yiannouli",
+                                       "Yiánnouli"
+                                   ],
+                       "population":  12277
+                   },
+                   {
+                       "canonical":  "Γλυφάδα",
+                       "aliases":  [
+                                       "Γλυφάδα",
+                                       "Glyfáda",
+                                       "Glyfada",
+                                       "Aixone",
+                                       "Glifadha",
+                                       "Glifádha",
+                                       "Γλυφαδα"
+                                   ],
+                       "population":  87305
+                   },
+                   {
+                       "canonical":  "Γρεβενά",
+                       "aliases":  [
+                                       "Γρεβενά",
+                                       "Grevená",
+                                       "Grevena",
+                                       "Grebena"
+                                   ],
+                       "population":  10563
+                   },
+                   {
+                       "canonical":  "Δάφνη",
+                       "aliases":  [
+                                       "Δάφνη",
+                                       "Dhafní",
+                                       "Dhafni",
+                                       "Dafni",
+                                       "Daphne",
+                                       "Daphni",
+                                       "Katsipodhion",
+                                       "Katsipódhion",
+                                       "Vlikha"
+                                   ],
+                       "population":  22913
+                   },
+                   {
+                       "canonical":  "Διαβατά",
+                       "aliases":  [
+                                       "Διαβατά",
+                                       "Diavatá",
+                                       "Diavata",
+                                       "Dhiavata",
+                                       "Dhiavatá",
+                                       "Dodulari",
+                                       "Doudoular",
+                                       "Dudular",
+                                       "Dudulár",
+                                       "Nea Ionia",
+                                       "Néa Ioniá",
+                                       "Δουδουλάρ",
+                                       "Додулари"
+                                   ],
+                       "population":  11876
+                   },
+                   {
+                       "canonical":  "Δράμα",
+                       "aliases":  [
+                                       "Δράμα",
+                                       "Dráma",
+                                       "Drama",
+                                       "Dhrama",
+                                       "Dhráma",
+                                       "dhrama",
+                                       "drama",
+                                       "drmh",
+                                       "Драма",
+                                       "דרמה",
+                                       "ذراما"
+                                   ],
+                       "population":  44823
+                   },
+                   {
+                       "canonical":  "Δραπετσώνα",
+                       "aliases":  [
+                                       "Δραπετσώνα",
+                                       "Drapetsóna",
+                                       "Drapetsona",
+                                       "Drapecona",
+                                       "Drapecóna",
+                                       "dorapetsuona",
+                                       "drabytswna",
+                                       "drapytswna",
+                                       "Драпецона",
+                                       "Դրապեցոնա",
+                                       "درابيتسونا",
+                                       "دراپیتسونا",
+                                       "ドラペツォナ"
+                                   ],
+                       "population":  13815
+                   },
+                   {
+                       "canonical":  "Έδεσσα",
+                       "aliases":  [
+                                       "Έδεσσα",
+                                       "Édessa",
+                                       "Edessa",
+                                       "Edhessa",
+                                       "Voden",
+                                       "Vodena",
+                                       "Vodená",
+                                       "Édhessa",
+                                       "Воден"
+                                   ],
+                       "population":  18669
+                   },
+                   {
+                       "canonical":  "Ελευθέριο - Κορδελιό",
+                       "aliases":  [
+                                       "Ελευθέριο - Κορδελιό",
+                                       "Elefthério - Kordelió",
+                                       "Eleftherio - Kordelio",
+                                       "Ελευθέρια",
+                                       "Eleftheria",
+                                       "Eleftherio",
+                                       "Eleftherio-Kordelio",
+                                       "Eleftherion",
+                                       "Elefthério",
+                                       "Elefthérion",
+                                       "Elevtherion",
+                                       "Elevthérion",
+                                       "Kharmankioi",
+                                       "Kharmánkioï"
+                                   ],
+                       "population":  27067
+                   },
+                   {
+                       "canonical":  "Ελευσίνα",
+                       "aliases":  [
+                                       "Ελευσίνα",
+                                       "Elefsína",
+                                       "Elefsina",
+                                       "Elefis",
+                                       "Elefsis",
+                                       "Elefsís",
+                                       "Eleusis",
+                                       "Elevsis",
+                                       "Elevsís",
+                                       "Lepsina",
+                                       "Ελευσίς"
+                                   ],
+                       "population":  24910
+                   },
+                   {
+                       "canonical":  "Ελληνικό",
+                       "aliases":  [
+                                       "Ελληνικό",
+                                       "Ellinikó",
+                                       "Elliniko",
+                                       "Ellinikon",
+                                       "Ellinikón",
+                                       "Ελληνικόν"
+                                   ],
+                       "population":  16715
+                   },
+                   {
+                       "canonical":  "Ερμούπολη",
+                       "aliases":  [
+                                       "Ερμούπολη",
+                                       "Ermoúpolis",
+                                       "Ermoupolis",
+                                       "Ermoupoli",
+                                       "Ermoúpoli",
+                                       "Hermoupolis",
+                                       "Hermoúpolis",
+                                       "Hermupolis",
+                                       "Siros",
+                                       "Syra",
+                                       "Síros",
+                                       "Ερμούπολις"
+                                   ],
+                       "population":  11351
+                   },
+                   {
+                       "canonical":  "Ευκαρπία",
+                       "aliases":  [
+                                       "Ευκαρπία",
+                                       "Efkarpía",
+                                       "Efkarpia",
+                                       "Evkarpia",
+                                       "Evkarpía",
+                                       "Lembed",
+                                       "Lembet",
+                                       "Lembét",
+                                       "Lempet",
+                                       "awkarbya",
+                                       "awkarbya  thysalwnyky",
+                                       "ayfkarpya",
+                                       "efukarupia",
+                                       "Λεμπέτ",
+                                       "Лембед",
+                                       "Лембет",
+                                       "إوكاربيا، ثيسالونيكي",
+                                       "اوكاربيا",
+                                       "ایفکارپیا",
+                                       "エフカルピア"
+                                   ],
+                       "population":  15416
+                   },
+                   {
+                       "canonical":  "Εύοσμος",
+                       "aliases":  [
+                                       "Εύοσμος",
+                                       "Évosmos",
+                                       "Evosmos",
+                                       "Charman\u0027kioi",
+                                       "Evosmo",
+                                       "Evosmon",
+                                       "Harmankioi",
+                                       "Harmankoej",
+                                       "Harmanköj",
+                                       "Nea Coclutsa",
+                                       "Neos Koukloutzas",
+                                       "Taousan Lofos",
+                                       "Taousán Lófos",
+                                       "Évosmo",
+                                       "Évosmon",
+                                       "Νέος Κουκλουτζάς",
+                                       "Χαρμάνκιοϊ"
+                                   ],
+                       "population":  74686
+                   },
+                   {
+                       "canonical":  "Ζάκυνθος",
+                       "aliases":  [
+                                       "Ζάκυνθος",
+                                       "Zakynthos",
+                                       "ZTH",
+                                       "Zacinto",
+                                       "Zakinthos",
+                                       "Zakintos",
+                                       "Zante",
+                                       "Zákinthos",
+                                       "Zákynthos",
+                                       "jakintoseu",
+                                       "zakintosu",
+                                       "zakynthws",
+                                       "zha jin suo si",
+                                       "Закинтос",
+                                       "زاكينثوس",
+                                       "ザキントス",
+                                       "扎金索斯",
+                                       "자킨토스"
+                                   ],
+                       "population":  11541
+                   },
+                   {
+                       "canonical":  "Ζωγράφου",
+                       "aliases":  [
+                                       "Ζωγράφου",
+                                       "Zográfos",
+                                       "Zografos",
+                                       "Ζωγράφος",
+                                       "Zografou"
+                                   ],
+                       "population":  71026
+                   },
+                   {
+                       "canonical":  "Ηλιούπολη",
+                       "aliases":  [
+                                       "Ηλιούπολη",
+                                       "Ilioúpoli",
+                                       "Ilioupoli"
+                                   ],
+                       "population":  78153
+                   },
+                   {
+                       "canonical":  "Ηράκλειο",
+                       "aliases":  [
+                                       "Ηράκλειο",
+                                       "Irákleio",
+                                       "Irakleio",
+                                       "Iraklion",
+                                       "Iráklion",
+                                       "Irákleion",
+                                       "Irakleion",
+                                       "Candia",
+                                       "Candie",
+                                       "Càndia",
+                                       "Erakleion",
+                                       "HER",
+                                       "Heracleum",
+                                       "Heracliao",
+                                       "Heraclion",
+                                       "Heraclião",
+                                       "Heraclión",
+                                       "Herakleion",
+                                       "Heraklion",
+                                       "Herákleion",
+                                       "Héraklion",
+                                       "Iraclio",
+                                       "Iraclion",
+                                       "Irakleio Kritis",
+                                       "Iraklija",
+                                       "Iraklio",
+                                       "Iráclio",
+                                       "Iráklio",
+                                       "Kandiye",
+                                       "Khandax",
+                                       "Megalokastro",
+                                       "Megalokastron",
+                                       "hrqlywn",
+                                       "irakurion",
+                                       "yi la ke li weng",
+                                       "Ērakleion",
+                                       "Ηράκλειο Κρήτης",
+                                       "Ираклио",
+                                       "Ираклион",
+                                       "הרקליון",
+                                       "イラクリオン",
+                                       "伊拉克利翁"
+                                   ],
+                       "population":  137154
+                   },
+                   {
+                       "canonical":  "Θέρμη",
+                       "aliases":  [
+                                       "Θέρμη",
+                                       "Thérmi",
+                                       "Thermi",
+                                       "Sedes",
+                                       "Sedhes",
+                                       "Sédhes",
+                                       "Σέδες",
+                                       "Седес"
+                                   ],
+                       "population":  14373
+                   },
+                   {
+                       "canonical":  "Θεσσαλονίκη",
+                       "aliases":  [
+                                       "Θεσσαλονίκη",
+                                       "Thessaloníki",
+                                       "Thessaloniki",
+                                       "Ftohomana",
+                                       "Ftohomána",
+                                       "I Protevoussa ton Prosfigon",
+                                       "I Protévoussa ton Prosfígon",
+                                       "SKG",
+                                       "Salonic",
+                                       "Salonica",
+                                       "Salonicco",
+                                       "Salonik",
+                                       "Salonika",
+                                       "Salonikai",
+                                       "Salonike",
+                                       "Saloniki",
+                                       "Salonique",
+                                       "Saloníki",
+                                       "Saluniccu",
+                                       "Salónica",
+                                       "Saruna",
+                                       "Selanik",
+                                       "Selânik",
+                                       "Solun",
+                                       "Soluň",
+                                       "Solún",
+                                       "Săruna",
+                                       "THessalonika",
+                                       "Tesalonica",
+                                       "Tesaloniki",
+                                       "Tesalonîkî",
+                                       "Tesalónica",
+                                       "Tessalonica",
+                                       "Tessalònica",
+                                       "Thessalonica",
+                                       "Thessalonike",
+                                       "Thessalonique",
+                                       "Thessaloníkē",
+                                       "sai sa luo ni ji",
+                                       "salwnyk",
+                                       "slwnyqh",
+                                       "slwnyqy",
+                                       "tessaroniki",
+                                       "Þessalóníka",
+                                       "Σαλονίκη",
+                                       "Σαλονικη",
+                                       "Салоники",
+                                       "Салоніки",
+                                       "Солун",
+                                       "Ѳessalonika",
+                                       "Ѳєссалонїка",
+                                       "סלוניקה",
+                                       "סלוניקי",
+                                       "سالونيك",
+                                       "テッサロニキ",
+                                       "塞萨洛尼基"
+                                   ],
+                       "population":  317778
+                   },
+                   {
+                       "canonical":  "Θήβα",
+                       "aliases":  [
+                                       "Θήβα",
+                                       "Thívai",
+                                       "Thivai",
+                                       "Teba",
+                                       "Tebas",
+                                       "Tebo",
+                                       "Teboj",
+                                       "Thebae",
+                                       "Thebai",
+                                       "Theben",
+                                       "Thebes",
+                                       "Thiva",
+                                       "Thèbes",
+                                       "Thíva",
+                                       "Thēbai",
+                                       "Θήβαι",
+                                       "Θηβαι"
+                                   ],
+                       "population":  32410
+                   },
+                   {
+                       "canonical":  "Ιαλυσός",
+                       "aliases":  [
+                                       "Ιαλυσός",
+                                       "Ialysós",
+                                       "Ialysos",
+                                       "Ιαλυσού",
+                                       "Ialisos",
+                                       "Ialissos",
+                                       "Ialisós",
+                                       "Ialysou",
+                                       "Ialyssos",
+                                       "Ialyssós",
+                                       "Lalisos",
+                                       "Trianda",
+                                       "Trianta",
+                                       "Triánda",
+                                       "Triánta",
+                                       "Τριάντα",
+                                       "Лалисос",
+                                       "Трианта"
+                                   ],
+                       "population":  12717
+                   },
+                   {
+                       "canonical":  "Ιεράπετρα",
+                       "aliases":  [
+                                       "Ιεράπετρα",
+                                       "Ierápetra",
+                                       "Ierapetra",
+                                       "Hierapetra",
+                                       "Ierapitna",
+                                       "Kasteli",
+                                       "Yerapetra",
+                                       "Yirapetra",
+                                       "Yirápetra",
+                                       "Иерапетра"
+                                   ],
+                       "population":  12355
+                   },
+                   {
+                       "canonical":  "Ίλιον",
+                       "aliases":  [
+                                       "Ίλιον",
+                                       "Ílion",
+                                       "Ilion",
+                                       "Kato Liosia",
+                                       "Káto Liósia",
+                                       "Nea Liosia",
+                                       "Néa Liósia",
+                                       "Νέα Λιόσια"
+                                   ],
+                       "population":  84793
+                   },
+                   {
+                       "canonical":  "Ιωάννινα",
+                       "aliases":  [
+                                       "Ιωάννινα",
+                                       "Ioánnina",
+                                       "Ioannina",
+                                       "Γιάννενα",
+                                       "Giannena",
+                                       "Giannina",
+                                       "IOA",
+                                       "Ioaa",
+                                       "Ioanina",
+                                       "Ioánina",
+                                       "Ioäa",
+                                       "Janina",
+                                       "Yanina",
+                                       "Yannina",
+                                       "Yanya",
+                                       "yue a ni na",
+                                       "Γιάννινα",
+                                       "Јанина",
+                                       "Янина",
+                                       "约阿尼纳"
+                                   ],
+                       "population":  65574
+                   },
+                   {
+                       "canonical":  "Καβάλα",
+                       "aliases":  [
+                                       "Καβάλα",
+                                       "Kavála",
+                                       "Kavala",
+                                       "Cavala",
+                                       "Cavalla",
+                                       "KVA",
+                                       "Kaballa",
+                                       "Kavalla",
+                                       "Kaválla",
+                                       "Kawala",
+                                       "Neapolis",
+                                       "ka wa la",
+                                       "kavuara",
+                                       "qwlt",
+                                       "Кава̀ла",
+                                       "Кавала",
+                                       "قولة",
+                                       "カヴァラ",
+                                       "卡瓦拉"
+                                   ],
+                       "population":  54027
+                   },
+                   {
+                       "canonical":  "Καισαριανή",
+                       "aliases":  [
+                                       "Καισαριανή",
+                                       "Kaisarianí",
+                                       "Kaisariani",
+                                       "Kaisariane",
+                                       "Kesariani",
+                                       "Кесариани"
+                                   ],
+                       "population":  26370
+                   },
+                   {
+                       "canonical":  "Καλαμαριά",
+                       "aliases":  [
+                                       "Καλαμαριά",
+                                       "Kalamariá",
+                                       "Kalamaria",
+                                       "Kalamarija",
+                                       "Kalamarya",
+                                       "Каламария",
+                                       "Каламарија"
+                                   ],
+                       "population":  91518
+                   },
+                   {
+                       "canonical":  "Καλαμάτα",
+                       "aliases":  [
+                                       "Καλαμάτα",
+                                       "Kalamata",
+                                       "Καλάμαι",
+                                       "KLX",
+                                       "Kalamae",
+                                       "Kalamai",
+                                       "Kalamatas",
+                                       "Kalamato",
+                                       "Kalamáta",
+                                       "Kalmata",
+                                       "Kalámai",
+                                       "kalamata",
+                                       "Каламата",
+                                       "كالاماتا"
+                                   ],
+                       "population":  54100
+                   },
+                   {
+                       "canonical":  "Καλλιθέα",
+                       "aliases":  [
+                                       "Καλλιθέα",
+                                       "Kallithéa",
+                                       "Kallithea",
+                                       "Kalitea",
+                                       "Kaliteja",
+                                       "Kalithea",
+                                       "Kalithéa",
+                                       "Kalitėja",
+                                       "Kallifeja",
+                                       "Kalliteja",
+                                       "kalythya",
+                                       "kalyth‌a",
+                                       "Калитеа",
+                                       "Каллифея",
+                                       "Каллітея",
+                                       "كاليثيا",
+                                       "کالیته‌آ"
+                                   ],
+                       "population":  100641
+                   },
+                   {
+                       "canonical":  "Καλύβια Θορικού",
+                       "aliases":  [
+                                       "Καλύβια Θορικού",
+                                       "Kalývia Thorikoú",
+                                       "Kalyvia Thorikou",
+                                       "Καλύβια",
+                                       "Kalivia",
+                                       "Kalivia Thorikou",
+                                       "Kalyvia",
+                                       "Kalívia",
+                                       "Kalívia Thorikoú",
+                                       "Kouvara",
+                                       "Kouvará",
+                                       "Thorikou",
+                                       "Thorikoú"
+                                   ],
+                       "population":  14424
+                   },
+                   {
+                       "canonical":  "Κάλυμνος",
+                       "aliases":  [
+                                       "Κάλυμνος",
+                                       "Kálymnos",
+                                       "Kalymnos",
+                                       "Calino",
+                                       "Kalimnos",
+                                       "Kálimnos",
+                                       "Pothaia",
+                                       "Pothia",
+                                       "Póthia",
+                                       "Πόθια"
+                                   ],
+                       "population":  12324
+                   },
+                   {
+                       "canonical":  "Καματερό",
+                       "aliases":  [
+                                       "Καματερό",
+                                       "Kamaterón",
+                                       "Kamateron",
+                                       "Kamateras",
+                                       "Kamatero",
+                                       "Kamaterò",
+                                       "Kamateró",
+                                       "ka ma tuo luo",
+                                       "kamaryrw",
+                                       "kamatelo",
+                                       "kamatero",
+                                       "kamatrwn",
+                                       "kamatyrw",
+                                       "kametaro",
+                                       "kametoro",
+                                       "kha ma the ro",
+                                       "Каматеро",
+                                       "Каматерон",
+                                       "Կամատերոն",
+                                       "كاماتيرو",
+                                       "کاماترون",
+                                       "کاماریرو",
+                                       "कमातेरो",
+                                       "कामेटरो",
+                                       "কামাতেরো",
+                                       "કામેટરો",
+                                       "கமடேரோ",
+                                       "కమతేరో",
+                                       "ಕಾಮೆಟೊರೊ",
+                                       "කමටෙරෝ",
+                                       "คามาเทโร",
+                                       "カマテロ",
+                                       "卡马托罗",
+                                       "카마테로"
+                                   ],
+                       "population":  29179
+                   },
+                   {
+                       "canonical":  "Καρδίτσα",
+                       "aliases":  [
+                                       "Καρδίτσα",
+                                       "Kardítsa",
+                                       "Karditsa",
+                                       "Kardhitsa",
+                                       "Kardhítsa",
+                                       "Kardica",
+                                       "Kardiça",
+                                       "ka er ji cha",
+                                       "Кардица",
+                                       "卡尔季察"
+                                   ],
+                       "population":  32789
+                   },
+                   {
+                       "canonical":  "Καρλόβασι",
+                       "aliases":  [
+                                       "Καρλόβασι",
+                                       "Néon Karlovásion",
+                                       "Neon Karlovasion",
+                                       "Karlovasi",
+                                       "Karlovassi",
+                                       "Neon Karlovasi",
+                                       "Néon Karlóvasi",
+                                       "Νέον Καρλοβάσιον"
+                                   ],
+                       "population":  10220
+                   },
+                   {
+                       "canonical":  "Καστοριά",
+                       "aliases":  [
+                                       "Καστοριά",
+                                       "Kastoria",
+                                       "Castoria",
+                                       "Castória",
+                                       "KSO",
+                                       "Kastorija",
+                                       "Kastorià",
+                                       "Kastoriá",
+                                       "Kastoriꙗ",
+                                       "Kastoryja",
+                                       "Kesrie",
+                                       "Kesriye",
+                                       "Kostur",
+                                       "Kosturi",
+                                       "ka si tuo li ya",
+                                       "kaseutolia",
+                                       "kasutoria",
+                                       "kostur",
+                                       "qstwryh",
+                                       "Καστορια",
+                                       "Кастория",
+                                       "Касторыя",
+                                       "Касторія",
+                                       "Касторїꙗ",
+                                       "Костур",
+                                       "קסטוריה",
+                                       "カストリア",
+                                       "卡斯托里亚",
+                                       "카스토리아"
+                                   ],
+                       "population":  13387
+                   },
+                   {
+                       "canonical":  "Κατερίνη",
+                       "aliases":  [
+                                       "Κατερίνη",
+                                       "Kateríni",
+                                       "Katerini",
+                                       "Aikaterini",
+                                       "Aikateríni",
+                                       "Katerina",
+                                       "Катерина",
+                                       "Катерини"
+                                   ],
+                       "population":  53293
+                   },
+                   {
+                       "canonical":  "Κερατέα",
+                       "aliases":  [
+                                       "Κερατέα",
+                                       "Keratéa",
+                                       "Keratea",
+                                       "Kerateja",
+                                       "Kieratea",
+                                       "keratea",
+                                       "kyratya",
+                                       "Кератеа",
+                                       "Кератея",
+                                       "Կերատեա",
+                                       "كيراتيا",
+                                       "ケラテア"
+                                   ],
+                       "population":  14483
+                   },
+                   {
+                       "canonical":  "Κέρκυρα",
+                       "aliases":  [
+                                       "Κέρκυρα",
+                                       "Corfu",
+                                       "CFU",
+                                       "Corcyra",
+                                       "Corfou",
+                                       "Corfù",
+                                       "Corfú",
+                                       "Kerkira",
+                                       "Kerkyra",
+                                       "Korfu",
+                                       "Krf",
+                                       "Kérkyra",
+                                       "ke ji la shi",
+                                       "keleukila",
+                                       "kerukira",
+                                       "qwrpw",
+                                       "shhr kwrfw",
+                                       "Керкира",
+                                       "Керкіра",
+                                       "Корфу",
+                                       "Крф",
+                                       "קורפו",
+                                       "شهر کورفو",
+                                       "ケルキラ",
+                                       "克基拉市",
+                                       "케르키라"
+                                   ],
+                       "population":  40047
+                   },
+                   {
+                       "canonical":  "Κηφισιά",
+                       "aliases":  [
+                                       "Κηφισιά",
+                                       "Kifisiá",
+                                       "Kifisia",
+                                       "Kefissia",
+                                       "Kephisia",
+                                       "Kephissia",
+                                       "Kifisija",
+                                       "Kifisià",
+                                       "Kifissia",
+                                       "Kēfissia",
+                                       "Кифисия",
+                                       "Кифисија",
+                                       "Кіфісія"
+                                   ],
+                       "population":  47332
+                   },
+                   {
+                       "canonical":  "Κιλκίς",
+                       "aliases":  [
+                                       "Κιλκίς",
+                                       "Kilkís",
+                                       "Kilkis",
+                                       "Kukus",
+                                       "Kukush",
+                                       "Kukuš",
+                                       "Prefectura Kilkis",
+                                       "Кукуш"
+                                   ],
+                       "population":  22914
+                   },
+                   {
+                       "canonical":  "Κοζάνη",
+                       "aliases":  [
+                                       "Κοζάνη",
+                                       "Kozáni",
+                                       "Kozani",
+                                       "KZI",
+                                       "Kozane",
+                                       "Kozhani",
+                                       "Кожани",
+                                       "Козани"
+                                   ],
+                       "population":  36481
+                   },
+                   {
+                       "canonical":  "Κομοτηνή",
+                       "aliases":  [
+                                       "Κομοτηνή",
+                                       "Komotiní",
+                                       "Komotini",
+                                       "Γκιουμουλτζίνα",
+                                       "Gjumjurdzhina",
+                                       "Guemuelcine",
+                                       "Gumulcine",
+                                       "Gumuljina",
+                                       "Gumuljína",
+                                       "Gümülcine",
+                                       "Komotene",
+                                       "Komotina",
+                                       "Komotinai",
+                                       "Komotine",
+                                       "Komotinē",
+                                       "Komotinė",
+                                       "Komotēnē",
+                                       "Koumoutzina",
+                                       "Nkioumoultzina",
+                                       "ke mo di ni",
+                                       "kmwtyny",
+                                       "komotini",
+                                       "kwmwtyny",
+                                       "qwomwotiyniy",
+                                       "Κομοτηνά",
+                                       "Κομοτηναί",
+                                       "Κουμουτζηνά",
+                                       "Гюмюрджина",
+                                       "Комотини",
+                                       "Комотіні",
+                                       "קוֹמוֹטִינִי",
+                                       "كوموتيني",
+                                       "کموتینی",
+                                       "コモティニ",
+                                       "科莫蒂尼",
+                                       "코모티니"
+                                   ],
+                       "population":  45631
+                   },
+                   {
+                       "canonical":  "Κόρινθος",
+                       "aliases":  [
+                                       "Κόρινθος",
+                                       "Kórinthos",
+                                       "Korinthos",
+                                       "Aebura",
+                                       "Corint",
+                                       "Corinth",
+                                       "Corinthe",
+                                       "Corinthus",
+                                       "Corintia",
+                                       "Corinto",
+                                       "Ephyra",
+                                       "Korinf",
+                                       "Korint",
+                                       "Korinth",
+                                       "Korinthe",
+                                       "Korintti",
+                                       "Korynt",
+                                       "Nea Korinthos",
+                                       "ke lin si",
+                                       "korintosu",
+                                       "kwrynth",
+                                       "qwryntws",
+                                       "Νέα Κόρινθος",
+                                       "Коринф",
+                                       "Корінѳъ",
+                                       "קורינתוס",
+                                       "كورينث",
+                                       "コリントス",
+                                       "科林斯"
+                                   ],
+                       "population":  30176
+                   },
+                   {
+                       "canonical":  "Κορυδαλλός",
+                       "aliases":  [
+                                       "Κορυδαλλός",
+                                       "Korydallós",
+                                       "Korydallos"
+                                   ],
+                       "population":  63445
+                   },
+                   {
+                       "canonical":  "Κορωπί",
+                       "aliases":  [
+                                       "Κορωπί",
+                                       "Koropí",
+                                       "Koropi",
+                                       "Κεκρωπία",
+                                       "Kekropia",
+                                       "Koropia",
+                                       "Koropion",
+                                       "Koropíon",
+                                       "Κοροπίον",
+                                       "Κορωπία",
+                                       "Κορωπίον"
+                                   ],
+                       "population":  19164
+                   },
+                   {
+                       "canonical":  "Κως",
+                       "aliases":  [
+                                       "Κως",
+                                       "Kos",
+                                       "Coo",
+                                       "KGS",
+                                       "Kos Stadt",
+                                       "Kos Town",
+                                       "Poli Kos",
+                                       "Póli Kos",
+                                       "Кос"
+                                   ],
+                       "population":  19244
+                   },
+                   {
+                       "canonical":  "Λαγκαδάς",
+                       "aliases":  [
+                                       "Λαγκαδάς",
+                                       "Lagkadás",
+                                       "Lagkadas",
+                                       "Lagadas",
+                                       "Lagadina",
+                                       "Lagadás",
+                                       "Langadas",
+                                       "Langadás",
+                                       "Langaza",
+                                       "Lankadas",
+                                       "Lugadina",
+                                       "lankadas",
+                                       "ragadasu",
+                                       "Лагадина",
+                                       "Лангадас",
+                                       "Лъгадина",
+                                       "لانكاداس",
+                                       "ラガダス"
+                                   ],
+                       "population":  37022
+                   },
+                   {
+                       "canonical":  "Λαμία",
+                       "aliases":  [
+                                       "Λαμία",
+                                       "Lamía",
+                                       "Lamia",
+                                       "Izdin",
+                                       "Lamija",
+                                       "lmyaʾ",
+                                       "Ламия",
+                                       "لمياء"
+                                   ],
+                       "population":  52006
+                   },
+                   {
+                       "canonical":  "Λάρισα",
+                       "aliases":  [
+                                       "Λάρισα",
+                                       "Lárisa",
+                                       "Larisa",
+                                       "Larissa",
+                                       "Lárissa",
+                                       "Yenisehir",
+                                       "Yenişehir",
+                                       "Лариса"
+                                   ],
+                       "population":  146926
+                   },
+                   {
+                       "canonical":  "Λιβαδειά",
+                       "aliases":  [
+                                       "Λιβαδειά",
+                                       "Livadeiá",
+                                       "Livadeia",
+                                       "Λεβάδεια",
+                                       "Leivadia",
+                                       "Levadeia",
+                                       "Levadhia",
+                                       "Levadia",
+                                       "Levadija",
+                                       "Levàdia",
+                                       "Levádeia",
+                                       "Levádhia",
+                                       "Livadia",
+                                       "Livadija",
+                                       "Livadiá",
+                                       "lai wa gu",
+                                       "libadia",
+                                       "lyfadhya",
+                                       "rivuadia",
+                                       "ywadya",
+                                       "Λειβαδιά",
+                                       "Левадия",
+                                       "Ливадия",
+                                       "Лівадія",
+                                       "ليفاذيا",
+                                       "یوادیا",
+                                       "リヴァディア",
+                                       "莱瓦贾",
+                                       "리바디아"
+                                   ],
+                       "population":  21492
+                   },
+                   {
+                       "canonical":  "Λουτράκι",
+                       "aliases":  [
+                                       "Λουτράκι",
+                                       "Loutráki",
+                                       "Loutraki",
+                                       "ΛΟΥΤΡΑΚΙ",
+                                       "LOUTRAKI",
+                                       "Loutrakion",
+                                       "Loutrákion",
+                                       "Lutraki",
+                                       "Λουτράκιον"
+                                   ],
+                       "population":  11564
+                   },
+                   {
+                       "canonical":  "Μακρακώμη",
+                       "aliases":  [
+                                       "Μακρακώμη",
+                                       "Makrakómi",
+                                       "Makrakomi",
+                                       "Βαρυμπόπη",
+                                       "Varibopi",
+                                       "Varibópi",
+                                       "Varympopi"
+                                   ],
+                       "population":  13500
+                   },
+                   {
+                       "canonical":  "Μάνδρα",
+                       "aliases":  [
+                                       "Μάνδρα",
+                                       "Mándra",
+                                       "Mandra",
+                                       "Mandhra",
+                                       "Mándhra"
+                                   ],
+                       "population":  11327
+                   },
+                   {
+                       "canonical":  "Μαρκόπουλο",
+                       "aliases":  [
+                                       "Μαρκόπουλο",
+                                       "Limín Mesoyaías",
+                                       "Limin Mesoyaias",
+                                       "Λιμήν Μαρκοπούλου",
+                                       "Limin Markopoulou",
+                                       "Limin Mesogaias",
+                                       "Porto Rafti",
+                                       "Pórto Ráfti",
+                                       "Schneiderhafen",
+                                       "Λιμήν Μεσογαίας",
+                                       "Πόρτο Ράφτη"
+                                   ],
+                       "population":  10526
+                   },
+                   {
+                       "canonical":  "Μαρούσι",
+                       "aliases":  [
+                                       "Μαρούσι",
+                                       "Maroúsi",
+                                       "Marousi",
+                                       "Αμαρούσιον",
+                                       "Amarousio",
+                                       "Amarousion",
+                                       "Amaroúsion",
+                                       "Maroussi"
+                                   ],
+                       "population":  72333
+                   },
+                   {
+                       "canonical":  "Μέγαρα",
+                       "aliases":  [
+                                       "Μέγαρα",
+                                       "Mégara",
+                                       "Megara",
+                                       "Megare",
+                                       "Mégare",
+                                       "megala",
+                                       "Мегара",
+                                       "메가라"
+                                   ],
+                       "population":  23456
+                   },
+                   {
+                       "canonical":  "Μελίσσια",
+                       "aliases":  [
+                                       "Μελίσσια",
+                                       "Melíssia",
+                                       "Melissia",
+                                       "Melissija",
+                                       "Мелиссия"
+                                   ],
+                       "population":  22741
+                   },
+                   {
+                       "canonical":  "Μενεμένη",
+                       "aliases":  [
+                                       "Μενεμένη",
+                                       "Meneméni",
+                                       "Menemeni",
+                                       "Nea Mainemeni",
+                                       "Nea Menemeni",
+                                       "Νέα Μαινεμένη",
+                                       "Менемени"
+                                   ],
+                       "population":  14297
+                   },
+                   {
+                       "canonical":  "Μεσολόγγι",
+                       "aliases":  [
+                                       "Μεσολόγγι",
+                                       "Mesolóngi",
+                                       "Mesolongi",
+                                       "Mesolonghi",
+                                       "Mesolongion",
+                                       "Mesolónghi",
+                                       "Mesolóngion",
+                                       "Messolonghi",
+                                       "Messolongi",
+                                       "Messolóngi",
+                                       "Missolonghi",
+                                       "Μεσολόγγιον"
+                                   ],
+                       "population":  12785
+                   },
+                   {
+                       "canonical":  "Μεταμόρφωση",
+                       "aliases":  [
+                                       "Μεταμόρφωση",
+                                       "Metamórfosi",
+                                       "Metamorfosi",
+                                       "Κουκουβάουναι",
+                                       "Koukouvaounai",
+                                       "Koukouvaounes",
+                                       "Koukouváounai",
+                                       "Koukouváounes",
+                                       "Κουκουβάουνες"
+                                   ],
+                       "population":  29891
+                   },
+                   {
+                       "canonical":  "Μοσχάτο",
+                       "aliases":  [
+                                       "Μοσχάτο",
+                                       "Moskháton",
+                                       "Moskhaton",
+                                       "Moschato",
+                                       "Moschaton",
+                                       "Moscháto",
+                                       "Moscháton",
+                                       "Μοσχάτον"
+                                   ],
+                       "population":  25441
+                   },
+                   {
+                       "canonical":  "Μύκονος",
+                       "aliases":  [
+                                       "Μύκονος",
+                                       "Mykonos",
+                                       "Chora",
+                                       "JMK",
+                                       "Kamenaki",
+                                       "Khora",
+                                       "Khóra",
+                                       "Miconos",
+                                       "Mikonos",
+                                       "Myconos",
+                                       "Mykoni",
+                                       "Mykonos Town",
+                                       "Míkonos",
+                                       "Χωρα",
+                                       "Χώρα"
+                                   ],
+                       "population":  10704
+                   },
+                   {
+                       "canonical":  "Μυτιλήνη",
+                       "aliases":  [
+                                       "Μυτιλήνη",
+                                       "Mytilene",
+                                       "Kastro",
+                                       "MJT",
+                                       "Metilene",
+                                       "Midilli",
+                                       "Mitilena",
+                                       "Mitilene",
+                                       "Mitileno",
+                                       "Mitilini",
+                                       "Mitilíni",
+                                       "Mitilėnė",
+                                       "Mitylena",
+                                       "Mitylene",
+                                       "Mytilena",
+                                       "Mytilini",
+                                       "Mytilène",
+                                       "Mytiléna",
+                                       "Mytilíni",
+                                       "mi di li ni",
+                                       "mitillene",
+                                       "mitirini",
+                                       "mwtylnh",
+                                       "mytylnh",
+                                       "Митилена",
+                                       "Митилини",
+                                       "Мітіліні",
+                                       "מיטילנה",
+                                       "موتیلنه",
+                                       "ሚጢሊኒ",
+                                       "ミティリーニ",
+                                       "米蒂利尼",
+                                       "미틸레네"
+                                   ],
+                       "population":  28322
+                   },
+                   {
+                       "canonical":  "Νάουσα",
+                       "aliases":  [
+                                       "Νάουσα",
+                                       "Náousa",
+                                       "Naousa",
+                                       "Negush",
+                                       "Негуш"
+                                   ],
+                       "population":  19887
+                   },
+                   {
+                       "canonical":  "Ναύπακτος",
+                       "aliases":  [
+                                       "Ναύπακτος",
+                                       "Náfpaktos",
+                                       "Nafpaktos",
+                                       "Epakhtos",
+                                       "Inebahti",
+                                       "Inebahtı",
+                                       "Lepanto",
+                                       "Naupacte",
+                                       "Naupactus",
+                                       "Naupaetus",
+                                       "Navpakt",
+                                       "Navpaktos",
+                                       "Návpaktos",
+                                       "aynh bhty",
+                                       "Навпакт",
+                                       "اینه بحتی"
+                                   ],
+                       "population":  13415
+                   },
+                   {
+                       "canonical":  "Ναύπλιο",
+                       "aliases":  [
+                                       "Ναύπλιο",
+                                       "Náfplio",
+                                       "Nafplio",
+                                       "Anabolu",
+                                       "Mora Yenisehri",
+                                       "Mora Yenişehri",
+                                       "Nafplion",
+                                       "Napoli di Romania",
+                                       "Nauplia",
+                                       "Nauplie",
+                                       "Nauplion",
+                                       "Navplio",
+                                       "Navplion",
+                                       "Náfplion",
+                                       "Návplio",
+                                       "Návplion",
+                                       "anabwly",
+                                       "nafupurio",
+                                       "Ναύπλιον",
+                                       "Нафплион",
+                                       "انابولی",
+                                       "ナフプリオ"
+                                   ],
+                       "population":  14582
+                   },
+                   {
+                       "canonical":  "Νέα Αλικαρνασσός",
+                       "aliases":  [
+                                       "Νέα Αλικαρνασσός",
+                                       "Néa Alikarnassós",
+                                       "Nea Alikarnassos",
+                                       "Nea Alikarnasos",
+                                       "Néa Alikarnasós"
+                                   ],
+                       "population":  14624
+                   },
+                   {
+                       "canonical":  "Νέα Αρτάκη",
+                       "aliases":  [
+                                       "Νέα Αρτάκη",
+                                       "Néa Artáki",
+                                       "Nea Artaki"
+                                   ],
+                       "population":  10302
+                   },
+                   {
+                       "canonical":  "Νέα Ερυθραία",
+                       "aliases":  [
+                                       "Νέα Ερυθραία",
+                                       "Néa Erythraía",
+                                       "Nea Erythraia",
+                                       "Nea Erithraia",
+                                       "Néa Erithraía",
+                                       "artrya aljdydt",
+                                       "إرتريا الجديدة"
+                                   ],
+                       "population":  18604
+                   },
+                   {
+                       "canonical":  "Νέα Ιωνία",
+                       "aliases":  [
+                                       "Νέα Ιωνία",
+                                       "Néa Ionía",
+                                       "Nea Ionia",
+                                       "Podharadhes",
+                                       "Podharádhes",
+                                       "Nea Jonija",
+                                       "Nea-Ionija",
+                                       "Неа Йония",
+                                       "Неа-Іонія"
+                                   ],
+                       "population":  67134
+                   },
+                   {
+                       "canonical":  "Νέα Καλλικράτεια",
+                       "aliases":  [
+                                       "Νέα Καλλικράτεια",
+                                       "Néa Kallikráteia",
+                                       "Nea Kallikrateia",
+                                       "Nea Kallikratia",
+                                       "Nova Kalikratija",
+                                       "Néa Kallikrátia",
+                                       "Нова Каликратија"
+                                   ],
+                       "population":  10144
+                   },
+                   {
+                       "canonical":  "Νέα Μάκρη",
+                       "aliases":  [
+                                       "Νέα Μάκρη",
+                                       "Néa Mákri",
+                                       "Nea Makri",
+                                       "Ayios Konstandinos",
+                                       "Nea Makre",
+                                       "Nea-Makri",
+                                       "neamakeuli",
+                                       "nya makry",
+                                       "xin ma ke li",
+                                       "Áyios Konstandínos",
+                                       "Неа-Макри",
+                                       "Неа-Макрі",
+                                       "Նեա Մակրի",
+                                       "נאה מקרי",
+                                       "نئا ماکری",
+                                       "نيا ماكرى",
+                                       "نيا ماكري",
+                                       "نیا ماکری",
+                                       "ネア・マクリ",
+                                       "新馬克立",
+                                       "新马克立",
+                                       "네아마크리"
+                                   ],
+                       "population":  18114
+                   },
+                   {
+                       "canonical":  "Νέα Μηχανιώνα",
+                       "aliases":  [
+                                       "Νέα Μηχανιώνα",
+                                       "Néa Michanióna",
+                                       "Nea Michaniona",
+                                       "Michianio",
+                                       "Nea Mechaniona",
+                                       "Nea Mikhaniona",
+                                       "Néa Mikhanióna"
+                                   ],
+                       "population":  10784
+                   },
+                   {
+                       "canonical":  "Νέα Μουδανιά",
+                       "aliases":  [
+                                       "Νέα Μουδανιά",
+                                       "Néa Moudhaniá",
+                                       "Nea Moudhania",
+                                       "Μουδανιά",
+                                       "Karyi-Liman",
+                                       "Karyí-Limán",
+                                       "Moudania",
+                                       "Nea Moudania",
+                                       "Nea Mudanija",
+                                       "Nea-Mudanija",
+                                       "Nova Mudana",
+                                       "Неа Мудания",
+                                       "Неа-Муданія",
+                                       "Нова Мудања"
+                                   ],
+                       "population":  10042
+                   },
+                   {
+                       "canonical":  "Νέα Σμύρνη",
+                       "aliases":  [
+                                       "Νέα Σμύρνη",
+                                       "Néa Smýrni",
+                                       "Nea Smyrni",
+                                       "Nea Smirni",
+                                       "Nea Smyrne",
+                                       "Néa Smírni"
+                                   ],
+                       "population":  73076
+                   },
+                   {
+                       "canonical":  "Νέα Φιλαδέλφεια",
+                       "aliases":  [
+                                       "Νέα Φιλαδέλφεια",
+                                       "Néa Filadélfeia",
+                                       "Nea Filadelfeia",
+                                       "Filadelfia",
+                                       "Nea Filadhelfia",
+                                       "Néa Filadhélfia",
+                                       "Podhoniftis",
+                                       "Podhoníftis"
+                                   ],
+                       "population":  25734
+                   },
+                   {
+                       "canonical":  "Νεάπολη",
+                       "aliases":  [
+                                       "Νεάπολη",
+                                       "Neapoli",
+                                       "Neapoli Thessalonikis",
+                                       "Neapoli  Thessaloniki",
+                                       "Neapolis",
+                                       "Neápoli",
+                                       "Neápolis",
+                                       "nai a bo li",
+                                       "neapori",
+                                       "nyabwly",
+                                       "nyapwly",
+                                       "Νεάπολη Θεσσαλονίκης",
+                                       "Неаполи",
+                                       "Неаполис",
+                                       "Неаполі",
+                                       "Նեապոլիս",
+                                       "نئاپولی",
+                                       "نيابولى",
+                                       "نيابولي",
+                                       "نیاپولی، تھیسالونیکی",
+                                       "ネアポリ",
+                                       "奈阿波利"
+                                   ],
+                       "population":  25822
+                   },
+                   {
+                       "canonical":  "Νέο Ψυχικό",
+                       "aliases":  [
+                                       "Νέο Ψυχικό",
+                                       "Néo Psychikó",
+                                       "Neo Psychiko",
+                                       "Neo Psichiko",
+                                       "Neo Psichikò",
+                                       "Neo Psihiko",
+                                       "Neo Psykhiko",
+                                       "Neo Pszihiko",
+                                       "Neo-Psikhiko",
+                                       "Neon Psychikon",
+                                       "Neon-Psikhikon",
+                                       "Néo Psykhikó",
+                                       "Néo Pszihikó",
+                                       "nyw bsykhykw",
+                                       "nyw psykhykw",
+                                       "Нео-Псіхіко",
+                                       "Неон-Психикон",
+                                       "نئو پسیخیکو",
+                                       "نيو بسيخيكو"
+                                   ],
+                       "population":  10671
+                   },
+                   {
+                       "canonical":  "Νίκαια",
+                       "aliases":  [
+                                       "Νίκαια",
+                                       "Níkaia",
+                                       "Nikaia",
+                                       "Νέα Κοκκινιά",
+                                       "Nea Kokkinia",
+                                       "Neokokinis",
+                                       "Nikea",
+                                       "Néa Kokkiniá"
+                                   ],
+                       "population":  89380
+                   },
+                   {
+                       "canonical":  "Ξάνθη",
+                       "aliases":  [
+                                       "Ξάνθη",
+                                       "Xánthi",
+                                       "Xanthi",
+                                       "Eskije",
+                                       "Ksanti",
+                                       "Skecha",
+                                       "Xanthe",
+                                       "Xanthē",
+                                       "Ксанти"
+                                   ],
+                       "population":  48221
+                   },
+                   {
+                       "canonical":  "Ορεστιάδα",
+                       "aliases":  [
+                                       "Ορεστιάδα",
+                                       "Orestiáda",
+                                       "Orestiada",
+                                       "Nea Orestias",
+                                       "Néa Orestiás",
+                                       "Orestias",
+                                       "Orestiás",
+                                       "Ορεστιάς"
+                                   ],
+                       "population":  16221
+                   },
+                   {
+                       "canonical":  "Παιανία",
+                       "aliases":  [
+                                       "Παιανία",
+                                       "Paianía",
+                                       "Paiania",
+                                       "Liopesi",
+                                       "Liópesi"
+                                   ],
+                       "population":  14595
+                   },
+                   {
+                       "canonical":  "Παλαιό Φάληρο",
+                       "aliases":  [
+                                       "Παλαιό Φάληρο",
+                                       "Palaió Fáliro",
+                                       "Palaio Faliro",
+                                       "Alt Phaleron",
+                                       "Old Faliron",
+                                       "Palaion Faliron",
+                                       "Palaión Fáliron",
+                                       "Paleo Faliro",
+                                       "Palio Faliro",
+                                       "Παλαιόν Φάληρον",
+                                       "Παλιό Φάληρο"
+                                   ],
+                       "population":  64021
+                   },
+                   {
+                       "canonical":  "Παλλήνη",
+                       "aliases":  [
+                                       "Παλλήνη",
+                                       "Pallíni",
+                                       "Pallini",
+                                       "Ano Kharvati",
+                                       "Palini",
+                                       "Palinis",
+                                       "Pallene",
+                                       "Palíni",
+                                       "balyny",
+                                       "pa li ni",
+                                       "pallini",
+                                       "palyny",
+                                       "parini",
+                                       "Áno Kharváti",
+                                       "Палини",
+                                       "Палліні",
+                                       "Паліні",
+                                       "Պալլինի",
+                                       "بالينى",
+                                       "باليني",
+                                       "پالینی",
+                                       "パリニ",
+                                       "帕利尼",
+                                       "팔리니"
+                                   ],
+                       "population":  14808
+                   },
+                   {
+                       "canonical":  "Πανόραμα",
+                       "aliases":  [
+                                       "Πανόραμα",
+                                       "Panórama",
+                                       "Panorama",
+                                       "Arsakli",
+                                       "Arsaklí"
+                                   ],
+                       "population":  17444
+                   },
+                   {
+                       "canonical":  "Παπάγου",
+                       "aliases":  [
+                                       "Παπάγου",
+                                       "Papágou",
+                                       "Papagou",
+                                       "Οικισμός Παπάγου",
+                                       "Oikismos Papagou",
+                                       "Oikismós Papágou",
+                                       "Papagos",
+                                       "Papagu",
+                                       "Papágos",
+                                       "Papágu",
+                                       "babaghw",
+                                       "babajw",
+                                       "papago",
+                                       "papagws",
+                                       "Папагос",
+                                       "باباجو",
+                                       "باباغو",
+                                       "پاپاگوس",
+                                       "パパーゴー"
+                                   ],
+                       "population":  13962
+                   },
+                   {
+                       "canonical":  "Πάργα",
+                       "aliases":  [
+                                       "Πάργα",
+                                       "Párga",
+                                       "Parga",
+                                       "Barga",
+                                       "barghh",
+                                       "parghh",
+                                       "Парга",
+                                       "بارغه",
+                                       "پارغه"
+                                   ],
+                       "population":  10762
+                   },
+                   {
+                       "canonical":  "Πάτρα",
+                       "aliases":  [
+                                       "Πάτρα",
+                                       "Pátra",
+                                       "Patra",
+                                       "Patrae",
+                                       "Patrai",
+                                       "Patras",
+                                       "Patrasse",
+                                       "Patrasso",
+                                       "Patres",
+                                       "Patrás",
+                                       "Pátrai",
+                                       "Pátras",
+                                       "pa te lei",
+                                       "patora",
+                                       "ptrs",
+                                       "Патра",
+                                       "פטרס",
+                                       "パトラ",
+                                       "帕特雷"
+                                   ],
+                       "population":  168034
+                   },
+                   {
+                       "canonical":  "Πειραιάς",
+                       "aliases":  [
+                                       "Πειραιάς",
+                                       "Piraeus",
+                                       "El Pireo",
+                                       "El Pireu",
+                                       "Il Pireo",
+                                       "Le Piree",
+                                       "Le Pirée",
+                                       "Lo Pireu",
+                                       "Lo Pirèu",
+                                       "O Pireo",
+                                       "Peiraeus",
+                                       "Peiraia",
+                                       "Peiraias",
+                                       "Peiraiefs",
+                                       "Peiraieus",
+                                       "Peiraievs",
+                                       "Peiraiá",
+                                       "Peiraiás",
+                                       "Peiraiéfs",
+                                       "Piraievs",
+                                       "Piraiévs",
+                                       "Piraus",
+                                       "Pire",
+                                       "Pireas",
+                                       "Pireefs",
+                                       "Pirehj",
+                                       "Pirej",
+                                       "Pireja",
+                                       "Pirejas",
+                                       "Pireo",
+                                       "Pireu",
+                                       "Pireus",
+                                       "Pireusz",
+                                       "Piräus",
+                                       "Piréefs",
+                                       "Pirėjas",
+                                       "bi lei ai fu si",
+                                       "byrayws",
+                                       "phiri xas",
+                                       "pileaseu",
+                                       "pireusu",
+                                       "pyrh",
+                                       "Πειραιεύς",
+                                       "Пирей",
+                                       "Пирея",
+                                       "Пиреј",
+                                       "Пірей",
+                                       "Пірэй",
+                                       "פיראוס",
+                                       "بيرايوس",
+                                       "پیره",
+                                       "ไพรีอัส",
+                                       "ピレウス",
+                                       "比雷埃夫斯",
+                                       "피레아스"
+                                   ],
+                       "population":  163688
+                   },
+                   {
+                       "canonical":  "Περαία",
+                       "aliases":  [
+                                       "Περαία",
+                                       "Peraía",
+                                       "Peraia"
+                                   ],
+                       "population":  18326
+                   },
+                   {
+                       "canonical":  "Πέραμα",
+                       "aliases":  [
+                                       "Πέραμα",
+                                       "Pérama",
+                                       "Perama",
+                                       "Перама"
+                                   ],
+                       "population":  25389
+                   },
+                   {
+                       "canonical":  "Περιστέρι",
+                       "aliases":  [
+                                       "Περιστέρι",
+                                       "Peristéri",
+                                       "Peristeri",
+                                       "Peristeri Attikes",
+                                       "Peristerion",
+                                       "Peristérion",
+                                       "Περιστέρι Αττικής",
+                                       "Περιστέριον",
+                                       "Перистерион"
+                                   ],
+                       "population":  139981
+                   },
+                   {
+                       "canonical":  "Πετρούπολη",
+                       "aliases":  [
+                                       "Πετρούπολη",
+                                       "Petroúpolis",
+                                       "Petroupolis",
+                                       "Kipoupolis",
+                                       "Kipoúpolis",
+                                       "Petroupoli",
+                                       "Петроуполис"
+                                   ],
+                       "population":  58979
+                   },
+                   {
+                       "canonical":  "Πεύκα",
+                       "aliases":  [
+                                       "Πεύκα",
+                                       "Péfka",
+                                       "Pefka",
+                                       "Jurendzhik",
+                                       "Jurendzik",
+                                       "Pevka",
+                                       "Pévka",
+                                       "Rendziki",
+                                       "Rendzíki",
+                                       "Rentzikion",
+                                       "Rentzíkion",
+                                       "Retziki",
+                                       "Retzikion",
+                                       "Retzíki",
+                                       "Retzíkion",
+                                       "bywka",
+                                       "bywka  thysalwnyky",
+                                       "pefuka",
+                                       "pyfka",
+                                       "Ρετζίκι",
+                                       "Јуренџик",
+                                       "Юренджик",
+                                       "بيوكا",
+                                       "بيوكا، ثيسالونيكي",
+                                       "پیفکا",
+                                       "ペフカ"
+                                   ],
+                       "population":  13435
+                   },
+                   {
+                       "canonical":  "Πεύκη",
+                       "aliases":  [
+                                       "Πεύκη",
+                                       "Péfki",
+                                       "Pefki",
+                                       "Pevki",
+                                       "Pévki"
+                                   ],
+                       "population":  21352
+                   },
+                   {
+                       "canonical":  "Πολίχνη",
+                       "aliases":  [
+                                       "Πολίχνη",
+                                       "Políchni",
+                                       "Polichni",
+                                       "Kara Usein",
+                                       "Polihni",
+                                       "Polikhni",
+                                       "Políhni",
+                                       "Políkhni",
+                                       "bwlykhny",
+                                       "porifuni",
+                                       "pwlykhny",
+                                       "Кара Усеин",
+                                       "Полихни",
+                                       "Поліхні",
+                                       "بوليخنى",
+                                       "بوليخني",
+                                       "پولیخنی",
+                                       "ポリフニ"
+                                   ],
+                       "population":  38887
+                   },
+                   {
+                       "canonical":  "Πολύγυρος",
+                       "aliases":  [
+                                       "Πολύγυρος",
+                                       "Polýgyros",
+                                       "Polygyros",
+                                       "Derigovo",
+                                       "Piliyiros",
+                                       "Pilíyiros",
+                                       "Poligero",
+                                       "Poligiros",
+                                       "Poliiros",
+                                       "Polijiros",
+                                       "Poliyiros",
+                                       "Polyjyros",
+                                       "Polígiros",
+                                       "Políyiros",
+                                       "Polýjyros",
+                                       "bo li yi luo si",
+                                       "polliiloseu",
+                                       "porigirosu",
+                                       "Деригово",
+                                       "Полигеро",
+                                       "Полигирос",
+                                       "Полийирос",
+                                       "Поліїрос",
+                                       "ポリギロス",
+                                       "波利伊罗斯",
+                                       "폴리이로스"
+                                   ],
+                       "population":  10000
+                   },
+                   {
+                       "canonical":  "Πρέβεζα",
+                       "aliases":  [
+                                       "Πρέβεζα",
+                                       "Préveza",
+                                       "Preveza",
+                                       "PVK",
+                                       "Prevesa",
+                                       "Preveze",
+                                       "Preweza",
+                                       "Prévéza",
+                                       "prwzh",
+                                       "پروزه"
+                                   ],
+                       "population":  17283
+                   },
+                   {
+                       "canonical":  "Πτολεμαΐδα",
+                       "aliases":  [
+                                       "Πτολεμαΐδα",
+                                       "Ptolemaḯda",
+                                       "Ptolemaida",
+                                       "Kailar",
+                                       "Kailaria",
+                                       "Kajlar",
+                                       "Kajlari",
+                                       "Kajljari",
+                                       "Kayilar",
+                                       "Kayılar",
+                                       "Kaïlária",
+                                       "Ptolemaidha",
+                                       "Ptolemais",
+                                       "Ptolemak",
+                                       "Ptolemaída",
+                                       "Ptolemaḯs",
+                                       "Ptolemeda",
+                                       "Кайляри",
+                                       "Кајлар",
+                                       "Кајлари",
+                                       "Птолемаида",
+                                       "Птолемеда"
+                                   ],
+                       "population":  30045
+                   },
+                   {
+                       "canonical":  "Πυλαία",
+                       "aliases":  [
+                                       "Πυλαία",
+                                       "Pylaía",
+                                       "Pylaia",
+                                       "Kapoutsidhes",
+                                       "Kapoutsídhes",
+                                       "Kapudzilar",
+                                       "Pilaia",
+                                       "Pilaja",
+                                       "Pilaía",
+                                       "Pilea",
+                                       "Pileja",
+                                       "Piléa",
+                                       "Pilėja",
+                                       "Pylea",
+                                       "Pyléa",
+                                       "Strefa",
+                                       "Stréfa",
+                                       "bylaya",
+                                       "pi lai ya",
+                                       "pirea",
+                                       "pyla",
+                                       "pylaya",
+                                       "Капуџилар",
+                                       "Пилаја",
+                                       "Пилеа",
+                                       "Пілея",
+                                       "بيلايا",
+                                       "پیلا",
+                                       "پیلایا",
+                                       "ピレア",
+                                       "皮萊亞"
+                                   ],
+                       "population":  36843
+                   },
+                   {
+                       "canonical":  "Πύργος",
+                       "aliases":  [
+                                       "Πύργος",
+                                       "Pýrgos",
+                                       "Pyrgos",
+                                       "PYR",
+                                       "Pirgos",
+                                       "Pírgos",
+                                       "Пиргос"
+                                   ],
+                       "population":  22399
+                   },
+                   {
+                       "canonical":  "Ραφήνα",
+                       "aliases":  [
+                                       "Ραφήνα",
+                                       "Rafína",
+                                       "Rafina",
+                                       "Αράφην",
+                                       "Arafin",
+                                       "Aráfin",
+                                       "Triglia",
+                                       "Tríglia"
+                                   ],
+                       "population":  12168
+                   },
+                   {
+                       "canonical":  "Ρέθυμνο",
+                       "aliases":  [
+                                       "Ρέθυμνο",
+                                       "Rethymno",
+                                       "Resmo",
+                                       "Rethimno",
+                                       "Rethimnon",
+                                       "Rethymne",
+                                       "Rethymnon",
+                                       "Rethýmne",
+                                       "Retimnas",
+                                       "Retimno",
+                                       "Retimnon",
+                                       "Retimo",
+                                       "Retino",
+                                       "Rhithymna",
+                                       "Réthimno",
+                                       "Réthimnon",
+                                       "Réthymno",
+                                       "Réthymnon",
+                                       "Rétino",
+                                       "ZRE",
+                                       "letimno",
+                                       "luo xi mu nuo",
+                                       "retimuno",
+                                       "rt\u0027ymnw",
+                                       "rtymnwn",
+                                       "rythymnw",
+                                       "Ρέθυμνον",
+                                       "Ретимно",
+                                       "Ретимнон",
+                                       "רת\u0027ימנו",
+                                       "رتیمنون",
+                                       "ريثيمنو",
+                                       "レティムノ",
+                                       "罗希姆诺",
+                                       "레팀노"
+                                   ],
+                       "population":  32468
+                   },
+                   {
+                       "canonical":  "Ρίο",
+                       "aliases":  [
+                                       "Ρίο",
+                                       "Río",
+                                       "Rio",
+                                       "Rhion",
+                                       "Rion",
+                                       "Ríon",
+                                       "Ρίον"
+                                   ],
+                       "population":  14219
+                   },
+                   {
+                       "canonical":  "Ρόδος",
+                       "aliases":  [
+                                       "Ρόδος",
+                                       "Rhodes",
+                                       "RHO",
+                                       "Rhodes Town",
+                                       "Rhodos",
+                                       "Rodas",
+                                       "Rodes",
+                                       "Rodhos",
+                                       "Rodi",
+                                       "Rodos",
+                                       "Rodos Town",
+                                       "Ródhos",
+                                       "Ródos",
+                                       "Родос"
+                                   ],
+                       "population":  56128
+                   },
+                   {
+                       "canonical":  "Σαλαμίνα",
+                       "aliases":  [
+                                       "Σαλαμίνα",
+                                       "Salamína",
+                                       "Salamina",
+                                       "Koulouri",
+                                       "Koúlouri",
+                                       "Salamis",
+                                       "Salamís",
+                                       "Σαλαμίς",
+                                       "Саламина"
+                                   ],
+                       "population":  25370
+                   },
+                   {
+                       "canonical":  "Σέρρες",
+                       "aliases":  [
+                                       "Σέρρες",
+                                       "Sérres",
+                                       "Serres",
+                                       "Σέρρα",
+                                       "Ser",
+                                       "Seres",
+                                       "Serez",
+                                       "Serra",
+                                       "Serrae",
+                                       "Serrai",
+                                       "Serre",
+                                       "Serrès",
+                                       "Sjar",
+                                       "Szeresz",
+                                       "Széresz",
+                                       "Sérrai",
+                                       "Sѣru",
+                                       "sai lei",
+                                       "seleseu",
+                                       "seres",
+                                       "seresu",
+                                       "Σέρραι",
+                                       "Сер",
+                                       "Серре",
+                                       "Серрес",
+                                       "Сяр",
+                                       "Сѣръ",
+                                       "סֶרֶס",
+                                       "セレス",
+                                       "塞雷",
+                                       "세레스"
+                                   ],
+                       "population":  58287
+                   },
+                   {
+                       "canonical":  "Σπάρτη",
+                       "aliases":  [
+                                       "Σπάρτη",
+                                       "Sparta",
+                                       "Λακεδαιμων",
+                                       "Esparta",
+                                       "Lacedaemon",
+                                       "Lacedemonia",
+                                       "Lakedaimon",
+                                       "Lakedaímon",
+                                       "SPJ",
+                                       "Sparte",
+                                       "Sparti",
+                                       "Sparto",
+                                       "Spartē",
+                                       "Spárti",
+                                       "Σπαρτη",
+                                       "Спарта"
+                                   ],
+                       "population":  16239
+                   },
+                   {
+                       "canonical":  "Σταυρούπολη",
+                       "aliases":  [
+                                       "Σταυρούπολη",
+                                       "Stavroúpoli",
+                                       "Stavroupoli",
+                                       "Stavroupolis",
+                                       "Stavroúpolis"
+                                   ],
+                       "population":  46008
+                   },
+                   {
+                       "canonical":  "Συκιές",
+                       "aliases":  [
+                                       "Συκιές",
+                                       "Sykiés",
+                                       "Sykies",
+                                       "Sikeai",
+                                       "Sikéai",
+                                       "Sykeai",
+                                       "Sykies Thessalonikis",
+                                       "Sykies  Thessaloniki",
+                                       "Sykéai",
+                                       "Συκιές Θεσσαλονίκης"
+                                   ],
+                       "population":  44955
+                   },
+                   {
+                       "canonical":  "Ταύρος",
+                       "aliases":  [
+                                       "Ταύρος",
+                                       "Távros",
+                                       "Tavros",
+                                       "Nea Sfayia",
+                                       "Néa Sfayía",
+                                       "Tavrosz",
+                                       "Tawros",
+                                       "Távrosz",
+                                       "tawrws",
+                                       "tawrws  atyky",
+                                       "Таврос",
+                                       "Տավրոս",
+                                       "تاوروس",
+                                       "تاوروس، أتيكي"
+                                   ],
+                       "population":  14972
+                   },
+                   {
+                       "canonical":  "Τρίκαλα",
+                       "aliases":  [
+                                       "Τρίκαλα",
+                                       "Tríkala",
+                                       "Trikala",
+                                       "Tirhala",
+                                       "Trikalon",
+                                       "Trikkaion",
+                                       "Trikkala",
+                                       "Trikkaíon",
+                                       "Trikálon",
+                                       "Tríkkala",
+                                       "Tırhala",
+                                       "trhalh",
+                                       "Трикала",
+                                       "ترحاله"
+                                   ],
+                       "population":  61653
+                   },
+                   {
+                       "canonical":  "Τρίπολη",
+                       "aliases":  [
+                                       "Τρίπολη",
+                                       "Trípoli",
+                                       "Tripoli",
+                                       "Tripole",
+                                       "Tripole Arkadias",
+                                       "Tripolis",
+                                       "Tripolitza",
+                                       "Tripolizza",
+                                       "Trípolis",
+                                       "Τρίπολη Αρκαδίας",
+                                       "Триполи"
+                                   ],
+                       "population":  26561
+                   },
+                   {
+                       "canonical":  "Τύρναβος",
+                       "aliases":  [
+                                       "Τύρναβος",
+                                       "Týrnavos",
+                                       "Tyrnavos",
+                                       "Tirnavos",
+                                       "Trnovo",
+                                       "Tyrnavo",
+                                       "Tírnavos",
+                                       "Трново"
+                                   ],
+                       "population":  10796
+                   },
+                   {
+                       "canonical":  "Υμηττός",
+                       "aliases":  [
+                                       "Υμηττός",
+                                       "Ymittos",
+                                       "Υμηττός Αττικής",
+                                       "Imittos",
+                                       "Ymetto",
+                                       "Ymittos Attikis",
+                                       "amytws",
+                                       "إميتوس"
+                                   ],
+                       "population":  11000
+                   },
+                   {
+                       "canonical":  "Φάρσαλα",
+                       "aliases":  [
+                                       "Φάρσαλα",
+                                       "Fársala",
+                                       "Farsala",
+                                       "Farsalia",
+                                       "Farsalos",
+                                       "Farsàlia",
+                                       "Fársalos",
+                                       "Pharsale",
+                                       "Pharsalus",
+                                       "Φάρσαλος"
+                                   ],
+                       "population":  10380
+                   },
+                   {
+                       "canonical":  "Φλώρινα",
+                       "aliases":  [
+                                       "Φλώρινα",
+                                       "Flórina",
+                                       "Florina",
+                                       "Follorina",
+                                       "Lerin",
+                                       "Plorina",
+                                       "lerin",
+                                       "Лерин"
+                                   ],
+                       "population":  17686
+                   },
+                   {
+                       "canonical":  "Φυλή",
+                       "aliases":  [
+                                       "Φυλή",
+                                       "Fylí",
+                                       "Fyli",
+                                       "Fili",
+                                       "Filí",
+                                       "Khasia",
+                                       "Khasiá",
+                                       "Phyle",
+                                       "Фили"
+                                   ],
+                       "population":  48157
+                   },
+                   {
+                       "canonical":  "Χαϊδάρι",
+                       "aliases":  [
+                                       "Χαϊδάρι",
+                                       "Chaïdári",
+                                       "Chaidari",
+                                       "Khaidhari",
+                                       "Khaidharion",
+                                       "Khaïdhári",
+                                       "Khaïdhárion"
+                                   ],
+                       "population":  45642
+                   },
+                   {
+                       "canonical":  "Χαλάνδρι",
+                       "aliases":  [
+                                       "Χαλάνδρι",
+                                       "Khalándrion",
+                                       "Khalandrion",
+                                       "Φλύα",
+                                       "Chalandri",
+                                       "Chalandrion",
+                                       "Flya",
+                                       "Khalandhrion",
+                                       "Khalandri",
+                                       "Khalándhrion",
+                                       "Khalándri",
+                                       "Phlya",
+                                       "Χαλάνδριον"
+                                   ],
+                       "population":  74192
+                   },
+                   {
+                       "canonical":  "Χαλκηδόνα",
+                       "aliases":  [
+                                       "Χαλκηδόνα",
+                                       "Chalkidóna",
+                                       "Chalkidona",
+                                       "Chalkidon",
+                                       "Chalkidón",
+                                       "Khalkidhon",
+                                       "Khalkidhón",
+                                       "Nea Khalkidhon",
+                                       "Néa Khalkidhón"
+                                   ],
+                       "population":  30030
+                   },
+                   {
+                       "canonical":  "Χαλκίδα",
+                       "aliases":  [
+                                       "Χαλκίδα",
+                                       "Chalkída",
+                                       "Chalkida",
+                                       "Calcide",
+                                       "Calcis",
+                                       "Chalcis",
+                                       "Chalkis",
+                                       "Chalkís",
+                                       "Euripos",
+                                       "Khalkida",
+                                       "Khalkis",
+                                       "Khalkís",
+                                       "klqys",
+                                       "Χαλκίς",
+                                       "Халкида",
+                                       "כלקיס"
+                                   ],
+                       "population":  59125
+                   },
+                   {
+                       "canonical":  "Χανιά",
+                       "aliases":  [
+                                       "Χανιά",
+                                       "Chaniá",
+                                       "Chania",
+                                       "Χανίων",
+                                       "CHQ",
+                                       "Candia",
+                                       "Canea",
+                                       "Chanion",
+                                       "Cydonia",
+                                       "Càndia",
+                                       "Hania",
+                                       "Hanio",
+                                       "Hanià",
+                                       "Hanya",
+                                       "Khan\u0027ja",
+                                       "Khania",
+                                       "Khaniá",
+                                       "Kreta",
+                                       "La Canea",
+                                       "La Canee",
+                                       "La Canée",
+                                       "Ĥanio",
+                                       "Ханья"
+                                   ],
+                       "population":  53910
+                   },
+                   {
+                       "canonical":  "Χίος",
+                       "aliases":  [
+                                       "Χίος",
+                                       "Chios",
+                                       "Κάστρο",
+                                       "Castro",
+                                       "Chio",
+                                       "Chora",
+                                       "Chíos",
+                                       "Chóra",
+                                       "Hios",
+                                       "JKH",
+                                       "Kastro",
+                                       "Kastron",
+                                       "Khios",
+                                       "Khora",
+                                       "Khíos",
+                                       "Khóra",
+                                       "Kástro",
+                                       "Quios",
+                                       "Quíos",
+                                       "Sakiz",
+                                       "Sakız",
+                                       "Scio",
+                                       "Xios",
+                                       "Xíos",
+                                       "el Xiu",
+                                       "hioseu",
+                                       "Καστρο",
+                                       "Χωρα",
+                                       "Χώρα",
+                                       "Хиос",
+                                       "Хіос",
+                                       "히오스"
+                                   ],
+                       "population":  23953
+                   },
+                   {
+                       "canonical":  "Χολαργός",
+                       "aliases":  [
+                                       "Χολαργός",
+                                       "Cholargós",
+                                       "Cholargos",
+                                       "Holargos",
+                                       "Kholargos",
+                                       "Kholargós"
+                                   ],
+                       "population":  30840
+                   },
+                   {
+                       "canonical":  "Χορτιάτης",
+                       "aliases":  [
+                                       "Χορτιάτης",
+                                       "Chortiátis",
+                                       "Chortiatis",
+                                       "Χορτιάτη",
+                                       "Chortiati",
+                                       "Chortiáti",
+                                       "Khortach",
+                                       "Khortiatis",
+                                       "Khortiatis i Thessaloniki",
+                                       "Khortiátis",
+                                       "Khortiátis i Thessaloníki",
+                                       "horutiatisu",
+                                       "khwrtyatys",
+                                       "Хортач",
+                                       "خورتياتيس",
+                                       "ホルティアティス"
+                                   ],
+                       "population":  17862
+                   },
+                   {
+                       "canonical":  "Ωραιόκαστρο",
+                       "aliases":  [
+                                       "Ωραιόκαστρο",
+                                       "Oraiókastro",
+                                       "Oraiokastro",
+                                       "Dautbal",
+                                       "Dautbali",
+                                       "Daütbalí",
+                                       "Oraiokastron",
+                                       "Oraiókastron",
+                                       "Oreorastron",
+                                       "Ωραιόκαστρον",
+                                       "Даутбал"
+                                   ],
+                       "population":  20852
+                   }
+               ]
+}
