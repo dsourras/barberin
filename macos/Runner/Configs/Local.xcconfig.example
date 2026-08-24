@@ -1,0 +1,6 @@
+// Copy this file to Local.xcconfig on the Mac used for the build.
+// Do not commit Local.xcconfig. Values come from the Firebase/Google project.
+
+GOOGLE_CLIENT_ID = REPLACE_WITH_MACOS_GOOGLE_CLIENT_ID
+GOOGLE_REVERSED_CLIENT_ID = REPLACE_WITH_REVERSED_CLIENT_ID
+GOOGLE_SERVER_CLIENT_ID = REPLACE_WITH_GOOGLE_WEB_SERVER_CLIENT_ID
