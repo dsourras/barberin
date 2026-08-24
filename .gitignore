@@ -43,3 +43,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local emulator, browser, device-capture and temporary audit artifacts
+/.firebase/
+/.playwright-cli/
+/asc_*/
+/mockups/
+/play_screenshots/
+/contact-functions/node_modules/
+/_tmp_*.json
+/shops_dump.*
+/*.png
+/*.xml
+/assets/images/*.before-*.png
