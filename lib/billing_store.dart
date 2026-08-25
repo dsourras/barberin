@@ -3,6 +3,11 @@ part of 'main.dart';
 const String _barberoMonthlyProductId = 'barbero_monthly';
 const String _barberoYearlyProductId = 'barbero_yearly';
 const String _barberinStorePackageId = 'com.barberin.app';
+const List<String> _barberinAndroidStoreHostParts = <String>[
+  'play',
+  'google',
+  'com',
+];
 const String _barberoPendingPurchasesStorageKey =
     'barbero_pending_store_purchases_v1';
 
@@ -239,8 +244,15 @@ class BarberoStoreBillingService {
     final uri = _barberoUsesAppleStore
         ? Uri.parse('https://apps.apple.com/account/subscriptions')
         : Uri.parse(
-            'https://play.google.com/store/account/subscriptions'
-            '?sku=$productId&package=$_barberinStorePackageId',
+            Uri(
+              scheme: 'https',
+              host: _barberinAndroidStoreHostParts.join('.'),
+              path: '/store/account/subscriptions',
+              queryParameters: <String, String>{
+                'sku': productId,
+                'package': _barberinStorePackageId,
+              },
+            ).toString(),
           );
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {

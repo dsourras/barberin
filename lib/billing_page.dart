@@ -1115,7 +1115,7 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
     final primaryLabel = billing.requiresPlanSelection
         ? 'Έναρξη δωρεάν δοκιμής'
         : (billing.canOpenWorkspace
-              ? 'Διαχείριση στο Google Play'
+              ? 'Διαχείριση συνδρομής'
               : 'Ενεργοποίηση επιλεγμένου προγράμματος');
 
     return Scaffold(
@@ -1289,9 +1289,9 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
               ),
               if (billing.canOpenWorkspace)
                 _BillingActionRow(
-                  label: 'Διαχείριση στο Google Play',
+                  label: 'Διαχείριση συνδρομής',
                   description:
-                      'Αλλαγή πλάνου, ακύρωση, ανανέωση και τρόπος πληρωμής.',
+                      'Αλλαγή πλάνου, ακύρωση, ανανέωση και τρόπος πληρωμής στο κατάστημα της συσκευής.',
                   onTap: _isSaving ? null : _manageSubscription,
                 ),
               ValueListenableBuilder<String?>(
