@@ -114,6 +114,7 @@ function shopRecord({shopId, shopName, ownerUid, customerUid, accessToken}) {
       mode: customerAppMode,
       accessToken,
       status: "built",
+      provisioningRequested: true,
       displayName: shopName,
     },
     notificationTokens: {
@@ -361,6 +362,11 @@ async function run() {
         shopOutboxItems.length > 0,
         true,
         JSON.stringify(notificationOutbox),
+    );
+    assert.equal(
+        shopOutboxItems.every((item) => Number(item?.attempts || 0) >= 1),
+        true,
+        "Each queued notification must make its immediate delivery attempt",
     );
     assert.equal(
         shopA.appointments[appointmentId].status,

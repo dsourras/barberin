@@ -791,15 +791,20 @@ BarberoSession requireCurrentBarberoSession() {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Object? firebaseStartupError;
   try {
     await _initializeBarberinFirebase();
-  } catch (_) {}
+  } catch (error, stackTrace) {
+    firebaseStartupError = error;
+    debugPrint('Barberin Firebase startup failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
   await _loadStoredBarberoNotifications();
   await loadBarberinLanguage();
-  if (isBarberinFirebaseMessagingSupported) {
+  if (firebaseStartupError == null && isBarberinFirebaseMessagingSupported) {
     FirebaseMessaging.onBackgroundMessage(_barberoMessagingBackgroundHandler);
   }
-  runApp(const BarberinApp());
+  runApp(BarberinApp(firebaseStartupError: firebaseStartupError));
 }
 
 DateTime athensNow() {

@@ -285,9 +285,17 @@ Future<UserCredential> _barberinSignInWithApple() async {
     );
   }
 
-  final credential = OAuthProvider(
-    'apple.com',
-  ).credential(idToken: identityToken, rawNonce: rawNonce);
+  // Include the name Apple returns on the first authorization. Firebase only
+  // receives that profile data once, so dropping it here leaves the owner
+  // profile incomplete even though authentication succeeds.
+  final credential = AppleAuthProvider.credentialWithIDToken(
+    identityToken,
+    rawNonce,
+    AppleFullPersonName(
+      givenName: appleCredential.givenName,
+      familyName: appleCredential.familyName,
+    ),
+  );
   try {
     return await FirebaseAuth.instance.signInWithCredential(credential);
   } on FirebaseAuthException catch (error) {
@@ -522,6 +530,34 @@ String _barberinAppleErrorMessage(Object error) {
       'Sign in with the existing email and password first to connect Apple.',
     );
   }
+  if (error is FirebaseAuthException && error.code == 'operation-not-allowed') {
+    return barberinLabel(
+      'Η σύνδεση με Apple δεν είναι ενεργοποιημένη στο Firebase.',
+      'Apple sign-in is not enabled in Firebase.',
+    );
+  }
+  if (error is FirebaseAuthException &&
+      error.code == 'missing-or-invalid-nonce') {
+    return barberinLabel(
+      'Η επαλήθευση της σύνδεσης με Apple απέτυχε. Δοκίμασε ξανά.',
+      'Apple sign-in verification failed. Please try again.',
+    );
+  }
+  if (error is FirebaseAuthException &&
+      (error.code == 'invalid-credential' ||
+          error.code == 'app-not-authorized')) {
+    return barberinLabel(
+      'Η ρύθμιση του Apple sign-in δεν είναι έγκυρη για αυτή την εφαρμογή.',
+      'Apple sign-in is not configured for this app.',
+    );
+  }
+  if (error is FirebaseAuthException &&
+      error.code == 'network-request-failed') {
+    return barberinLabel(
+      'Πρόβλημα σύνδεσης με το δίκτυο.',
+      'Network connection failed.',
+    );
+  }
   return barberinLabel(
     'Δεν ήταν δυνατή η σύνδεση με Apple.',
     'Apple sign-in was not completed.',
@@ -686,8 +722,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submitWithApple() async {
     setState(() => _isSubmitting = true);
+    barberinRegistrationInProgress.value = true;
+    var continueRegistration = false;
     try {
-      await _barberinSignInWithAppleAndRecovery(context);
+      final credential = await _barberinSignInWithAppleAndRecovery(context);
+      final user = credential.user ?? FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(code: 'apple-sign-in-user-missing');
+      }
+      try {
+        await resolveBarberoSessionForCurrentUser(
+          user,
+          signOutOnFailure: false,
+        );
+      } on BarberoSessionResolutionException catch (error) {
+        if (error.reason != 'barbero-session-not-found') rethrow;
+        continueRegistration = true;
+        if (mounted) widget.onRegisterTap();
+        return;
+      }
       if (!mounted) return;
       widget.onLogin();
     } on _BarberinAppleRecoveryCanceled {
@@ -714,6 +767,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
+      if (!continueRegistration) {
+        barberinRegistrationInProgress.value = false;
+      }
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
@@ -1274,6 +1330,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   int _step = 0;
 
   @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null &&
+        user.providerData.any(
+          (provider) =>
+              provider.providerId == 'apple.com' ||
+              provider.providerId == 'google.com',
+        )) {
+      _isSocialRegistration = true;
+      _emailController.text = user.email ?? '';
+      _ownerNameController.text = user.displayName ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     _ownerNameController.dispose();
     _phoneController.dispose();
@@ -1326,6 +1398,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _startGoogleRegistration() async {
     setState(() => _isSubmitting = true);
+    barberinRegistrationInProgress.value = true;
+    var authenticated = false;
     try {
       final credential = await _barberinSignInWithGoogleAndRecovery(context);
       final user = credential.user ?? FirebaseAuth.instance.currentUser;
@@ -1345,6 +1419,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (mounted) {
         setState(() => _isSocialRegistration = true);
       }
+      authenticated = true;
     } on _BarberinGoogleRecoveryCanceled {
       return;
     } on GoogleSignInException catch (error) {
@@ -1369,6 +1444,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
+      if (!authenticated) barberinRegistrationInProgress.value = false;
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
@@ -1377,6 +1453,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _startAppleRegistration() async {
     setState(() => _isSubmitting = true);
+    barberinRegistrationInProgress.value = true;
+    var authenticated = false;
     try {
       final credential = await _barberinSignInWithAppleAndRecovery(context);
       final user = credential.user ?? FirebaseAuth.instance.currentUser;
@@ -1396,6 +1474,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (mounted) {
         setState(() => _isSocialRegistration = true);
       }
+      authenticated = true;
     } on _BarberinAppleRecoveryCanceled {
       return;
     } on SignInWithAppleException catch (error) {
@@ -1420,6 +1499,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
+      if (!authenticated) barberinRegistrationInProgress.value = false;
       if (mounted) {
         setState(() => _isSubmitting = false);
       }

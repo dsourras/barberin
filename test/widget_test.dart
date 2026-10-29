@@ -3,6 +3,76 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('Firebase startup failure shows a recoverable screen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const BarberinApp(firebaseStartupError: 'missing-firebase-options'),
+    );
+
+    expect(find.text('Το Barberin δεν μπόρεσε να ξεκινήσει'), findsOneWidget);
+    expect(find.text('Δοκίμασε ξανά'), findsOneWidget);
+    expect(find.byType(AppFlowPage), findsNothing);
+  });
+
+  test(
+    'StoreKit 2 JWS is replaced with the app receipt for the backend',
+    () async {
+      expect(
+        await barberoAppleReceiptForBackend(
+          'header.payload.signature',
+          () async => 'receipt-base64',
+        ),
+        'receipt-base64',
+      );
+      expect(
+        await barberoAppleReceiptForBackend(
+          'receipt-base64',
+          () async => throw StateError('should not load'),
+        ),
+        'receipt-base64',
+      );
+      await expectLater(
+        barberoAppleReceiptForBackend(
+          'header.payload.signature',
+          () async => '',
+        ),
+        throwsStateError,
+      );
+      var loads = 0;
+      var refreshes = 0;
+      expect(
+        await barberoAppleReceiptForBackend(
+          'header.payload.signature',
+          () async => ++loads == 1 ? '' : 'refreshed-receipt',
+          refreshReceipt: () async => refreshes++,
+        ),
+        'refreshed-receipt',
+      );
+      expect(loads, 2);
+      expect(refreshes, 1);
+    },
+  );
+
+  test(
+    'session resolution exposes a missing shop without leaking other errors',
+    () {
+      expect(
+        barberoSessionFailureReason(
+          '{"message":"forbidden","details":"barbero-session-not-found"}',
+        ),
+        'barbero-session-not-found',
+      );
+      expect(
+        barberoSessionFailureReason(
+          '{"message":"forbidden","details":"invalid-auth-token"}',
+        ),
+        'forbidden',
+      );
+      expect(barberoSessionFailureReason('not-json'), 'session-resolve-failed');
+    },
+  );
+
   testWidgets('renders Barberin privacy policy page', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(home: BarberoPrivacyPolicyPage()),

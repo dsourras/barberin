@@ -2,6 +2,26 @@ part of 'main.dart';
 
 const String barberinPlatformAdminRole = 'platform_admin';
 
+const Map<String, String> _customerAppDefaultPalette = {
+  'canvas': '#F6F5EF',
+  'paper': '#FFFDF8',
+  'ink': '#102B35',
+  'primary': '#1B5B70',
+  'primaryDark': '#0F3440',
+  'soft': '#DCEEF2',
+  'accent': '#9AC7B7',
+};
+
+const Map<String, String> _customerAppPaletteLabels = {
+  'canvas': 'Φόντο',
+  'paper': 'Επιφάνειες',
+  'ink': 'Κείμενο',
+  'primary': 'Βασικό χρώμα',
+  'primaryDark': 'Σκούρο βασικό',
+  'soft': 'Απαλό χρώμα',
+  'accent': 'Τονισμός',
+};
+
 final ValueNotifier<bool> currentBarberinPlatformAdmin = ValueNotifier<bool>(
   false,
 );
@@ -39,6 +59,8 @@ class PlatformAdminShopSummary {
     required this.shopName,
     required this.ownerName,
     required this.ownerEmail,
+    required this.shopLogoUrl,
+    required this.shopIconUrl,
     required this.billingStatus,
     required this.billingPlan,
     required this.billingPlatform,
@@ -46,6 +68,8 @@ class PlatformAdminShopSummary {
     required this.currentPeriodEnd,
     required this.appMode,
     required this.appStatus,
+    required this.provisioningRequested,
+    required this.palette,
     required this.packageName,
     required this.bundleId,
     required this.workspaceName,
@@ -62,6 +86,8 @@ class PlatformAdminShopSummary {
   final String shopName;
   final String ownerName;
   final String ownerEmail;
+  final String shopLogoUrl;
+  final String shopIconUrl;
   final String billingStatus;
   final String billingPlan;
   final String billingPlatform;
@@ -69,6 +95,8 @@ class PlatformAdminShopSummary {
   final String currentPeriodEnd;
   final String appMode;
   final String appStatus;
+  final bool provisioningRequested;
+  final Map<String, String> palette;
   final String packageName;
   final String bundleId;
   final String workspaceName;
@@ -92,6 +120,8 @@ class PlatformAdminShopSummary {
       shopName: '${json['shopName'] ?? ''}'.trim(),
       ownerName: '${json['ownerName'] ?? ''}'.trim(),
       ownerEmail: '${json['ownerEmail'] ?? ''}'.trim(),
+      shopLogoUrl: '${json['shopLogoUrl'] ?? ''}'.trim(),
+      shopIconUrl: '${json['shopIconUrl'] ?? ''}'.trim(),
       billingStatus:
           '${billing['status'] ?? json['billingStatus'] ?? 'setup_required'}'
               .trim(),
@@ -103,6 +133,12 @@ class PlatformAdminShopSummary {
       currentPeriodEnd: '${billing['currentPeriodEnd'] ?? ''}'.trim(),
       appMode: '${app['mode'] ?? 'separate'}'.trim(),
       appStatus: '${app['status'] ?? 'provisioning_required'}'.trim(),
+      provisioningRequested: app['provisioningRequested'] == true,
+      palette: app['palette'] is Map
+          ? (app['palette'] as Map).map(
+              (key, value) => MapEntry('$key', '$value'),
+            )
+          : const <String, String>{},
       packageName: '${app['packageName'] ?? ''}'.trim(),
       bundleId: '${app['bundleId'] ?? ''}'.trim(),
       workspaceName: '${app['workspaceName'] ?? ''}'.trim(),
@@ -242,6 +278,7 @@ class PlatformAdminShopDetail {
     required this.trialEndsAt,
     required this.currentPeriodEnd,
     required this.appStatus,
+    required this.provisioningRequested,
     required this.packageName,
     required this.bundleId,
     required this.workspaceName,
@@ -275,6 +312,7 @@ class PlatformAdminShopDetail {
   final String trialEndsAt;
   final String currentPeriodEnd;
   final String appStatus;
+  final bool provisioningRequested;
   final String packageName;
   final String bundleId;
   final String workspaceName;
@@ -333,6 +371,7 @@ class PlatformAdminShopDetail {
       trialEndsAt: '${billing['trialEndsAt'] ?? ''}'.trim(),
       currentPeriodEnd: '${billing['currentPeriodEnd'] ?? ''}'.trim(),
       appStatus: '${app['status'] ?? 'provisioning_required'}'.trim(),
+      provisioningRequested: app['provisioningRequested'] == true,
       packageName: '${app['packageName'] ?? ''}'.trim(),
       bundleId: '${app['bundleId'] ?? ''}'.trim(),
       workspaceName: '${app['workspaceName'] ?? ''}'.trim(),
@@ -464,6 +503,12 @@ class PlatformAdminRepository {
     String? bundleId,
     String? workspaceName,
     String? templateVersion,
+    bool? brandingApproved,
+    Map<String, String>? palette,
+    String? logoBase64,
+    String? logoContentType,
+    String? iconBase64,
+    String? iconContentType,
   }) async {
     final response = await http.post(
       Uri.parse('$_functionsBaseUrl/barberoManagePlatformCustomerApp'),
@@ -478,10 +523,20 @@ class PlatformAdminRepository {
         'bundleId': ?bundleId,
         'workspaceName': ?workspaceName,
         'templateVersion': ?templateVersion,
+        'brandingApproved': ?brandingApproved,
+        'palette': ?palette,
+        'logoBase64': ?logoBase64,
+        'logoContentType': ?logoContentType,
+        'iconBase64': ?iconBase64,
+        'iconContentType': ?iconContentType,
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('platform-customer-app-action-failed');
+      final decoded = jsonDecode(response.body);
+      final message = decoded is Map ? '${decoded['message'] ?? ''}' : '';
+      throw Exception(
+        message.isEmpty ? 'platform-customer-app-action-failed' : message,
+      );
     }
   }
 }
@@ -786,7 +841,7 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                   child: FilledButton.icon(
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
-                      await _runAction(shop, action: 'request_provisioning');
+                      await _showBrandingApproval(shop);
                     },
                     icon: const Icon(Icons.refresh_rounded),
                     label: const Text('Επανάληψη provisioning'),
@@ -808,7 +863,7 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Το shop δημιουργήθηκε με ID $shopId και μπήκε σε provisioning.',
+            'Το shop δημιουργήθηκε με ID $shopId. Η δημιουργία εφαρμογής παραμένει σε αναμονή έγκρισης.',
           ),
         ),
       );
@@ -1037,6 +1092,368 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
     }
   }
 
+  Future<void> _showBrandingApproval(PlatformAdminShopSummary shop) async {
+    final controllers = <String, TextEditingController>{
+      for (final entry in _customerAppDefaultPalette.entries)
+        entry.key: TextEditingController(
+          text: shop.palette[entry.key] ?? entry.value,
+        ),
+    };
+    XFile? logoFile;
+    XFile? iconFile;
+    Uint8List? logoPreview;
+    Uint8List? iconPreview;
+    String? errorText;
+    var reviewed = false;
+    var saving = false;
+    try {
+      final approved = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            Future<void> pickAsset({required bool icon}) async {
+              final file = await openFile(
+                acceptedTypeGroups: const [
+                  XTypeGroup(
+                    label: 'Images',
+                    extensions: ['png', 'jpg', 'jpeg'],
+                  ),
+                ],
+              );
+              if (file == null) return;
+              if (await file.length() > 5 * 1024 * 1024) {
+                setDialogState(
+                  () => errorText = 'Η εικόνα πρέπει να είναι έως 5 MB.',
+                );
+                return;
+              }
+              final bytes = await file.readAsBytes();
+              if (!dialogContext.mounted) return;
+              setDialogState(() {
+                if (icon) {
+                  iconFile = file;
+                  iconPreview = bytes;
+                } else {
+                  logoFile = file;
+                  logoPreview = bytes;
+                }
+                reviewed = false;
+                errorText = null;
+              });
+            }
+
+            Widget assetRow({required bool icon}) {
+              final file = icon ? iconFile : logoFile;
+              final bytes = icon ? iconPreview : logoPreview;
+              final url = icon ? shop.shopIconUrl : shop.shopLogoUrl;
+              final preview = bytes != null
+                  ? Image.memory(
+                      bytes,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.contain,
+                    )
+                  : url.isNotEmpty
+                  ? Image.network(
+                      url,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, error, stackTrace) =>
+                          const Icon(Icons.broken_image_outlined),
+                    )
+                  : const Icon(Icons.image_outlined, size: 32);
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: SizedBox(width: 48, height: 48, child: preview),
+                title: Text(icon ? 'Εικονίδιο εφαρμογής' : 'Λογότυπο'),
+                subtitle: Text(
+                  file?.name ??
+                      (url.isNotEmpty ? 'Υπάρχουσα εικόνα' : 'Λείπει εικόνα'),
+                ),
+                trailing: TextButton(
+                  onPressed: saving ? null : () => pickAsset(icon: icon),
+                  child: const Text('Επιλογή'),
+                ),
+              );
+            }
+
+            Color previewColor(String key) {
+              final value = controllers[key]!.text.trim();
+              final hex = RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(value)
+                  ? value
+                  : _customerAppDefaultPalette[key]!;
+              return Color(int.parse('FF${hex.substring(1)}', radix: 16));
+            }
+
+            return AlertDialog(
+              title: const Text('Έλεγχος εμφάνισης εφαρμογής'),
+              content: SizedBox(
+                width: 540,
+                height: 520,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        shop.shopName,
+                        style: Theme.of(dialogContext).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        shop.shopId,
+                        style: Theme.of(dialogContext).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 14),
+                      assetRow(icon: false),
+                      assetRow(icon: true),
+                      const Divider(height: 24),
+                      const Text('Χρώματα εφαρμογής'),
+                      const SizedBox(height: 8),
+                      for (final entry in _customerAppPaletteLabels.entries)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color:
+                                      RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(
+                                        controllers[entry.key]!.text.trim(),
+                                      )
+                                      ? Color(
+                                          int.parse(
+                                            'FF${controllers[entry.key]!.text.trim().substring(1)}',
+                                            radix: 16,
+                                          ),
+                                        )
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: context.barberinBorder,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: controllers[entry.key],
+                                  maxLength: 7,
+                                  textCapitalization:
+                                      TextCapitalization.characters,
+                                  decoration: InputDecoration(
+                                    labelText: entry.value,
+                                    hintText: '#1B5B70',
+                                    counterText: '',
+                                    isDense: true,
+                                  ),
+                                  onChanged: (_) =>
+                                      setDialogState(() => reviewed = false),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Ενδεικτική προεπισκόπηση',
+                        style: Theme.of(dialogContext).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: previewColor('canvas'),
+                          border: Border.all(color: previewColor('soft')),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                if (logoPreview != null)
+                                  Image.memory(
+                                    logoPreview!,
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.contain,
+                                  )
+                                else if (shop.shopLogoUrl.isNotEmpty)
+                                  Image.network(
+                                    shop.shopLogoUrl,
+                                    width: 28,
+                                    height: 28,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, error, stackTrace) =>
+                                        Icon(
+                                          Icons.cut_rounded,
+                                          color: previewColor('primary'),
+                                        ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.cut_rounded,
+                                    color: previewColor('primary'),
+                                  ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    shop.shopName,
+                                    style: TextStyle(
+                                      color: previewColor('ink'),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: previewColor('paper'),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Κλείσε το επόμενο ραντεβού σου',
+                                style: TextStyle(color: previewColor('ink')),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: reviewed,
+                        onChanged: saving
+                            ? null
+                            : (value) => setDialogState(
+                                () => reviewed = value == true,
+                              ),
+                        title: const Text(
+                          'Έλεγξα όνομα, λογότυπο, εικονίδιο και χρώματα.',
+                        ),
+                        subtitle: const Text(
+                          'Με την έγκριση ξεκινά η προετοιμασία της εφαρμογής.',
+                        ),
+                      ),
+                      if (errorText != null)
+                        Text(
+                          errorText!,
+                          style: TextStyle(
+                            color: Theme.of(dialogContext).colorScheme.error,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Άκυρο'),
+                ),
+                FilledButton(
+                  onPressed: !reviewed || saving
+                      ? null
+                      : () async {
+                          final palette = <String, String>{
+                            for (final entry in controllers.entries)
+                              entry.key: entry.value.text.trim().toUpperCase(),
+                          };
+                          if (palette.values.any(
+                            (value) =>
+                                !RegExp(r'^#[0-9A-F]{6}$').hasMatch(value),
+                          )) {
+                            setDialogState(
+                              () => errorText =
+                                  'Έλεγξε τους 7 χρωματικούς κωδικούς.',
+                            );
+                            return;
+                          }
+                          if ((logoFile == null && shop.shopLogoUrl.isEmpty) ||
+                              (iconFile == null && shop.shopIconUrl.isEmpty)) {
+                            setDialogState(
+                              () => errorText =
+                                  'Χρειάζονται λογότυπο και εικονίδιο.',
+                            );
+                            return;
+                          }
+                          setDialogState(() {
+                            saving = true;
+                            errorText = null;
+                          });
+                          try {
+                            await _repository.manageCustomerApp(
+                              shopId: shop.shopId,
+                              action: 'request_provisioning',
+                              displayName: shop.shopName,
+                              brandingApproved: true,
+                              palette: palette,
+                              logoBase64: logoPreview == null
+                                  ? null
+                                  : base64Encode(logoPreview!),
+                              logoContentType: logoFile == null
+                                  ? null
+                                  : logoFile!.name.toLowerCase().endsWith(
+                                      '.png',
+                                    )
+                                  ? 'image/png'
+                                  : 'image/jpeg',
+                              iconBase64: iconPreview == null
+                                  ? null
+                                  : base64Encode(iconPreview!),
+                              iconContentType: iconFile == null
+                                  ? null
+                                  : iconFile!.name.toLowerCase().endsWith(
+                                      '.png',
+                                    )
+                                  ? 'image/png'
+                                  : 'image/jpeg',
+                            );
+                            if (dialogContext.mounted) {
+                              Navigator.of(dialogContext).pop(true);
+                            }
+                          } catch (error) {
+                            if (dialogContext.mounted) {
+                              setDialogState(() {
+                                saving = false;
+                                errorText =
+                                    'Δεν αποθηκεύτηκε η έγκριση: $error';
+                              });
+                            }
+                          }
+                        },
+                  child: const Text('Έγκριση και προετοιμασία'),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+      if (approved == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Η εμφάνιση εγκρίθηκε. Η εφαρμογή μπήκε στην ουρά προετοιμασίας.',
+            ),
+          ),
+        );
+        await _load();
+      }
+    } finally {
+      for (final controller in controllers.values) {
+        controller.dispose();
+      }
+    }
+  }
+
   Future<void> _runAction(
     PlatformAdminShopSummary shop, {
     required String action,
@@ -1117,18 +1534,23 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                   await _showShopDetail(shop);
                 },
               ),
-              if (shop.appStatus == 'provisioning_required' ||
+              if ((shop.appStatus == 'provisioning_required' &&
+                      !shop.provisioningRequested) ||
                   shop.appStatus == 'failed')
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.rocket_launch_outlined),
-                  title: const Text('Δημιουργία εφαρμογής shop'),
+                  title: Text(
+                    shop.appStatus == 'failed'
+                        ? 'Επανάληψη provisioning'
+                        : 'Έγκριση & δημιουργία εφαρμογής',
+                  ),
                   subtitle: const Text(
-                    'Καταχωρίζει αίτημα για δημιουργία του app.',
+                    'Ξεκινά το provisioning μόνο αφού έχει συμφωνηθεί η συνεργασία.',
                   ),
                   onTap: () async {
                     Navigator.of(sheetContext).pop();
-                    await _runAction(shop, action: 'request_provisioning');
+                    await _showBrandingApproval(shop);
                   },
                 ),
               ListTile(
@@ -1268,7 +1690,10 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
     }
   }
 
-  String _appStatusLabel(String status) {
+  String _appStatusLabel(String status, {bool provisioningRequested = true}) {
+    if (!provisioningRequested && status == 'provisioning_required') {
+      return 'Δεν έχει ζητηθεί';
+    }
     switch (status) {
       case 'released':
         return 'Δημοσιευμένο';
@@ -1660,7 +2085,10 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                       ),
                       _AdminMeta(
                         label: 'Εφαρμογή',
-                        value: _appStatusLabel(shop.appStatus),
+                        value: _appStatusLabel(
+                          shop.appStatus,
+                          provisioningRequested: shop.provisioningRequested,
+                        ),
                       ),
                     ],
                   ),
@@ -2136,7 +2564,11 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                                         ),
                                       ),
                                       Text(
-                                        _appStatusLabel(shop.appStatus),
+                                        _appStatusLabel(
+                                          shop.appStatus,
+                                          provisioningRequested:
+                                              shop.provisioningRequested,
+                                        ),
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
@@ -2591,7 +3023,10 @@ class _PlatformAdminShopDetailPageState
     _detailFuture = widget.repository.loadShopDetail(widget.shopId);
   }
 
-  String _statusLabel(String status) {
+  String _statusLabel(String status, {bool provisioningRequested = true}) {
+    if (!provisioningRequested && status == 'provisioning_required') {
+      return 'Δεν έχει ζητηθεί';
+    }
     switch (status) {
       case 'released':
         return 'Δημοσιευμένο';
@@ -2757,7 +3192,10 @@ class _PlatformAdminShopDetailPageState
           values: [
             _AdminDetailRow(
               label: 'Κατάσταση',
-              value: _statusLabel(detail.appStatus),
+              value: _statusLabel(
+                detail.appStatus,
+                provisioningRequested: detail.provisioningRequested,
+              ),
             ),
             _AdminDetailRow(
               label: 'Android package',

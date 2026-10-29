@@ -24,7 +24,9 @@ const bool _subscriptionGateEnabled = bool.fromEnvironment(
 );
 
 class BarberinApp extends StatelessWidget {
-  const BarberinApp({super.key});
+  const BarberinApp({super.key, this.firebaseStartupError});
+
+  final Object? firebaseStartupError;
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +53,80 @@ class BarberinApp extends StatelessWidget {
               theme: _barberinLightTheme(),
               darkTheme: _barberinDarkTheme(),
               themeMode: mode,
-              home: const AppFlowPage(),
+              home: firebaseStartupError == null
+                  ? const AppFlowPage()
+                  : const _BarberinStartupErrorPage(),
             );
           },
         );
       },
+    );
+  }
+}
+
+class _BarberinStartupErrorPage extends StatefulWidget {
+  const _BarberinStartupErrorPage();
+
+  @override
+  State<_BarberinStartupErrorPage> createState() =>
+      _BarberinStartupErrorPageState();
+}
+
+class _BarberinStartupErrorPageState extends State<_BarberinStartupErrorPage> {
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    try {
+      await _initializeBarberinFirebase();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const AppFlowPage()),
+      );
+    } catch (error) {
+      debugPrint('Barberin Firebase retry failed: $error');
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnglish = barberinLanguage.value == BarberinLanguage.english;
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.cloud_off_outlined, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  isEnglish
+                      ? 'Barberin could not start'
+                      : 'Το Barberin δεν μπόρεσε να ξεκινήσει',
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isEnglish
+                      ? 'Check your connection and try again. If this continues, contact support.'
+                      : 'Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά. Αν συνεχιστεί, επικοινώνησε με την υποστήριξη.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: _retrying ? null : _retry,
+                  child: Text(isEnglish ? 'Try again' : 'Δοκίμασε ξανά'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -619,17 +690,33 @@ class _AppFlowPageState extends State<AppFlowPage> with WidgetsBindingObserver {
                     late final Object pageKey;
 
                     if (registrationInProgress) {
-                      pageKey = 'registration';
-                      page = AuthShell(
-                        child: RegistrationScreen(
-                          onBack: () {
-                            barberinRegistrationInProgress.value = false;
-                            setState(() => step = 1);
-                          },
-                          onComplete: (shopId, ownerName) =>
-                              setState(() => step = 4),
-                        ),
-                      );
+                      // Keep the active auth form mounted while Firebase emits
+                      // the new user's auth event during social registration.
+                      pageKey = step == 1 ? 1 : 2;
+                      page = step == 1
+                          ? AuthShell(
+                              child: LoginScreen(
+                                onBack: () => setState(() => step = 0),
+                                onLogin: () => setState(() => step = 4),
+                                onRegisterTap: () => setState(() => step = 2),
+                                onJoinTap: () => setState(() => step = 3),
+                              ),
+                            )
+                          : AuthShell(
+                              child: RegistrationScreen(
+                                onBack: () async {
+                                  if (FirebaseAuth.instance.currentUser !=
+                                          null &&
+                                      currentBarberoSession.value == null) {
+                                    await FirebaseAuth.instance.signOut();
+                                  }
+                                  barberinRegistrationInProgress.value = false;
+                                  if (mounted) setState(() => step = 1);
+                                },
+                                onComplete: (shopId, ownerName) =>
+                                    setState(() => step = 4),
+                              ),
+                            );
                     } else if (user != null &&
                         isBarberinPlatformAdmin &&
                         (session == null || billing == null)) {
@@ -762,6 +849,21 @@ List<BarberoAccessibleShop> _parseAccessibleBarberoShops(
   ];
 }
 
+String barberoSessionFailureReason(String responseBody) {
+  try {
+    final body = jsonDecode(responseBody);
+    if (body is Map) {
+      final detail = '${body['details'] ?? ''}'.trim();
+      if (detail == 'barbero-session-not-found') return detail;
+      final message = '${body['message'] ?? ''}'.trim();
+      if (message.isNotEmpty) return message;
+    }
+  } catch (_) {
+    // The server can return a non-JSON response during an outage.
+  }
+  return 'session-resolve-failed';
+}
+
 Future<void> resolveBarberoSessionForCurrentUser(
   User user, {
   String? preferredShopId,
@@ -786,18 +888,9 @@ Future<void> resolveBarberoSessionForCurrentUser(
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      var reason = 'session-resolve-failed';
-      try {
-        final body = jsonDecode(response.body);
-        if (body is Map && '${body['message'] ?? ''}'.trim().isNotEmpty) {
-          reason = '${body['message']}'.trim();
-        }
-      } catch (_) {
-        // Keep the stable fallback reason when the server response is not JSON.
-      }
       throw BarberoSessionResolutionException(
         statusCode: response.statusCode,
-        reason: reason,
+        reason: barberoSessionFailureReason(response.body),
       );
     }
     // The backend refreshes shop membership custom claims for database rules.

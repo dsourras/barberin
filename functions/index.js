@@ -12,6 +12,7 @@ const {createHash, randomUUID} = require("node:crypto");
 const nodemailer = require("nodemailer");
 const {buildCanonicalShopIdentity, normalizeShopAddress, normalizeShopLocation} =
   require("./greek_city_normalizer");
+const {normalizeCustomerAppPalette} = require("./customer_app_branding");
 
 initializeApp();
 
@@ -31,7 +32,7 @@ const BILLING_MONTHLY_PRODUCT_ID = "barbero_monthly";
 const BILLING_YEARLY_PRODUCT_ID = "barbero_yearly";
 const BILLING_ANDROID_PACKAGE_NAME = "com.barberin.app";
 const BILLING_IOS_BUNDLE_ID = "com.barberin.app";
-const BILLING_MACOS_BUNDLE_ID = "com.barberin.app.macos";
+const BILLING_MACOS_BUNDLE_ID = "com.barberin.app";
 const ANDROID_PUBLISHER_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
 const APPLE_VERIFY_RECEIPT_PRODUCTION_URL = "https://buy.itunes.apple.com/verifyReceipt";
 const APPLE_VERIFY_RECEIPT_SANDBOX_URL = "https://sandbox.itunes.apple.com/verifyReceipt";
@@ -62,7 +63,8 @@ const APPOINTMENT_REMINDER_INDEX_PATH = "appointmentReminderIndex";
 const APPOINTMENT_REMINDER_INDEX_META_PATH = "appointmentReminderIndexMeta";
 const NOTIFICATION_OUTBOX_MAX_ATTEMPTS = 5;
 const NOTIFICATION_OUTBOX_LOCK_MS = 10 * 60 * 1000;
-const NOTIFICATION_OUTBOX_IDLE_TIMESTAMP = Number.MAX_SAFE_INTEGER;
+// Keep the idle value within the Realtime Database transaction-safe range.
+const NOTIFICATION_OUTBOX_IDLE_TIMESTAMP = Date.UTC(2100, 0, 1);
 const NOTIFICATION_CLEANUP_INDEX_META_PATH = "notificationCleanupIndexMeta";
 const NOTIFICATION_OUTBOX_RETRY_DELAYS_MS = [
   60 * 1000,
@@ -79,6 +81,7 @@ const STORAGE_MEMBERSHIP_INDEX_META_PATH = "storageMembershipIndexMeta";
 const BARBERIN_EMAIL_SENDER = "dsourras@gmail.com";
 const BARBERIN_SUPPORT_EMAIL = "oryn.barberin@gmail.com";
 const crewInvitationSmtpPassword = defineSecret("CONTACT_SMTP_PASSWORD_DSOURRAS");
+const appleSharedSecret = defineSecret("APPLE_SHARED_SECRET");
 const LEGACY_DELETION_ARCHIVE_PATHS = [
   "deleted/shops",
   "deleted/barberoAccounts",
@@ -771,6 +774,15 @@ function normalizeCustomerAppSlug(value) {
 
 function buildCustomerAppConfiguration({shopId, shopName, existing}) {
   const current = existing && typeof existing === "object" ? existing : {};
+  const currentStatus = String(
+      current.status || "provisioning_required",
+  ).trim();
+  // New shops are intentionally gated until an administrator explicitly
+  // approves app creation. Preserve legacy records that were already in the
+  // provisioning lifecycle before this gate was introduced.
+  const provisioningRequested = current.provisioningRequested === true ||
+    ["provisioning", "configured", "built", "released", "failed"]
+        .includes(currentStatus);
   const normalizedShopId = String(shopId || "").trim();
   const normalizedShopName = String(shopName || "").trim() || "Barber Shop";
   const accessToken = String(current.accessToken || "").trim() ||
@@ -784,7 +796,17 @@ function buildCustomerAppConfiguration({shopId, shopName, existing}) {
   const now = new Date().toISOString();
 
   const configuration = {
-    status: String(current.status || "provisioning_required").trim(),
+    status: currentStatus,
+    provisioningRequested,
+    provisioningRequestedAt: String(
+        current.provisioningRequestedAt || "",
+    ).trim(),
+    provisioningRequestedBy: String(
+        current.provisioningRequestedBy || "",
+    ).trim(),
+    brandingApprovedAt: String(current.brandingApprovedAt || "").trim(),
+    palette: current.palette && typeof current.palette === "object" ?
+      current.palette : {},
     shopId: normalizedShopId,
     displayName: String(current.displayName || normalizedShopName).trim(),
     legalDisplayName: String(
@@ -4163,6 +4185,7 @@ exports.barberoCreatePlatformShop = onRequest(async (request, response) => {
       shopName,
       customerAppMode: "separate",
       customerAppStatus: customerApp.status,
+      customerAppProvisioningRequested: customerApp.provisioningRequested,
     });
   } catch (error) {
     console.error(error);
@@ -4282,6 +4305,8 @@ function buildPlatformAdminSummaryShop({shopId, shop, startDate, endDate}) {
     archivedForTesting: shop?.archivedForTesting === true,
     ownerName: String(shop?.ownerName || "").trim(),
     ownerEmail: String(shop?.ownerEmail || "").trim(),
+    shopLogoUrl: String(shop?.shopLogoUrl || "").trim(),
+    shopIconUrl: String(shop?.shopIconUrl || "").trim(),
     createdAt: String(shop?.createdAt || "").trim(),
     barberCount: Object.keys(shop?.barbers || {}).length,
     customerCount: Object.keys(shop?.customers || {}).length,
@@ -4313,6 +4338,17 @@ function buildPlatformAdminSummaryShop({shopId, shop, startDate, endDate}) {
       provisioningRequestId: String(
           customerApp.provisioningRequestId || "",
       ).trim(),
+      provisioningRequested: customerApp.provisioningRequested === true,
+      provisioningRequestedAt: String(
+          customerApp.provisioningRequestedAt || "",
+      ).trim(),
+      provisioningRequestedBy: String(
+          customerApp.provisioningRequestedBy || "",
+      ).trim(),
+      brandingApprovedAt: String(
+          customerApp.brandingApprovedAt || "",
+      ).trim(),
+      palette: customerApp.palette || {},
       provisionedAt: String(customerApp.provisionedAt || "").trim(),
       lastBuildAt: String(customerApp.lastBuildAt || "").trim(),
       lastReleaseAt: String(customerApp.lastReleaseAt || "").trim(),
@@ -4780,6 +4816,8 @@ exports.barberoGetPlatformShopDetail = onRequest(async (request, response) => {
         ownerName: String(shop.ownerName || "").trim(),
         ownerEmail: String(shop.ownerEmail || "").trim(),
         ownerPhone: String(shop.ownerPhone || "").trim(),
+        shopLogoUrl: String(shop.shopLogoUrl || "").trim(),
+        shopIconUrl: String(shop.shopIconUrl || "").trim(),
         createdAt: String(shop.createdAt || "").trim(),
         updatedAt: String(shop.updatedAt || "").trim(),
         billing: shop.billing || {},
@@ -4868,8 +4906,49 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       updatedAt: now,
       updatedBy: String(decoded.uid || "").trim(),
     };
+    const shopUpdates = {};
 
     if (action === "request_provisioning") {
+      if (request.body?.brandingApproved !== true) {
+        return json(response, 400, {ok: false, message: "branding-approval-required"});
+      }
+      if (!["provisioning_required", "failed"].includes(
+          String(current.status || "provisioning_required").trim())) {
+        return json(response, 409, {ok: false, message: "app-already-requested"});
+      }
+      let palette;
+      try {
+        palette = normalizeCustomerAppPalette(request.body?.palette);
+      } catch (error) {
+        return json(response, 400, {
+          ok: false,
+          message: String(error.message || "invalid-customer-app-palette"),
+        });
+      }
+      const imageInputs = [
+        {key: "shopLogoUrl", base64: "logoBase64", type: "logoContentType", path: "logo"},
+        {key: "shopIconUrl", base64: "iconBase64", type: "iconContentType", path: "app-icon"},
+      ];
+      const approvalId = randomUUID();
+      for (const image of imageInputs) {
+        if (!String(request.body?.[image.base64] || "").trim() &&
+            !String(shop[image.key] || "").trim()) {
+          return json(response, 400, {
+            ok: false,
+            message: `customer-app-${image.path}-required`,
+          });
+        }
+      }
+      for (const image of imageInputs) {
+        const base64 = String(request.body?.[image.base64] || "").trim();
+        if (base64) {
+          shopUpdates[image.key] = await uploadImageAndGetUrl({
+            path: `shops/${shopId}/branding/approvals/${approvalId}-${image.path}`,
+            bytes: decodeBase64Image(base64),
+            contentType: request.body?.[image.type],
+          });
+        }
+      }
       const previousAttempt = Number.parseInt(
           current.provisioningAttempt,
           10,
@@ -4879,6 +4958,7 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       updates.accessToken = customerAppAccessTokenForShop(shop) ||
         createCustomerAppAccessToken();
       updates.status = "provisioning";
+      updates.provisioningRequested = true;
       updates.provisioningPhase = "queued";
       updates.provisioningProgressPercent = 0;
       updates.provisioningErrorReason = "";
@@ -4890,12 +4970,30 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       updates.provisioningRequestedAt = now;
       updates.provisioningRequestedBy = String(decoded.email || decoded.uid || "").trim();
       updates.provisioningRequestId = `${shopId}-${Date.now()}`;
+      updates.brandingApprovedAt = now;
+      updates.palette = palette;
+      updates.approvedBranding = {
+        shopName: displayName,
+        logoUrl: shopUpdates.shopLogoUrl || String(shop.shopLogoUrl || "").trim(),
+        iconUrl: shopUpdates.shopIconUrl || String(shop.shopIconUrl || "").trim(),
+        palette,
+      };
     } else if (action === "set_status") {
       const status = String(request.body?.status || "").trim();
       if (!PLATFORM_CUSTOMER_APP_STATUSES.has(status)) {
         return json(response, 400, {ok: false, message: "invalid-customer-app-status"});
       }
       updates.status = status;
+      if (["provisioning", "configured", "built", "released", "failed"]
+          .includes(status)) {
+        updates.provisioningRequested = true;
+        updates.provisioningRequestedAt = String(
+            current.provisioningRequestedAt || now,
+        ).trim();
+        updates.provisioningRequestedBy = String(
+            current.provisioningRequestedBy || decoded.email || decoded.uid || "",
+        ).trim();
+      }
     } else {
       const packageName = String(request.body?.packageName || "").trim();
       const bundleId = String(request.body?.bundleId || "").trim();
@@ -4909,6 +5007,13 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       }
       Object.assign(updates, {
         mode: "separate",
+        provisioningRequested: true,
+        provisioningRequestedAt: String(
+            current.provisioningRequestedAt || now,
+        ).trim(),
+        provisioningRequestedBy: String(
+            current.provisioningRequestedBy || decoded.email || decoded.uid || "",
+        ).trim(),
         accessToken: customerAppAccessTokenForShop(shop) ||
           createCustomerAppAccessToken(),
         packageName,
@@ -4925,7 +5030,38 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       if (status === "released") updates.lastReleaseAt = now;
     }
 
-    await shopRef.child("customerApp").update(updates);
+    const databaseUpdates = {
+      ...Object.fromEntries(
+          Object.entries(shopUpdates).map(([key, value]) =>
+            [`shops/${shopId}/${key}`, value]),
+      ),
+      ...Object.fromEntries(
+          Object.entries(updates).map(([key, value]) =>
+            [`shops/${shopId}/customerApp/${key}`, value]),
+      ),
+    };
+    if (action === "request_provisioning") {
+      const queueEntry = {
+        requestId: updates.provisioningRequestId,
+        shopId,
+        displayName,
+        status: "queued",
+        phase: "queued",
+        progressPercent: 0,
+        errorReason: "",
+        workspacePath: "",
+        aabPath: "",
+        buildVersion: "",
+        attempt: updates.provisioningAttempt,
+        retryCount: updates.retryCount,
+        requestedBy: String(decoded.email || decoded.uid || "").trim(),
+        createdAt: now,
+        updatedAt: now,
+      };
+      databaseUpdates[`customerAppProvisioningQueue/${updates.provisioningRequestId}`] = queueEntry;
+      databaseUpdates[`shops/${shopId}/customerApp/provisioningHistory/${updates.provisioningRequestId}`] = queueEntry;
+    }
+    await getDatabase().ref().update(databaseUpdates);
     const auditRef = getDatabase().ref("platformAdminAudit").push();
     await auditRef.set({
       action,
@@ -4935,46 +5071,6 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
       adminEmail: String(decoded.email || "").trim(),
       createdAt: now,
     });
-    if (action === "request_provisioning") {
-      await getDatabase().ref(
-          `customerAppProvisioningQueue/${updates.provisioningRequestId}`)
-          .set({
-            requestId: updates.provisioningRequestId,
-            shopId,
-            displayName,
-            status: "queued",
-            phase: "queued",
-            progressPercent: 0,
-            errorReason: "",
-            workspacePath: "",
-            aabPath: "",
-            buildVersion: "",
-            attempt: updates.provisioningAttempt,
-            retryCount: updates.retryCount,
-            requestedBy: String(decoded.email || decoded.uid || "").trim(),
-            createdAt: now,
-            updatedAt: now,
-          });
-      await getDatabase().ref(
-          `shops/${shopId}/customerApp/provisioningHistory/${updates.provisioningRequestId}`)
-          .set({
-            requestId: updates.provisioningRequestId,
-            shopId,
-            displayName,
-            status: "queued",
-            phase: "queued",
-            progressPercent: 0,
-            errorReason: "",
-            workspacePath: "",
-            aabPath: "",
-            buildVersion: "",
-            attempt: updates.provisioningAttempt,
-            retryCount: updates.retryCount,
-            requestedBy: String(decoded.email || decoded.uid || "").trim(),
-            createdAt: now,
-            updatedAt: now,
-          });
-    }
     return json(response, 200, {
       ok: true,
       shopId,
@@ -5379,15 +5475,15 @@ async function sendShopProvisioningStartedEmail({
     from: `Barberin <${BARBERIN_EMAIL_SENDER}>`,
     to: recipient,
     replyTo: BARBERIN_SUPPORT_EMAIL,
-    subject: `Το customer app για το ${safeShopName} βρίσκεται σε προετοιμασία`,
+    subject: `Το κατάστημά σου καταχωρήθηκε στο Barberin`,
     text: [
       `Γεια σου ${safeOwnerName},`,
       "",
       `Το κατάστημα «${safeShopName}» δημιουργήθηκε επιτυχώς στο Barberin στις ${dateText}.`,
       "",
-      "Το εξατομικευμένο customer app του καταστήματος δεν δημιουργείται και δεν δημοσιεύεται αυτόματα σε πραγματικό χρόνο. Χρειάζονται μερικές ημέρες για την προετοιμασία της εφαρμογής, τη δημιουργία της έκδοσης και τους απαραίτητους ελέγχους και δοκιμές πριν γίνει διαθέσιμη.",
+      "Το εξατομικευμένο customer app του καταστήματος δεν δημιουργείται αυτόματα. Μετά την επιβεβαίωση των στοιχείων και της συνεργασίας με την ομάδα Barberin, θα ξεκινήσει ξεχωριστά η προετοιμασία της εφαρμογής, η δημιουργία της έκδοσης και οι απαραίτητοι έλεγχοι.",
       "",
-      "Θα ενημερωθείς ξανά με νέο email για την εξέλιξη της διαδικασίας. Δεν χρειάζεται να κάνεις κάτι προς το παρόν.",
+      "Θα ενημερωθείς με νέο email για την εξέλιξη και τα επόμενα βήματα. Δεν θα ξεκινήσει χρέωση ή δημοσίευση εφαρμογής πριν ολοκληρωθεί η συμφωνία και η σχετική διαδικασία.",
       "",
       `Κωδικός καταστήματος: ${safeShopId}`,
       "",
@@ -7915,7 +8011,9 @@ exports.barberoStartSubscriptionTrial = onRequest(async (request, response) => {
   });
 });
 
-exports.barberoProcessStorePurchase = onRequest(async (request, response) => {
+exports.barberoProcessStorePurchase = onRequest(
+    {secrets: [appleSharedSecret]},
+    async (request, response) => {
   if (request.method !== "POST") {
     return json(response, 405, {ok: false, message: "method-not-allowed"});
   }
@@ -8073,7 +8171,8 @@ exports.barberoProcessStorePurchase = onRequest(async (request, response) => {
       details: safeClientErrorDetails(error),
     });
   }
-});
+    },
+);
 
 exports.barberoDeleteAccount = onRequest(async (request, response) => {
   if (request.method !== "POST") {
@@ -10205,6 +10304,7 @@ exports.barberoSyncStoreSubscriptions = onSchedule(
       timeZone: "Europe/Athens",
       retryCount: 3,
       maxInstances: 1,
+      secrets: [appleSharedSecret],
     },
     async () => {
       const db = getDatabase();

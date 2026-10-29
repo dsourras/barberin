@@ -248,22 +248,19 @@ if (-not (Test-Path -LiteralPath $TemplatePath)) {
     throw "Customer app template was not found: $TemplatePath"
 }
 
-$shop = $null
-if (-not $SkipDatabaseUpdate -or [string]::IsNullOrWhiteSpace($ShopName)) {
-    $shop = Get-FirebaseJson -Arguments @(
-        "database:get",
-        "/shops/$ShopId",
-        "--project",
-        $ProjectId,
-        "--json"
-    )
-    $ShopName = "$($shop.shopName)".Trim()
-    if ([string]::IsNullOrWhiteSpace($ShopName)) {
-        $ShopName = "$($shop.name)".Trim()
-    }
+$shop = Get-FirebaseJson -Arguments @(
+    "database:get",
+    "/shops/$ShopId",
+    "--project",
+    $ProjectId,
+    "--json"
+)
+if ($null -eq $shop) {
+    throw "Shop '$ShopId' was not found."
 }
-if ([string]::IsNullOrWhiteSpace($ShopName)) {
-    $ShopName = "Barber Shop"
+if (-not [string]::IsNullOrWhiteSpace($LogoPath) -or
+    -not [string]::IsNullOrWhiteSpace($IconPath)) {
+    throw "LogoPath and IconPath cannot override branding approved in Administration."
 }
 $shopAddress = if ($null -ne $shop) { "$($shop.address)".Trim() } else { "" }
 $shopPhone = if ($null -ne $shop) { "$($shop.ownerPhone)".Trim() } else { "" }
@@ -283,14 +280,75 @@ $existingCustomerApp = $null
 if ($null -ne $shop -and $null -ne $shop.customerApp) {
     $existingCustomerApp = $shop.customerApp
 }
+$provisioningRequested = $null -ne $existingCustomerApp -and
+    $existingCustomerApp.provisioningRequested -eq $true
+$requestId = if ($null -ne $existingCustomerApp) {
+    "$($existingCustomerApp.provisioningRequestId)".Trim()
+} else { "" }
+if (-not $provisioningRequested -or
+    [string]::IsNullOrWhiteSpace("$($existingCustomerApp.brandingApprovedAt)") -or
+    [string]::IsNullOrWhiteSpace($requestId)) {
+    throw "Shop '$ShopId' needs final branding approval in Administration before app creation."
+}
+if ([string]::IsNullOrWhiteSpace($shopLogoUrl) -or
+    [string]::IsNullOrWhiteSpace($shopIconUrl)) {
+    throw "Shop '$ShopId' needs an approved logo and app icon."
+}
+$approvedBranding = $existingCustomerApp.approvedBranding
+$approvedName = "$($approvedBranding.shopName)".Trim()
+if ([string]::IsNullOrWhiteSpace($approvedName) -or
+    "$($existingCustomerApp.displayName)".Trim() -ne $approvedName -or
+    "$($approvedBranding.logoUrl)".Trim() -ne $shopLogoUrl -or
+    "$($approvedBranding.iconUrl)".Trim() -ne $shopIconUrl) {
+    throw "Shop '$ShopId' branding changed after approval. Review it again in Administration."
+}
+if (-not [string]::IsNullOrWhiteSpace($ShopName) -and $ShopName.Trim() -ne $approvedName) {
+    throw "ShopName does not match the approved name '$approvedName'."
+}
+$ShopName = $approvedName
+$palette = $existingCustomerApp.palette
+$approvedPalette = $approvedBranding.palette
+$requiredPaletteColors = @("canvas", "paper", "ink", "primary", "primaryDark", "soft", "accent")
+foreach ($colorKey in $requiredPaletteColors) {
+    $property = if ($null -ne $palette) { $palette.PSObject.Properties[$colorKey] } else { $null }
+    $approvedProperty = if ($null -ne $approvedPalette) { $approvedPalette.PSObject.Properties[$colorKey] } else { $null }
+    if ($null -eq $property -or
+        $null -eq $approvedProperty -or
+        "$($property.Value)" -notmatch '^#[0-9A-Fa-f]{6}$' -or
+        "$($property.Value)" -ne "$($approvedProperty.Value)") {
+        throw "Shop '$ShopId' is missing approved color '$colorKey'."
+    }
+}
+$queueOutput = Invoke-Firebase -Arguments @(
+    "database:get",
+    "/customerAppProvisioningQueue/$requestId",
+    "--project",
+    $ProjectId,
+    "--json"
+)
+if ($queueOutput.Trim() -eq "null") {
+    throw "No matching queued app request exists for shop '$ShopId'."
+}
+$queueEntry = ConvertFrom-FirebaseJson -Output $queueOutput
+if ("$($queueEntry.shopId)".Trim() -ne $ShopId -or
+    "$($queueEntry.requestId)".Trim() -ne $requestId) {
+    throw "The app request for shop '$ShopId' does not match."
+}
+$appStatus = "$($existingCustomerApp.status)".Trim()
+$queueStatus = "$($queueEntry.status)".Trim()
+$isApprovedQueue = $appStatus -eq "provisioning" -and $queueStatus -eq "queued"
+$isManualBuild = $Force -and -not $SkipReleaseBuild -and
+    $appStatus -eq "configured" -and $queueStatus -eq "configured"
+if (-not $isApprovedQueue -and -not $isManualBuild) {
+    throw "The approved app request for shop '$ShopId' is not queued for preparation or a manual build."
+}
 $shopAccessToken = if ($null -ne $existingCustomerApp) {
     "$($existingCustomerApp.accessToken)".Trim()
 } else {
     ""
 }
 if ($CustomerAppMode -eq "separate" -and
-    [string]::IsNullOrWhiteSpace($shopAccessToken) -and
-    -not $SkipReleaseBuild) {
+    [string]::IsNullOrWhiteSpace($shopAccessToken)) {
     throw "Separate customer app is missing its shop access token. Run the owner provisioning/link flow first, then rerun this build."
 }
 $slug = New-AsciiSlug -Value $ShopName
@@ -308,7 +366,12 @@ $bundleId = if ($null -ne $existingCustomerApp -and "$($existingCustomerApp.bund
     $packageName
 }
 $workspaceName = "${slug}_${hash}_customer_app"
-$outputPath = Join-Path $OutputRoot $workspaceName
+$resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+$outputPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedOutputRoot $workspaceName))
+$expectedPrefix = $resolvedOutputRoot + [System.IO.Path]::DirectorySeparatorChar
+if (-not $outputPath.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Generated app path must stay inside OutputRoot."
+}
 $workspacePath = $outputPath
 $buildVersion = ""
 $aabPath = ""
@@ -318,6 +381,9 @@ $safeDisplayName = [Security.SecurityElement]::Escape($displayName)
 if (Test-Path -LiteralPath $outputPath) {
     if (-not $Force) {
         throw "Output already exists: $outputPath. Use -Force only when you intentionally want to rebuild it."
+    }
+    if ((Get-Item -LiteralPath $outputPath -Force).Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+        throw "Refusing to replace a linked output directory: $outputPath"
     }
     Remove-Item -LiteralPath $outputPath -Recurse -Force
 }
@@ -358,18 +424,27 @@ $config = $config -replace "static const String customerAppMode = '[^']*';", "st
 $config = $config -replace "static const String shopAccessToken = '[^']*';", "static const String shopAccessToken = '$(ConvertTo-DartString $shopAccessToken)';"
 Write-Utf8NoBom -Path $configPath -Content $config
 
+$brandThemePath = Join-Path $outputPath "lib\brand_theme.dart"
+$paletteMappings = @(
+    @{ Token = "canvas"; Key = "canvas" },
+    @{ Token = "paper"; Key = "paper" },
+    @{ Token = "ink"; Key = "ink" },
+    @{ Token = "teal"; Key = "primary" },
+    @{ Token = "tealDeep"; Key = "primaryDark" },
+    @{ Token = "sky"; Key = "soft" },
+    @{ Token = "skySoft"; Key = "soft" },
+    @{ Token = "sage"; Key = "accent" }
+)
+foreach ($mapping in $paletteMappings) {
+    $hex = "$($palette.PSObject.Properties[$mapping.Key].Value)".Substring(1).ToUpperInvariant()
+    $pattern = '(?m)^  static const ' + $mapping.Token + ' = Color\(0xFF[0-9A-Fa-f]{6}\);$'
+    Replace-InFile -Path $brandThemePath -Pattern $pattern -Replacement "  static const $($mapping.Token) = Color(0xFF$hex);"
+}
+
 $logoDestination = Join-Path $outputPath "assets\images\customer_app_logo.png"
 $iconDestination = Join-Path $outputPath "assets\images\customer_app_icon.png"
-$logoSource = if (-not [string]::IsNullOrWhiteSpace($LogoPath)) {
-    $LogoPath
-} else {
-    $shopLogoUrl
-}
-$iconSource = if (-not [string]::IsNullOrWhiteSpace($IconPath)) {
-    $IconPath
-} else {
-    $shopIconUrl
-}
+$logoSource = $shopLogoUrl
+$iconSource = $shopIconUrl
 $logoCopied = $false
 if (-not [string]::IsNullOrWhiteSpace($logoSource)) {
     $logoCopied = Copy-BrandAsset -Source $logoSource -Destination $logoDestination
@@ -503,6 +578,15 @@ $manifest = [ordered]@{
     shopEmail = $shopEmail
     appDisplayName = $displayName
     mode = $CustomerAppMode
+    provisioningRequested = $provisioningRequested
+    brandingApprovedAt = "$($existingCustomerApp.brandingApprovedAt)"
+    palette = $palette
+    provisioningRequestedAt = if ($null -ne $existingCustomerApp) {
+        "$($existingCustomerApp.provisioningRequestedAt)"
+    } else { "" }
+    provisioningRequestedBy = if ($null -ne $existingCustomerApp) {
+        "$($existingCustomerApp.provisioningRequestedBy)"
+    } else { "" }
     packageName = $packageName
     bundleId = $bundleId
     firebaseProjectId = $ProjectId
@@ -567,6 +651,15 @@ function Update-ShopCustomerAppMetadata {
         shopPhone = $shopPhone
         shopEmail = $shopEmail
         mode = $CustomerAppMode
+        provisioningRequested = $provisioningRequested
+        brandingApprovedAt = "$($existingCustomerApp.brandingApprovedAt)"
+        palette = $palette
+        provisioningRequestedAt = if ($null -ne $existingCustomerApp) {
+            "$($existingCustomerApp.provisioningRequestedAt)"
+        } else { $updatedAt }
+        provisioningRequestedBy = if ($null -ne $existingCustomerApp) {
+            "$($existingCustomerApp.provisioningRequestedBy)"
+        } else { "" }
         packageName = $packageName
         bundleId = $bundleId
         firebaseAndroidAppId = $firebaseAndroidAppId

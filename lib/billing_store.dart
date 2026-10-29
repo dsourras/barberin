@@ -18,6 +18,27 @@ bool get _barberoUsesAppleStore =>
 bool get _barberoUsesNativeStore =>
     defaultTargetPlatform == TargetPlatform.android || _barberoUsesAppleStore;
 
+Future<String> barberoAppleReceiptForBackend(
+  String verificationData,
+  Future<String> Function() loadReceipt, {
+  Future<void> Function()? refreshReceipt,
+}) async {
+  final data = verificationData.trim();
+  final parts = data.split('.');
+  final isSignedTransaction =
+      parts.length == 3 && parts.every((part) => part.isNotEmpty);
+  if (data.isNotEmpty && !isSignedTransaction) return data;
+
+  // StoreKit 2 provides a signed transaction, but our backend verifies app receipts.
+  var receipt = (await loadReceipt()).trim();
+  if (receipt.isEmpty && refreshReceipt != null) {
+    await refreshReceipt();
+    receipt = (await loadReceipt()).trim();
+  }
+  if (receipt.isEmpty) throw StateError('app-store-receipt-unavailable');
+  return receipt;
+}
+
 class BarberoStoreProductOffer {
   const BarberoStoreProductOffer({required this.plan, required this.product});
 
@@ -217,13 +238,17 @@ class BarberoStoreBillingService {
     isPurchasePending.value = true;
     lastStoreError.value = null;
     final purchaseParam = PurchaseParam(productDetails: offer.product);
-    final launched = await _inAppPurchase.buyNonConsumable(
-      purchaseParam: purchaseParam,
-    );
-    if (!launched) {
+    try {
+      final launched = await _inAppPurchase.buyNonConsumable(
+        purchaseParam: purchaseParam,
+      );
+      if (launched) return;
+    } catch (_) {
       isPurchasePending.value = false;
-      throw Exception('purchase-flow-not-started');
+      rethrow;
     }
+    isPurchasePending.value = false;
+    throw Exception('purchase-flow-not-started');
   }
 
   Future<void> restorePurchases() async {
@@ -536,6 +561,18 @@ class BarberoStoreBillingService {
     final purchase = Map<String, dynamic>.from(
       (pending['purchase'] as Map?) ?? <String, dynamic>{},
     );
+    if (purchase['platform'] == 'ios' || purchase['platform'] == 'macos') {
+      final verificationData = Map<String, dynamic>.from(
+        (purchase['verificationData'] as Map?) ?? <String, dynamic>{},
+      );
+      verificationData['serverVerificationData'] =
+          await barberoAppleReceiptForBackend(
+            '${verificationData['serverVerificationData'] ?? ''}',
+            SKReceiptManager.retrieveReceiptData,
+            refreshReceipt: () => SKRequestMaker().startRefreshReceiptRequest(),
+          );
+      purchase['verificationData'] = verificationData;
+    }
     final response = await http.post(
       Uri.parse(
         'https://europe-west1-barbero-88d00.cloudfunctions.net/barberoProcessStorePurchase',

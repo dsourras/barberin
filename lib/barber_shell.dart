@@ -21,6 +21,7 @@ bool _useDesktopBarberShell(BuildContext context) {
 
 class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
   int tabIndex = 0;
+  Widget? _moreDetailPage;
   late DateTime currentAthensTime;
   late DateTime selectedDate;
   String ownerFirstName = '';
@@ -38,10 +39,20 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
   List<CustomerProfile> liveCustomers = const <CustomerProfile>[];
   List<CrewMember> liveBarbers = const <CrewMember>[];
   Timer? _clockTimer;
-  Timer? _windowsShopPollTimer;
+  Timer? _windowsRealtimeReconnectTimer;
+  Timer? _windowsRealtimeTokenRefreshTimer;
+  WindowsRealtimeShopStream? _windowsRealtimeStream;
+  StreamSubscription<String>? _windowsRealtimeSubscription;
+  int _windowsRealtimeReconnectAttempt = 0;
+  bool _windowsRealtimeStopped = false;
+  bool _windowsRealtimeReconnectScheduled = false;
+  DateTime? _windowsRealtimeLastFallbackSnapshotAt;
+  String _windowsRealtimeEvent = 'put';
+  final List<String> _windowsRealtimeDataLines = <String>[];
   final List<StreamSubscription<DatabaseEvent>> _shopSubscriptions =
       <StreamSubscription<DatabaseEvent>>[];
   final Map<String, dynamic> _liveShopData = <String, dynamic>{};
+  final Map<String, dynamic> _windowsRealtimeShopData = <String, dynamic>{};
   final WeeklyScheduleRepository _scheduleRepository =
       WeeklyScheduleRepository();
   final CustomerAdminRepository _customerAdminRepository =
@@ -814,7 +825,11 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
     );
     WidgetsBinding.instance.removeObserver(this);
     _clockTimer?.cancel();
-    _windowsShopPollTimer?.cancel();
+    _windowsRealtimeStopped = true;
+    _windowsRealtimeReconnectTimer?.cancel();
+    _windowsRealtimeTokenRefreshTimer?.cancel();
+    unawaited(_windowsRealtimeSubscription?.cancel());
+    unawaited(_windowsRealtimeStream?.close());
     for (final subscription in _shopSubscriptions) {
       unawaited(subscription.cancel());
     }
@@ -827,12 +842,12 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       _syncCurrentDayIfNeeded();
       if (isBarberinWindows) {
-        _startWindowsShopPolling();
-        unawaited(_refreshWindowsShopSnapshot());
+        _windowsRealtimeStopped = false;
+        unawaited(_connectWindowsRealtimeShopStream());
       }
     } else if (isBarberinWindows) {
-      _windowsShopPollTimer?.cancel();
-      _windowsShopPollTimer = null;
+      _windowsRealtimeStopped = true;
+      unawaited(_stopWindowsRealtimeShopStream());
     }
   }
 
@@ -888,14 +903,204 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
     }
   }
 
-  void _startWindowsShopPolling() {
-    if (_windowsShopPollTimer != null) {
+  Future<void> _stopWindowsRealtimeShopStream() async {
+    _windowsRealtimeReconnectTimer?.cancel();
+    _windowsRealtimeReconnectTimer = null;
+    _windowsRealtimeTokenRefreshTimer?.cancel();
+    _windowsRealtimeTokenRefreshTimer = null;
+    _windowsRealtimeReconnectScheduled = false;
+    final subscription = _windowsRealtimeSubscription;
+    _windowsRealtimeSubscription = null;
+    await subscription?.cancel();
+    final stream = _windowsRealtimeStream;
+    _windowsRealtimeStream = null;
+    await stream?.close();
+  }
+
+  Future<void> _connectWindowsRealtimeShopStream() async {
+    if (!isBarberinWindows || !mounted || _windowsRealtimeStopped) return;
+    if (_windowsRealtimeSubscription != null) return;
+    try {
+      final stream = await WindowsBackendAdapter.instance
+          .openShopRealtimeStream(_session.shopId);
+      if (!mounted || _windowsRealtimeStopped) {
+        await stream.close();
+        return;
+      }
+      _windowsRealtimeStream = stream;
+      _windowsRealtimeReconnectAttempt = 0;
+      _windowsRealtimeReconnectScheduled = false;
+      _windowsRealtimeEvent = 'put';
+      _windowsRealtimeDataLines.clear();
+      final textStream = stream.response.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter());
+      _windowsRealtimeSubscription = textStream.listen(
+        _handleWindowsRealtimeLine,
+        onError: (_) => unawaited(_handleWindowsRealtimeDisconnect()),
+        onDone: () => unawaited(_handleWindowsRealtimeDisconnect()),
+        cancelOnError: true,
+      );
+      _windowsRealtimeTokenRefreshTimer?.cancel();
+      _windowsRealtimeTokenRefreshTimer = Timer(
+        const Duration(minutes: 45),
+        () => unawaited(_restartWindowsRealtimeShopStream()),
+      );
+    } catch (_) {
+      // Keep the last known data visible and use one authenticated snapshot
+      // while the stream is unavailable; reconnecting remains automatic.
+      final now = DateTime.now();
+      final lastFallback = _windowsRealtimeLastFallbackSnapshotAt;
+      if (lastFallback == null ||
+          now.difference(lastFallback) >= const Duration(minutes: 15)) {
+        _windowsRealtimeLastFallbackSnapshotAt = now;
+        unawaited(_refreshWindowsShopSnapshot());
+      }
+      _scheduleWindowsRealtimeReconnect();
+    }
+  }
+
+  Future<void> _restartWindowsRealtimeShopStream() async {
+    if (_windowsRealtimeStopped) return;
+    await _stopWindowsRealtimeShopStream();
+    if (!mounted || _windowsRealtimeStopped) return;
+    await _connectWindowsRealtimeShopStream();
+  }
+
+  Future<void> _handleWindowsRealtimeDisconnect() async {
+    if (_windowsRealtimeStopped) return;
+    final subscription = _windowsRealtimeSubscription;
+    _windowsRealtimeSubscription = null;
+    await subscription?.cancel();
+    final stream = _windowsRealtimeStream;
+    _windowsRealtimeStream = null;
+    await stream?.close();
+    _scheduleWindowsRealtimeReconnect();
+  }
+
+  void _scheduleWindowsRealtimeReconnect() {
+    if (_windowsRealtimeStopped ||
+        _windowsRealtimeReconnectScheduled ||
+        !mounted) {
       return;
     }
-    _windowsShopPollTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => unawaited(_refreshWindowsShopSnapshot()),
+    _windowsRealtimeReconnectScheduled = true;
+    final seconds = math.min(
+      60,
+      2 * math.pow(2, _windowsRealtimeReconnectAttempt).round(),
     );
+    _windowsRealtimeReconnectAttempt = math.min(
+      _windowsRealtimeReconnectAttempt + 1,
+      5,
+    );
+    _windowsRealtimeReconnectTimer = Timer(Duration(seconds: seconds), () {
+      _windowsRealtimeReconnectTimer = null;
+      _windowsRealtimeReconnectScheduled = false;
+      unawaited(_connectWindowsRealtimeShopStream());
+    });
+  }
+
+  void _handleWindowsRealtimeLine(String line) {
+    if (line.startsWith('event:')) {
+      _windowsRealtimeEvent = line.substring('event:'.length).trim();
+      return;
+    }
+    if (line.startsWith('data:')) {
+      _windowsRealtimeDataLines.add(line.substring('data:'.length).trimLeft());
+      return;
+    }
+    if (line.trim().isEmpty) {
+      final raw = _windowsRealtimeDataLines.join('\n');
+      _windowsRealtimeDataLines.clear();
+      if (raw.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(raw);
+          if (decoded is Map) {
+            _applyWindowsRealtimeEvent(
+              _windowsRealtimeEvent,
+              decoded.cast<String, dynamic>(),
+            );
+          }
+        } catch (_) {
+          // Ignore a malformed event and keep the stream alive.
+        }
+      }
+      _windowsRealtimeEvent = 'put';
+    }
+  }
+
+  void _applyWindowsRealtimeEvent(
+    String eventType,
+    Map<String, dynamic> event,
+  ) {
+    final path = '${event['path'] ?? '/'}';
+    final data = event['data'];
+    if (eventType == 'patch' && data is Map) {
+      for (final entry in data.entries) {
+        _setWindowsRealtimePath('$path/${entry.key}', entry.value);
+      }
+    } else {
+      _setWindowsRealtimePath(path, data);
+    }
+    if (mounted) {
+      _applyShopData(Map<String, dynamic>.from(_windowsRealtimeShopData));
+    }
+  }
+
+  void _setWindowsRealtimePath(String path, Object? value) {
+    final segments = path
+        .split('/')
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+    if (segments.isEmpty) {
+      _windowsRealtimeShopData
+        ..clear()
+        ..addAll(_normalizeWindowsRealtimeMap(value));
+      return;
+    }
+    var current = _windowsRealtimeShopData;
+    for (final segment in segments.take(segments.length - 1)) {
+      final existing = current[segment];
+      if (existing is Map) {
+        final child = existing is Map<String, dynamic>
+            ? existing
+            : existing.map(
+                (key, item) =>
+                    MapEntry('$key', _normalizeWindowsRealtimeValue(item)),
+              );
+        current[segment] = child;
+        current = child;
+      } else {
+        final child = <String, dynamic>{};
+        current[segment] = child;
+        current = child;
+      }
+    }
+    final last = segments.last;
+    if (value == null) {
+      current.remove(last);
+    } else {
+      current[last] = _normalizeWindowsRealtimeValue(value);
+    }
+  }
+
+  Map<String, dynamic> _normalizeWindowsRealtimeMap(Object? value) {
+    final normalized = _normalizeWindowsRealtimeValue(value);
+    return normalized is Map
+        ? normalized.map((key, item) => MapEntry('$key', item))
+        : <String, dynamic>{};
+  }
+
+  dynamic _normalizeWindowsRealtimeValue(Object? value) {
+    if (value is Map) {
+      return value.map(
+        (key, item) => MapEntry('$key', _normalizeWindowsRealtimeValue(item)),
+      );
+    }
+    if (value is List) {
+      return value.map(_normalizeWindowsRealtimeValue).toList(growable: false);
+    }
+    return value;
   }
 
   Future<void> _initializeRealtimeShopSync() async {
@@ -904,8 +1109,8 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
       if (user == null) return;
       final session = _session;
       if (isBarberinWindows) {
-        await _refreshWindowsShopSnapshot();
-        _startWindowsShopPolling();
+        _windowsRealtimeStopped = false;
+        await _connectWindowsRealtimeShopStream();
         return;
       }
       for (final subscription in _shopSubscriptions) {
@@ -1414,11 +1619,25 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
       );
       return;
     }
-    setState(() => tabIndex = index);
+    setState(() {
+      _moreDetailPage = null;
+      tabIndex = index;
+    });
   }
 
   void openProgramTab() {
-    setState(() => tabIndex = 1);
+    setState(() {
+      _moreDetailPage = null;
+      tabIndex = 1;
+    });
+  }
+
+  void _openMoreDetailPage(BuildContext context, Widget page) {
+    if (_useDesktopBarberShell(context)) {
+      setState(() => _moreDetailPage = page);
+      return;
+    }
+    _openBarberoMenuPage(context, page);
   }
 
   void _openAppointmentFromNotification(
@@ -1592,7 +1811,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
               appointments: liveAppointments,
               weeklySchedule: weeklySchedule,
               onOpenCustomerIntelligence: () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   CustomerIntelligencePage(
                     selectedDate: selectedDate,
@@ -1605,7 +1824,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
       MoreHubPage(
         onOpenSustainabilityIndex: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   SustainabilityIndexPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1616,7 +1835,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenCustomerIntelligence: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   CustomerIntelligencePage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1627,7 +1846,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenFinancialClarity: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   FinancialClarityPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1638,7 +1857,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenOperationalAlerts: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   OperationalAlertsPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1650,7 +1869,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenBarberPerformance: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   BarberPerformancePage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1661,7 +1880,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenServiceInsights: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   ServiceInsightsPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1672,7 +1891,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenDemandInsights: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   DemandInsightsPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1683,7 +1902,7 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
             : null,
         onOpenBusinessSnapshot: _permissions.viewStats
             ? () {
-                _openBarberoMenuPage(
+                _openMoreDetailPage(
                   context,
                   BusinessSnapshotPage(
                     selectedDate: _barberinReportsAnchorDate,
@@ -1701,20 +1920,24 @@ class _BarberShellState extends State<BarberShell> with WidgetsBindingObserver {
     return PopScope(
       canPop: safeTabIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && safeTabIndex != 0 && mounted) {
-          setState(() => tabIndex = 0);
+        if (!didPop && mounted) {
+          if (_moreDetailPage != null && _useDesktopBarberShell(context)) {
+            setState(() => _moreDetailPage = null);
+          } else if (safeTabIndex != 0) {
+            setState(() => tabIndex = 0);
+          }
         }
       },
       child: useDesktopShell
           ? _DesktopBarberWorkspace(
-              currentIndex: safeTabIndex,
+              currentIndex: _moreDetailPage == null ? safeTabIndex : 4,
               session: _session,
               canViewClients: _permissions.viewClients,
               canViewStats: _permissions.viewStats,
               hasMultipleShops: currentBarberoAccessibleShops.value.length > 1,
               onTabTap: _handleTabTap,
               onSwitchShop: () => _openBarberoShopSwitcher(context),
-              child: pages[safeTabIndex],
+              child: _moreDetailPage ?? pages[safeTabIndex],
             )
           : Scaffold(
               body: pages[safeTabIndex],
@@ -2327,10 +2550,10 @@ class _RevenueReportsPageState extends State<RevenueReportsPage> {
                     GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
+                      crossAxisCount: _reportsMetricColumnCount(context),
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
-                      childAspectRatio: 1.5,
+                      childAspectRatio: _reportsMetricAspectRatio(context),
                       children: [
                         _ReportsMetricCard(
                           label: 'Ραντεβού',
@@ -2705,11 +2928,17 @@ class _ReportsMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final compact = _DesktopShellScope.enabledOf(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: EdgeInsets.fromLTRB(
+        compact ? 11 : 18,
+        compact ? 10 : 18,
+        compact ? 11 : 18,
+        compact ? 9 : 16,
+      ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(compact ? 13 : 22),
         border: Border.all(color: scheme.outline),
       ),
       child: Column(
@@ -2721,11 +2950,11 @@ class _ReportsMetricCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: _moreCardTextColor(context),
-              fontSize: 11.5,
+              fontSize: compact ? 9.5 : 11.5,
               height: 1.15,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: compact ? 5 : 12),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -2738,7 +2967,7 @@ class _ReportsMetricCard extends StatelessWidget {
                   softWrap: false,
                   style: TextStyle(
                     color: _moreCardTextColor(context),
-                    fontSize: 24,
+                    fontSize: compact ? 18 : 24,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.5,
                   ),
@@ -2750,6 +2979,16 @@ class _ReportsMetricCard extends StatelessWidget {
       ),
     );
   }
+}
+
+int _reportsMetricColumnCount(BuildContext context) {
+  if (!_DesktopShellScope.enabledOf(context)) return 2;
+  return MediaQuery.sizeOf(context).width >= 1320 ? 3 : 2;
+}
+
+double _reportsMetricAspectRatio(BuildContext context) {
+  if (!_DesktopShellScope.enabledOf(context)) return 1.5;
+  return MediaQuery.sizeOf(context).width >= 1320 ? 3.8 : 2.8;
 }
 
 class _RevenueTrendData {
@@ -3853,10 +4092,10 @@ class _CustomerIntelligencePageState extends State<CustomerIntelligencePage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Ενεργοί πελάτες',
@@ -4090,10 +4329,10 @@ class _FinancialClarityPageState extends State<FinancialClarityPage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Εκτιμώμενα',
@@ -4437,10 +4676,10 @@ class _BarberPerformancePageState extends State<BarberPerformancePage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Ενεργοί barber',
@@ -4640,10 +4879,10 @@ class _ServiceInsightsPageState extends State<ServiceInsightsPage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Υπηρεσίες που παρακολουθούνται',
@@ -4828,10 +5067,10 @@ class _DemandInsightsPageState extends State<DemandInsightsPage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Κλεισμένα ραντεβού',
@@ -5027,10 +5266,10 @@ class _BusinessSnapshotPageState extends State<BusinessSnapshotPage> {
                         GridView.count(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
+                          crossAxisCount: _reportsMetricColumnCount(context),
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: _reportsMetricAspectRatio(context),
                           children: [
                             _ReportsMetricCard(
                               label: 'Πραγματικά έσοδα',
@@ -7290,7 +7529,7 @@ class _CustomerAppLinkPageState extends State<CustomerAppLinkPage> {
               FilledButton.icon(
                 onPressed: () => _openUrl(_playStoreUrl),
                 icon: const Icon(Icons.android_rounded),
-                label: const Text('Άνοιγμα Google Play'),
+                label: const Text('Άνοιγμα καταστήματος εφαρμογών'),
               ),
             if (_appStoreUrl.isNotEmpty) ...[
               const SizedBox(height: 8),

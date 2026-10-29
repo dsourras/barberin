@@ -6,6 +6,21 @@ part of 'main.dart';
 /// reads or embedding service credentials in the desktop client.
 bool get isBarberinWindows => !kIsWeb && Platform.isWindows;
 
+/// Authenticated Firebase RTDB stream used by Windows, where FlutterFire's
+/// Realtime Database plugin is not available. The stream sends one initial
+/// snapshot followed by small `put`/`patch` events for changed paths.
+class WindowsRealtimeShopStream {
+  WindowsRealtimeShopStream(this.client, this.response);
+
+  final http.Client client;
+  final http.StreamedResponse response;
+
+  Future<void> close() async {
+    // Closing the client terminates the long-lived HTTP response stream.
+    client.close();
+  }
+}
+
 class WindowsBackendAdapter {
   WindowsBackendAdapter._();
 
@@ -72,6 +87,33 @@ class WindowsBackendAdapter {
       throw Exception('invalid-windows-shop-snapshot');
     }
     return shop.cast<String, dynamic>();
+  }
+
+  Future<WindowsRealtimeShopStream> openShopRealtimeStream(
+    String shopId,
+  ) async {
+    final token = await _idToken();
+    final client = http.Client();
+    final uri = Uri.parse(
+      'https://barbero-88d00-default-rtdb.firebaseio.com/'
+      'shops/${Uri.encodeComponent(shopId)}.json?'
+      'auth=${Uri.encodeQueryComponent(token)}',
+    );
+    final request = http.Request('GET', uri)
+      ..headers['Accept'] = 'text/event-stream';
+    try {
+      final response = await client.send(request);
+      if (response.statusCode != 200) {
+        client.close();
+        throw Exception(
+          'windows-realtime-stream-failed-${response.statusCode}',
+        );
+      }
+      return WindowsRealtimeShopStream(client, response);
+    } catch (_) {
+      client.close();
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> loadSchedule(String shopId) async {
