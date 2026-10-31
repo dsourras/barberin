@@ -557,7 +557,7 @@ class BarberoStoreBillingService {
     if (user == null) {
       throw Exception('missing-billing-context');
     }
-    final idToken = await user.getIdToken();
+    final idToken = await user.getIdToken(true);
     final purchase = Map<String, dynamic>.from(
       (pending['purchase'] as Map?) ?? <String, dynamic>{},
     );
