@@ -36,6 +36,21 @@ String barberoStoreDisplayPrice({
   return storePrice;
 }
 
+String barberoStoreYearlySavingsLabel({
+  required BarberoStoreProductOffer? monthlyOffer,
+  required BarberoStoreProductOffer? yearlyOffer,
+}) {
+  if (monthlyOffer == null || yearlyOffer == null) return '';
+  final monthly = monthlyOffer.product;
+  final yearly = yearlyOffer.product;
+  if (monthly.currencyCode != yearly.currencyCode || monthly.rawPrice <= 0) {
+    return '';
+  }
+  final percent = ((1 - yearly.rawPrice / (monthly.rawPrice * 12)) * 100)
+      .round();
+  return percent > 0 ? 'Εξοικονόμηση $percent%' : '';
+}
+
 String barberoStorePurchaseFailureMessage(PurchaseStatus status) =>
     status == PurchaseStatus.restored
     ? 'Δεν ήταν δυνατή η επαναφορά της προηγούμενης αγοράς για αυτό το κατάστημα. Δοκίμασε ξανά αργότερα ή επικοινώνησε με την υποστήριξη.'
@@ -116,7 +131,8 @@ class BarberoStoreProductOffer {
     productId: product.id,
     storePrice: product.price,
     appleStoreCountryCode: switch (product) {
-      AppStoreProductDetails details => details.skProduct.priceLocale.countryCode,
+      AppStoreProductDetails details =>
+        details.skProduct.priceLocale.countryCode,
       AppStoreProduct2Details _ => null,
       _ => null,
     },

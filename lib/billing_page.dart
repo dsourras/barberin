@@ -123,9 +123,7 @@ class _BarberoSubscriptionGatePageState
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Δεν ήταν δυνατή η επαναφορά αγορών.'),
-        ),
+        const SnackBar(content: Text('Δεν ήταν δυνατή η επαναφορά αγορών.')),
       );
     } finally {
       if (mounted) {
@@ -236,8 +234,10 @@ class _BarberoSubscriptionGatePageState
                             selected:
                                 _selectedPlan == BarberoBillingPlan.yearly,
                             badgeText: 'Καλύτερη αξία',
-                            detailText:
-                                'Εξοικονόμηση ${billing.yearlySavingsEur} EUR',
+                            detailText: barberoStoreYearlySavingsLabel(
+                              monthlyOffer: monthlyOffer,
+                              yearlyOffer: yearlyOffer,
+                            ),
                             onTap: isOwner
                                 ? () => setState(
                                     () => _selectedPlan =
@@ -612,8 +612,10 @@ class _LegacyBarberoBillingPageState extends State<_LegacyBarberoBillingPage> {
                             '${billing.yearlyPriceEur} EUR',
                         selected: _selectedPlan == BarberoBillingPlan.yearly,
                         badgeText: 'Καλύτερη αξία',
-                        detailText:
-                            'Εξοικονόμηση ${billing.yearlySavingsEur} EUR',
+                        detailText: barberoStoreYearlySavingsLabel(
+                          monthlyOffer: monthlyOffer,
+                          yearlyOffer: yearlyOffer,
+                        ),
                         onTap: () => setState(
                           () => _selectedPlan = BarberoBillingPlan.yearly,
                         ),
@@ -1287,8 +1289,10 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
                             '${billing.yearlyPriceEur} EUR',
                         selected: _selectedPlan == BarberoBillingPlan.yearly,
                         badgeText: 'Καλύτερη αξία',
-                        detailText:
-                            'Εξοικονόμηση ${billing.yearlySavingsEur} EUR',
+                        detailText: barberoStoreYearlySavingsLabel(
+                          monthlyOffer: monthlyOffer,
+                          yearlyOffer: yearlyOffer,
+                        ),
                         onTap: () => setState(
                           () => _selectedPlan = BarberoBillingPlan.yearly,
                         ),

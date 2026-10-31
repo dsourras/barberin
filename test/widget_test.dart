@@ -39,6 +39,50 @@ void main() {
     );
   });
 
+  test('yearly savings use the storefront prices, not a fixed euro amount', () {
+    BarberoStoreProductOffer offer(
+      BarberoBillingPlan plan,
+      double amount,
+      String currency,
+    ) => BarberoStoreProductOffer(
+      plan: plan,
+      product: ProductDetails(
+        id: plan == BarberoBillingPlan.monthly
+            ? 'barbero_monthly'
+            : 'barbero_yearly',
+        title: 'Test',
+        description: 'Test',
+        price: '$amount $currency',
+        rawPrice: amount,
+        currencyCode: currency,
+      ),
+    );
+
+    final greekMonthly = offer(BarberoBillingPlan.monthly, 29.99, 'EUR');
+    final greekYearly = offer(BarberoBillingPlan.yearly, 299.99, 'EUR');
+    expect(
+      barberoStoreYearlySavingsLabel(
+        monthlyOffer: greekMonthly,
+        yearlyOffer: greekYearly,
+      ),
+      'Εξοικονόμηση 17%',
+    );
+    expect(
+      barberoStoreYearlySavingsLabel(
+        monthlyOffer: greekMonthly,
+        yearlyOffer: offer(BarberoBillingPlan.yearly, 249.99, 'USD'),
+      ),
+      '',
+    );
+    expect(
+      barberoStoreYearlySavingsLabel(
+        monthlyOffer: null,
+        yearlyOffer: greekYearly,
+      ),
+      '',
+    );
+  });
+
   test('restored purchase failure does not claim a new purchase', () {
     expect(
       barberoStorePurchaseFailureMessage(PurchaseStatus.restored),
