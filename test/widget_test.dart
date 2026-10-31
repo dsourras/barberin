@@ -5,46 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
-  test('Apple EUR prices match the configured checkout prices', () {
-    expect(
-      barberoStoreDisplayPrice(
-        productId: 'barbero_monthly',
-        storePrice: '24,99 €',
-        storeCurrencyCode: 'EUR',
-        isAppleStore: true,
-      ),
-      '29,99 €',
-    );
-    expect(
-      barberoStoreDisplayPrice(
-        productId: 'barbero_yearly',
-        storePrice: '249,99 €',
-        storeCurrencyCode: 'EUR',
-        isAppleStore: true,
-      ),
-      '299,99 €',
-    );
-    expect(
-      barberoStoreDisplayPrice(
-        productId: 'barbero_monthly',
-        storePrice: '24,99 €',
-        storeCurrencyCode: 'EUR',
-        isAppleStore: false,
-      ),
-      '24,99 €',
-    );
-    expect(
-      barberoStoreDisplayPrice(
-        productId: 'barbero_monthly',
-        storePrice: '\$29.99',
-        storeCurrencyCode: 'USD',
-        isAppleStore: true,
-      ),
-      '\$29.99',
-    );
-  });
-
-  test('product offer uses corrected EUR display only on Apple', () {
+  test('product offer displays the exact price returned by each storefront', () {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     addTearDown(() => debugDefaultTargetPlatformOverride = null);
     final offer = BarberoStoreProductOffer(
@@ -58,9 +19,22 @@ void main() {
         currencyCode: 'EUR',
       ),
     );
-    expect(offer.displayPrice, '29,99 €');
+    expect(offer.displayPrice, '24,99 €');
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     expect(offer.displayPrice, '24,99 €');
+
+    final usOffer = BarberoStoreProductOffer(
+      plan: BarberoBillingPlan.yearly,
+      product: ProductDetails(
+        id: 'barbero_yearly',
+        title: 'Yearly',
+        description: 'Subscription',
+        price: '\$249.99',
+        rawPrice: 249.99,
+        currencyCode: 'USD',
+      ),
+    );
+    expect(usOffer.displayPrice, '\$249.99');
   });
 
   testWidgets('menu pages can return to the previous page or home', (

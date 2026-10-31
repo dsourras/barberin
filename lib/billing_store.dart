@@ -2,8 +2,6 @@ part of 'main.dart';
 
 const String _barberoMonthlyProductId = 'barbero_monthly';
 const String _barberoYearlyProductId = 'barbero_yearly';
-const String _barberoGreekMonthlyPrice = '29,99 €';
-const String _barberoGreekYearlyPrice = '299,99 €';
 const String _barberinStorePackageId = 'com.barberin.app';
 const List<String> _barberinAndroidStoreHostParts = <String>[
   'play',
@@ -19,25 +17,6 @@ bool get _barberoUsesAppleStore =>
 
 bool get _barberoUsesNativeStore =>
     defaultTargetPlatform == TargetPlatform.android || _barberoUsesAppleStore;
-
-String barberoStoreDisplayPrice({
-  required String productId,
-  required String storePrice,
-  required String storeCurrencyCode,
-  required bool isAppleStore,
-}) {
-  // TestFlight can return a stale EUR product price while checkout uses the
-  // current App Store Connect price. All configured EUR storefronts use these.
-  if (isAppleStore && storeCurrencyCode.toUpperCase() == 'EUR') {
-    if (productId == _barberoMonthlyProductId) {
-      return _barberoGreekMonthlyPrice;
-    }
-    if (productId == _barberoYearlyProductId) {
-      return _barberoGreekYearlyPrice;
-    }
-  }
-  return storePrice;
-}
 
 bool barberoIsAppleSandboxSubscription(BarberoBillingSnapshot billing) =>
     _barberoUsesAppleStore &&
@@ -134,12 +113,7 @@ class BarberoStoreProductOffer {
   final ProductDetails product;
 
   String get id => product.id;
-  String get displayPrice => barberoStoreDisplayPrice(
-    productId: product.id,
-    storePrice: product.price,
-    storeCurrencyCode: product.currencyCode,
-    isAppleStore: _barberoUsesAppleStore,
-  );
+  String get displayPrice => product.price;
 
   bool get isNativeFreeTrialOffer {
     if (product is GooglePlayProductDetails) {
