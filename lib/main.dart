@@ -791,6 +791,16 @@ BarberoSession requireCurrentBarberoSession() {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    // iOS still verifies app receipts on the backend, not StoreKit 2 JWS.
+    // Configure before InAppPurchase.instance registers the StoreKit platform.
+    try {
+      // ignore: deprecated_member_use
+      await InAppPurchaseStoreKitPlatform.enableStoreKit1();
+    } catch (error) {
+      debugPrint('StoreKit 1 configuration unavailable: $error');
+    }
+  }
   Object? firebaseStartupError;
   try {
     await _initializeBarberinFirebase();

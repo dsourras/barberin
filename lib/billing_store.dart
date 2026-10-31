@@ -312,6 +312,7 @@ class BarberoStoreBillingService {
     }
     _restoreRequestedShopId = session.shopId;
     _restoreRequestedAt = DateTime.now();
+    lastStoreError.value = null;
     try {
       await _inAppPurchase.restorePurchases();
     } catch (_) {

@@ -89,7 +89,9 @@ class _BarberoSubscriptionGatePageState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Η δωρεάν δοκιμή ενός μήνα είναι πλέον ενεργή.'),
+          content: Text(
+            'Ολοκλήρωσε την αγορά στο παράθυρο του καταστήματος. Η δοκιμή ενεργοποιείται μετά την επαλήθευση.',
+          ),
         ),
       );
     } catch (_) {
@@ -97,6 +99,32 @@ class _BarberoSubscriptionGatePageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Δεν ήταν δυνατή η έναρξη της δωρεάν δοκιμής.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _restorePurchases() async {
+    setState(() => _isSubmitting = true);
+    try {
+      await _storeBilling.restorePurchases();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Ελέγχουμε την προηγούμενη αγορά. Η πρόσβαση θα ενεργοποιηθεί μόλις επαληθευτεί.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Δεν ήταν δυνατή η επαναφορά αγορών.'),
         ),
       );
     } finally {
@@ -270,6 +298,13 @@ class _BarberoSubscriptionGatePageState
                         await FirebaseAuth.instance.signOut();
                       },
                     ),
+                  if (isOwner && _barberoUsesNativeStore) ...[
+                    const SizedBox(height: 12),
+                    SecondaryButton(
+                      label: 'Επαναφορά αγορών',
+                      onPressed: _isSubmitting ? () {} : _restorePurchases,
+                    ),
+                  ],
                   if (!isOwner && !billing.requiresPlanSelection) ...[
                     const SizedBox(height: 12),
                     SecondaryButton(
