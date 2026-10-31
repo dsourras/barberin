@@ -207,7 +207,7 @@ Future<UserCredential> _barberinSignInWithGoogleOnWindows() async {
       idToken: credentialData['idToken'],
       accessToken: credentialData['accessToken'],
     );
-    return FirebaseAuth.instance.signInWithCredential(credential);
+    return await FirebaseAuth.instance.signInWithCredential(credential);
   } finally {
     await subscription.cancel();
     await server.close(force: true);
