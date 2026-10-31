@@ -7042,51 +7042,42 @@ class AppHamburgerMenu extends StatelessWidget {
     if (_DesktopShellScope.enabledOf(context)) {
       return const SizedBox.shrink();
     }
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => showAppSideMenu(context),
-        child: SizedBox(
-          width: 46,
-          height: 46,
-          child: Center(
-            child: Icon(
-              Icons.menu_rounded,
-              color: context.barberinAccent,
-              size: 22,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (Navigator.of(context).canPop())
+          IconButton(
+            tooltip: 'Πίσω',
+            onPressed: () => Navigator.of(context).maybePop(),
+            icon: Icon(Icons.arrow_back_rounded, color: context.barberinAccent),
+          ),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => showAppSideMenu(context),
+            child: SizedBox(
+              width: 46,
+              height: 46,
+              child: Center(
+                child: Icon(
+                  Icons.menu_rounded,
+                  color: context.barberinAccent,
+                  size: 22,
+                ),
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
 Future<void> _openBarberoMenuPage(BuildContext context, Widget page) async {
-  await Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => _ReturnToPreviousPage(child: page)),
-  );
-}
-
-class _ReturnToPreviousPage extends StatelessWidget {
-  const _ReturnToPreviousPage({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          return;
-        }
-        Navigator.of(context).pop();
-      },
-      child: child,
-    );
-  }
+  await Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => page));
 }
 
 Future<void> showAppSideMenu(BuildContext context) async {
@@ -7929,6 +7920,18 @@ class _AppSideMenuSheet extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 22),
+                              _SideMenuItem(
+                                icon: Icons.home_rounded,
+                                label: 'Αρχική',
+                                onTap: () {
+                                  Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).popUntil((route) => route.isFirst);
+                                  barberoReturnHomeTrigger.value++;
+                                },
+                              ),
+                              const SizedBox(height: 8),
                               if (currentBarberoAccessibleShops.value.length >
                                   1) ...[
                                 Container(

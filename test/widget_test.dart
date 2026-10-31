@@ -1,16 +1,17 @@
-import 'package:barbero/main.dart';
+import 'package:barbero/main.dart' hide Text;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
-  test('Greek Apple storefront shows the configured checkout prices', () {
+  test('Apple EUR prices match the configured checkout prices', () {
     expect(
       barberoStoreDisplayPrice(
         productId: 'barbero_monthly',
         storePrice: '24,99 €',
-        appleStoreCountryCode: 'GR',
+        storeCurrencyCode: 'EUR',
+        isAppleStore: true,
       ),
       '29,99 €',
     );
@@ -18,7 +19,8 @@ void main() {
       barberoStoreDisplayPrice(
         productId: 'barbero_yearly',
         storePrice: '249,99 €',
-        appleStoreCountryCode: 'GRC',
+        storeCurrencyCode: 'EUR',
+        isAppleStore: true,
       ),
       '299,99 €',
     );
@@ -26,7 +28,8 @@ void main() {
       barberoStoreDisplayPrice(
         productId: 'barbero_monthly',
         storePrice: '24,99 €',
-        appleStoreCountryCode: 'ME',
+        storeCurrencyCode: 'EUR',
+        isAppleStore: false,
       ),
       '24,99 €',
     );
@@ -34,10 +37,76 @@ void main() {
       barberoStoreDisplayPrice(
         productId: 'barbero_monthly',
         storePrice: '\$29.99',
-        appleStoreCountryCode: null,
+        storeCurrencyCode: 'USD',
+        isAppleStore: true,
       ),
       '\$29.99',
     );
+  });
+
+  test('product offer uses corrected EUR display only on Apple', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final offer = BarberoStoreProductOffer(
+      plan: BarberoBillingPlan.monthly,
+      product: ProductDetails(
+        id: 'barbero_monthly',
+        title: 'Monthly',
+        description: 'Subscription',
+        price: '24,99 €',
+        rawPrice: 24.99,
+        currencyCode: 'EUR',
+      ),
+    );
+    expect(offer.displayPrice, '29,99 €');
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    expect(offer.displayPrice, '24,99 €');
+  });
+
+  testWidgets('menu pages can return to the previous page or home', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => Column(
+              children: [
+                const Text('Home screen'),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const Scaffold(
+                        body: Column(
+                          children: [AppHamburgerMenu(), Text('Menu page')],
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: const Text('Open menu page'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open menu page'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Πίσω'), findsOneWidget);
+    await tester.tap(find.byTooltip('Πίσω'));
+    await tester.pumpAndSettle();
+    expect(find.text('Home screen'), findsOneWidget);
+
+    await tester.tap(find.text('Open menu page'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.menu_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Αρχική'));
+    await tester.pumpAndSettle();
+    expect(find.text('Home screen'), findsOneWidget);
+    expect(find.text('Menu page'), findsNothing);
   });
 
   test('Apple sandbox subscriptions do not use production management', () {

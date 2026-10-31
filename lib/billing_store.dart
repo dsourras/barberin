@@ -23,9 +23,12 @@ bool get _barberoUsesNativeStore =>
 String barberoStoreDisplayPrice({
   required String productId,
   required String storePrice,
-  required String? appleStoreCountryCode,
+  required String storeCurrencyCode,
+  required bool isAppleStore,
 }) {
-  if (const {'GR', 'GRC'}.contains(appleStoreCountryCode?.toUpperCase())) {
+  // TestFlight can return a stale EUR product price while checkout uses the
+  // current App Store Connect price. All configured EUR storefronts use these.
+  if (isAppleStore && storeCurrencyCode.toUpperCase() == 'EUR') {
     if (productId == _barberoMonthlyProductId) {
       return _barberoGreekMonthlyPrice;
     }
@@ -125,26 +128,17 @@ Future<String> barberoAppleReceiptForBackend(
 }
 
 class BarberoStoreProductOffer {
-  const BarberoStoreProductOffer({
-    required this.plan,
-    required this.product,
-    this.appleStoreCountryCode,
-  });
+  const BarberoStoreProductOffer({required this.plan, required this.product});
 
   final BarberoBillingPlan plan;
   final ProductDetails product;
-  final String? appleStoreCountryCode;
 
   String get id => product.id;
   String get displayPrice => barberoStoreDisplayPrice(
     productId: product.id,
     storePrice: product.price,
-    appleStoreCountryCode: switch (product) {
-      AppStoreProductDetails details =>
-        details.skProduct.priceLocale.countryCode,
-      AppStoreProduct2Details _ => appleStoreCountryCode,
-      _ => null,
-    },
+    storeCurrencyCode: product.currencyCode,
+    isAppleStore: _barberoUsesAppleStore,
   );
 
   bool get isNativeFreeTrialOffer {
@@ -266,17 +260,6 @@ class BarberoStoreBillingService {
       lastStoreError.value = response.error!.message;
       return;
     }
-    String? appleStoreCountryCode;
-    if (_barberoUsesAppleStore &&
-        response.productDetails.any(
-          (item) => item is AppStoreProduct2Details,
-        )) {
-      try {
-        appleStoreCountryCode = await Storefront().countryCode();
-      } catch (_) {
-        // Price display can still use StoreKit's localized product price.
-      }
-    }
     final loadedOffers =
         response.productDetails
             .map((product) {
@@ -285,7 +268,6 @@ class BarberoStoreBillingService {
                     ? BarberoBillingPlan.yearly
                     : BarberoBillingPlan.monthly,
                 product: product,
-                appleStoreCountryCode: appleStoreCountryCode,
               );
             })
             .toList(growable: false)
