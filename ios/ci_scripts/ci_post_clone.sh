@@ -13,6 +13,8 @@ fi
 if ! command -v pod >/dev/null 2>&1; then
   HOMEBREW_NO_AUTO_UPDATE=1 brew install cocoapods
 fi
+# Xcode Cloud resolves packages before Flutter can generate Package.resolved.
+flutter config --no-enable-swift-package-manager
 flutter precache --ios
 flutter pub get
 flutter build ios --release --config-only
