@@ -19,6 +19,88 @@ void main() {
     );
   });
 
+  test('unsolicited StoreKit restores cannot attach to another shop', () {
+    final pending = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'shopId': 'shop_a',
+        'acknowledged': false,
+        'purchase': <String, dynamic>{
+          'status': 'purchased',
+          'productId': 'barbero_monthly',
+          'purchaseId': 'transaction_a',
+        },
+      },
+      <String, dynamic>{
+        'shopId': 'shop_b',
+        'acknowledged': false,
+        'purchase': <String, dynamic>{
+          'status': 'restored',
+          'productId': 'barbero_monthly',
+          'purchaseId': 'transaction_b',
+        },
+      },
+    ];
+    bool accepts(String? shopId, String purchaseId, {bool requested = false}) =>
+        barberoShouldProcessRestoredPurchase(
+          shopId: shopId,
+          productId: 'barbero_monthly',
+          purchaseId: purchaseId,
+          verificationData: '',
+          restoreRequested: requested,
+          pendingPurchases: pending,
+        );
+
+    expect(accepts('shop_b', 'transaction_b'), isFalse);
+    expect(accepts('shop_b', 'transaction_a'), isFalse);
+    expect(accepts('shop_a', 'transaction_b'), isFalse);
+    expect(accepts(null, 'transaction_a', requested: true), isFalse);
+    expect(accepts('shop_a', 'transaction_a'), isTrue);
+    expect(accepts('shop_b', 'transaction_b', requested: true), isTrue);
+  });
+
+  test('legacy restore retries are skipped only on Apple platforms', () {
+    final restored = <String, dynamic>{
+      'shopId': 'shop_a',
+      'purchase': <String, dynamic>{'status': 'restored'},
+    };
+    final purchased = <String, dynamic>{
+      'shopId': 'shop_a',
+      'purchase': <String, dynamic>{'status': 'purchased'},
+    };
+    expect(
+      barberoShouldRetryPendingPurchase(
+        restored,
+        'shop_a',
+        usesAppleStore: true,
+      ),
+      isFalse,
+    );
+    expect(
+      barberoShouldRetryPendingPurchase(
+        restored,
+        'shop_a',
+        usesAppleStore: false,
+      ),
+      isTrue,
+    );
+    expect(
+      barberoShouldRetryPendingPurchase(
+        purchased,
+        'shop_a',
+        usesAppleStore: true,
+      ),
+      isTrue,
+    );
+    expect(
+      barberoShouldRetryPendingPurchase(
+        purchased,
+        'shop_b',
+        usesAppleStore: true,
+      ),
+      isFalse,
+    );
+  });
+
   testWidgets('Firebase startup failure shows a recoverable screen', (
     tester,
   ) async {

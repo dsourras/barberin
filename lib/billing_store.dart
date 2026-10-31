@@ -23,6 +23,49 @@ String barberoStorePurchaseFailureMessage(PurchaseStatus status) =>
     ? 'Δεν ήταν δυνατή η επαναφορά της προηγούμενης αγοράς για αυτό το κατάστημα. Δοκίμασε ξανά αργότερα ή επικοινώνησε με την υποστήριξη.'
     : 'Η αγορά ολοκληρώθηκε, αλλά η πρόσβαση του καταστήματος δεν ενημερώθηκε ακόμη. Χρησιμοποίησε την επαναφορά αγορών όταν αποκατασταθεί η σύνδεση.';
 
+bool barberoShouldProcessRestoredPurchase({
+  required String? shopId,
+  required String productId,
+  required String? purchaseId,
+  required String verificationData,
+  required bool restoreRequested,
+  required Iterable<Map<String, dynamic>> pendingPurchases,
+}) {
+  if (shopId == null || shopId.isEmpty) return false;
+  if (restoreRequested) return true;
+  return pendingPurchases.any((entry) {
+    if (entry['shopId'] != shopId || entry['acknowledged'] == true) {
+      return false;
+    }
+    final purchase = Map<String, dynamic>.from(
+      (entry['purchase'] as Map?) ?? <String, dynamic>{},
+    );
+    // A legacy restored event is not proof that this shop started the purchase.
+    if (purchase['status'] != PurchaseStatus.purchased.name ||
+        purchase['productId'] != productId) {
+      return false;
+    }
+    final storedPurchaseId = '${purchase['purchaseId'] ?? ''}'.trim();
+    if (storedPurchaseId.isNotEmpty && purchaseId != null) {
+      return storedPurchaseId == purchaseId;
+    }
+    final storedVerificationData = Map<String, dynamic>.from(
+      (purchase['verificationData'] as Map?) ?? <String, dynamic>{},
+    );
+    return verificationData.isNotEmpty &&
+        storedVerificationData['serverVerificationData'] == verificationData;
+  });
+}
+
+bool barberoShouldRetryPendingPurchase(
+  Map<String, dynamic> entry,
+  String shopId, {
+  required bool usesAppleStore,
+}) =>
+    entry['shopId'] == shopId &&
+    (!usesAppleStore ||
+        (entry['purchase'] as Map?)?['status'] != PurchaseStatus.restored.name);
+
 Future<String> barberoAppleReceiptForBackend(
   String verificationData,
   Future<String> Function() loadReceipt, {
@@ -110,6 +153,8 @@ class BarberoStoreBillingService {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   bool _isInitialized = false;
   Future<void> _processingLock = Future<void>.value();
+  String? _restoreRequestedShopId;
+  DateTime? _restoreRequestedAt;
 
   Future<void> initialize() async {
     if (!_barberoUsesNativeStore) {
@@ -261,7 +306,19 @@ class BarberoStoreBillingService {
       throw Exception('native-store-required');
     }
     await initialize();
-    await _inAppPurchase.restorePurchases();
+    final session = currentBarberoSession.value;
+    if (session == null || !session.isOwner) {
+      throw Exception('missing-owner-billing-context');
+    }
+    _restoreRequestedShopId = session.shopId;
+    _restoreRequestedAt = DateTime.now();
+    try {
+      await _inAppPurchase.restorePurchases();
+    } catch (_) {
+      _restoreRequestedShopId = null;
+      _restoreRequestedAt = null;
+      rethrow;
+    }
   }
 
   Future<void> openManageSubscription(BarberoBillingPlan plan) async {
@@ -448,7 +505,13 @@ class BarberoStoreBillingService {
       return;
     }
     final shopEntries = entries
-        .where((entry) => entry['shopId'] == session.shopId)
+        .where(
+          (entry) => barberoShouldRetryPendingPurchase(
+            entry,
+            session.shopId,
+            usesAppleStore: _barberoUsesAppleStore,
+          ),
+        )
         .toList(growable: false);
     if (shopEntries.isEmpty) return;
     await _runSerialized(() async {
@@ -468,9 +531,11 @@ class BarberoStoreBillingService {
         }
       }
     });
-    // The store owns completion. Asking it to restore causes unfinished
-    // purchases to be emitted again so they can be completed safely.
-    await _inAppPurchase.restorePurchases();
+    if (!_barberoUsesAppleStore) {
+      await _inAppPurchase.restorePurchases();
+    }
+    // StoreKit re-emits unfinished transactions on its stream. Calling restore
+    // here would also replay unrelated purchases from the same Apple account.
   }
 
   Future<void> _runSerialized(Future<void> Function() action) async {
@@ -489,6 +554,27 @@ class BarberoStoreBillingService {
     List<PurchaseDetails> purchaseDetailsList,
   ) async {
     for (final purchaseDetails in purchaseDetailsList) {
+      if (_barberoUsesAppleStore &&
+          purchaseDetails.status == PurchaseStatus.restored) {
+        final session = currentBarberoSession.value;
+        final restoreRequested =
+            session != null &&
+            session.isOwner &&
+            _restoreRequestedShopId == session.shopId &&
+            _restoreRequestedAt != null &&
+            DateTime.now().difference(_restoreRequestedAt!) <
+                const Duration(minutes: 2);
+        final shouldProcess = barberoShouldProcessRestoredPurchase(
+          shopId: session?.isOwner == true ? session!.shopId : null,
+          productId: purchaseDetails.productID,
+          purchaseId: purchaseDetails.purchaseID,
+          verificationData:
+              purchaseDetails.verificationData.serverVerificationData,
+          restoreRequested: restoreRequested,
+          pendingPurchases: await _loadPendingPurchases(),
+        );
+        if (!shouldProcess) continue;
+      }
       await _runSerialized(() async {
         var shouldCompletePurchase = true;
         Map<String, dynamic>? pendingEntry;
