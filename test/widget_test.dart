@@ -1,4 +1,5 @@
 import 'package:barbero/main.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -17,7 +18,7 @@ void main() {
       barberoStoreDisplayPrice(
         productId: 'barbero_yearly',
         storePrice: '249,99 €',
-        appleStoreCountryCode: 'gr',
+        appleStoreCountryCode: 'GRC',
       ),
       '299,99 €',
     );
@@ -37,6 +38,28 @@ void main() {
       ),
       '\$29.99',
     );
+  });
+
+  test('Apple sandbox subscriptions do not use production management', () {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    BarberoBillingSnapshot billing(String environment) =>
+        BarberoBillingSnapshot(
+          status: BarberoBillingStatus.active,
+          selectedPlan: BarberoBillingPlan.monthly,
+          planConfirmed: true,
+          allowsAccess: true,
+          requiresOwnerAction: false,
+          monthlyPriceEur: 29.99,
+          yearlyPriceEur: 299.99,
+          yearlySavingsEur: 59.89,
+          storeEnvironment: environment,
+        );
+
+    expect(barberoIsAppleSandboxSubscription(billing('sandbox')), isTrue);
+    expect(barberoIsAppleSandboxSubscription(billing('production')), isFalse);
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    expect(barberoIsAppleSandboxSubscription(billing('sandbox')), isFalse);
   });
 
   test('yearly savings use the storefront prices, not a fixed euro amount', () {

@@ -208,10 +208,8 @@ class _BarberoSubscriptionGatePageState
                             title: 'Μηνιαία',
                             subtitle: monthlyOffer != null
                                 ? 'Δωρεάν δοκιμή ενός μήνα και μετά ${monthlyOffer.displayPrice} / μήνα'
-                                : '1 μήνας δωρεάν δοκιμή, μετά 29,99 EUR / μήνα',
-                            trailing:
-                                monthlyOffer?.displayPrice ??
-                                '${billing.monthlyPriceEur} EUR',
+                                : 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.',
+                            trailing: monthlyOffer?.displayPrice ?? '-',
                             selected:
                                 _selectedPlan == BarberoBillingPlan.monthly,
                             badgeText: '',
@@ -227,10 +225,8 @@ class _BarberoSubscriptionGatePageState
                             title: 'Ετήσια',
                             subtitle: yearlyOffer != null
                                 ? 'Δωρεάν δοκιμή ενός μήνα και μετά ${yearlyOffer.displayPrice} / έτος'
-                                : '1 μήνας δωρεάν δοκιμή, μετά 299,99 EUR / έτος',
-                            trailing:
-                                yearlyOffer?.displayPrice ??
-                                '${billing.yearlyPriceEur} EUR',
+                                : 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.',
+                            trailing: yearlyOffer?.displayPrice ?? '-',
                             selected:
                                 _selectedPlan == BarberoBillingPlan.yearly,
                             badgeText: 'Καλύτερη αξία',
@@ -487,7 +483,7 @@ class _LegacyBarberoBillingPageState extends State<_LegacyBarberoBillingPage> {
   Future<void> _manageSubscription() async {
     setState(() => _isSaving = true);
     try {
-      await _storeBilling.openManageSubscription(_selectedPlan);
+      await _storeBilling.openManageSubscription(_billing.currentPlan);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -592,10 +588,8 @@ class _LegacyBarberoBillingPageState extends State<_LegacyBarberoBillingPage> {
                         title: 'Μηνιαία',
                         subtitle: monthlyOffer != null
                             ? '1 μήνας δωρεάν δοκιμή, μετά ${monthlyOffer.displayPrice} / μήνα'
-                            : '1 μήνας δωρεάν δοκιμή, μετά 29,99 EUR / μήνα',
-                        trailing:
-                            monthlyOffer?.displayPrice ??
-                            '${billing.monthlyPriceEur} EUR',
+                            : 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.',
+                        trailing: monthlyOffer?.displayPrice ?? '-',
                         selected: _selectedPlan == BarberoBillingPlan.monthly,
                         onTap: () => setState(
                           () => _selectedPlan = BarberoBillingPlan.monthly,
@@ -606,10 +600,8 @@ class _LegacyBarberoBillingPageState extends State<_LegacyBarberoBillingPage> {
                         title: 'Ετήσια',
                         subtitle: yearlyOffer != null
                             ? '1 μήνας δωρεάν δοκιμή, μετά ${yearlyOffer.displayPrice} / έτος'
-                            : '1 μήνας δωρεάν δοκιμή, μετά 299,99 EUR / έτος',
-                        trailing:
-                            yearlyOffer?.displayPrice ??
-                            '${billing.yearlyPriceEur} EUR',
+                            : 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.',
+                        trailing: yearlyOffer?.displayPrice ?? '-',
                         selected: _selectedPlan == BarberoBillingPlan.yearly,
                         badgeText: 'Καλύτερη αξία',
                         detailText: barberoStoreYearlySavingsLabel(
@@ -1113,7 +1105,7 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
   Future<void> _manageSubscription() async {
     setState(() => _isSaving = true);
     try {
-      await _storeBilling.openManageSubscription(_selectedPlan);
+      await _storeBilling.openManageSubscription(_billing.currentPlan);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1135,6 +1127,8 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
     final trialEndsText = billing.trialEndsAt != null
         ? _formatBillingDate(billing.trialEndsAt)
         : 'Δεν έχει οριστεί';
+    final isSandboxSubscription =
+        billing.canOpenWorkspace && barberoIsAppleSandboxSubscription(billing);
     final primaryLabel = billing.requiresPlanSelection
         ? 'Έναρξη δωρεάν δοκιμής'
         : (billing.canOpenWorkspace
@@ -1268,12 +1262,12 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
                     children: [
                       _BillingPlanRow(
                         title: 'Μηνιαία',
-                        subtitle: monthlyOffer != null
+                        subtitle: monthlyOffer == null
+                            ? 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.'
+                            : billing.requiresPlanSelection
                             ? '1 μήνας δωρεάν · μετά ${monthlyOffer.displayPrice} / μήνα'
-                            : '1 μήνας δωρεάν · μετά 29,99 EUR / μήνα',
-                        trailing:
-                            monthlyOffer?.displayPrice ??
-                            '${billing.monthlyPriceEur} EUR',
+                            : '${monthlyOffer.displayPrice} / μήνα',
+                        trailing: monthlyOffer?.displayPrice ?? '-',
                         selected: _selectedPlan == BarberoBillingPlan.monthly,
                         onTap: () => setState(
                           () => _selectedPlan = BarberoBillingPlan.monthly,
@@ -1281,12 +1275,12 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
                       ),
                       _BillingPlanRow(
                         title: 'Ετήσια',
-                        subtitle: yearlyOffer != null
+                        subtitle: yearlyOffer == null
+                            ? 'Η τιμή θα εμφανιστεί από το κατάστημα αγορών.'
+                            : billing.requiresPlanSelection
                             ? '1 μήνας δωρεάν · μετά ${yearlyOffer.displayPrice} / έτος'
-                            : '1 μήνας δωρεάν · μετά 299,99 EUR / έτος',
-                        trailing:
-                            yearlyOffer?.displayPrice ??
-                            '${billing.yearlyPriceEur} EUR',
+                            : '${yearlyOffer.displayPrice} / έτος',
+                        trailing: yearlyOffer?.displayPrice ?? '-',
                         selected: _selectedPlan == BarberoBillingPlan.yearly,
                         badgeText: 'Καλύτερη αξία',
                         detailText: barberoStoreYearlySavingsLabel(
@@ -1302,17 +1296,30 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
                 },
               ),
               const SizedBox(height: 24),
-              PrimaryButton(
-                label: _isSaving ? 'Περίμενε...' : primaryLabel,
-                onPressed: _isSaving ? () {} : _purchaseSelectedPlan,
-              ),
+              if (isSandboxSubscription)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Αυτή είναι δοκιμαστική συνδρομή TestFlight. Δεν εμφανίζεται στη γενική διαχείριση συνδρομών του Apple ID. Αν χρησιμοποιείς Sandbox Apple Account, διαχειρίσου τη από Ρυθμίσεις > Developer > Sandbox Apple Account.',
+                    style: TextStyle(
+                      color: context.barberinTextSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                )
+              else
+                PrimaryButton(
+                  label: _isSaving ? 'Περίμενε...' : primaryLabel,
+                  onPressed: _isSaving ? () {} : _purchaseSelectedPlan,
+                ),
               const SizedBox(height: 4),
               _BillingActionRow(
                 label: 'Έλεγχος προηγούμενων αγορών',
                 description: 'Μόνο αν μια ενεργή αγορά δεν εμφανίζεται εδώ.',
                 onTap: _isSaving ? null : _restorePurchases,
               ),
-              if (billing.canOpenWorkspace)
+              if (billing.canOpenWorkspace && !isSandboxSubscription)
                 _BillingActionRow(
                   label: 'Διαχείριση συνδρομής',
                   description:

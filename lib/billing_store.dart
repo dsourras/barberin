@@ -25,7 +25,7 @@ String barberoStoreDisplayPrice({
   required String storePrice,
   required String? appleStoreCountryCode,
 }) {
-  if (appleStoreCountryCode?.toUpperCase() == 'GR') {
+  if (const {'GR', 'GRC'}.contains(appleStoreCountryCode?.toUpperCase())) {
     if (productId == _barberoMonthlyProductId) {
       return _barberoGreekMonthlyPrice;
     }
@@ -35,6 +35,10 @@ String barberoStoreDisplayPrice({
   }
   return storePrice;
 }
+
+bool barberoIsAppleSandboxSubscription(BarberoBillingSnapshot billing) =>
+    _barberoUsesAppleStore &&
+    billing.storeEnvironment.trim().toLowerCase() == 'sandbox';
 
 String barberoStoreYearlySavingsLabel({
   required BarberoStoreProductOffer? monthlyOffer,
@@ -121,10 +125,15 @@ Future<String> barberoAppleReceiptForBackend(
 }
 
 class BarberoStoreProductOffer {
-  const BarberoStoreProductOffer({required this.plan, required this.product});
+  const BarberoStoreProductOffer({
+    required this.plan,
+    required this.product,
+    this.appleStoreCountryCode,
+  });
 
   final BarberoBillingPlan plan;
   final ProductDetails product;
+  final String? appleStoreCountryCode;
 
   String get id => product.id;
   String get displayPrice => barberoStoreDisplayPrice(
@@ -133,7 +142,7 @@ class BarberoStoreProductOffer {
     appleStoreCountryCode: switch (product) {
       AppStoreProductDetails details =>
         details.skProduct.priceLocale.countryCode,
-      AppStoreProduct2Details _ => null,
+      AppStoreProduct2Details _ => appleStoreCountryCode,
       _ => null,
     },
   );
@@ -257,6 +266,17 @@ class BarberoStoreBillingService {
       lastStoreError.value = response.error!.message;
       return;
     }
+    String? appleStoreCountryCode;
+    if (_barberoUsesAppleStore &&
+        response.productDetails.any(
+          (item) => item is AppStoreProduct2Details,
+        )) {
+      try {
+        appleStoreCountryCode = await Storefront().countryCode();
+      } catch (_) {
+        // Price display can still use StoreKit's localized product price.
+      }
+    }
     final loadedOffers =
         response.productDetails
             .map((product) {
@@ -265,6 +285,7 @@ class BarberoStoreBillingService {
                     ? BarberoBillingPlan.yearly
                     : BarberoBillingPlan.monthly,
                 product: product,
+                appleStoreCountryCode: appleStoreCountryCode,
               );
             })
             .toList(growable: false)
