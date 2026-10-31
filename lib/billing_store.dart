@@ -2,6 +2,8 @@ part of 'main.dart';
 
 const String _barberoMonthlyProductId = 'barbero_monthly';
 const String _barberoYearlyProductId = 'barbero_yearly';
+const String _barberoGreekMonthlyPrice = '29,99 €';
+const String _barberoGreekYearlyPrice = '299,99 €';
 const String _barberinStorePackageId = 'com.barberin.app';
 const List<String> _barberinAndroidStoreHostParts = <String>[
   'play',
@@ -17,6 +19,22 @@ bool get _barberoUsesAppleStore =>
 
 bool get _barberoUsesNativeStore =>
     defaultTargetPlatform == TargetPlatform.android || _barberoUsesAppleStore;
+
+String barberoStoreDisplayPrice({
+  required String productId,
+  required String storePrice,
+  required String? appleStoreCountryCode,
+}) {
+  if (appleStoreCountryCode?.toUpperCase() == 'GR') {
+    if (productId == _barberoMonthlyProductId) {
+      return _barberoGreekMonthlyPrice;
+    }
+    if (productId == _barberoYearlyProductId) {
+      return _barberoGreekYearlyPrice;
+    }
+  }
+  return storePrice;
+}
 
 String barberoStorePurchaseFailureMessage(PurchaseStatus status) =>
     status == PurchaseStatus.restored
@@ -94,7 +112,15 @@ class BarberoStoreProductOffer {
   final ProductDetails product;
 
   String get id => product.id;
-  String get displayPrice => product.price;
+  String get displayPrice => barberoStoreDisplayPrice(
+    productId: product.id,
+    storePrice: product.price,
+    appleStoreCountryCode: switch (product) {
+      AppStoreProductDetails details => details.skProduct.priceLocale.countryCode,
+      AppStoreProduct2Details _ => null,
+      _ => null,
+    },
+  );
 
   bool get isNativeFreeTrialOffer {
     if (product is GooglePlayProductDetails) {

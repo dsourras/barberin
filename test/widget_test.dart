@@ -4,6 +4,41 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
+  test('Greek Apple storefront shows the configured checkout prices', () {
+    expect(
+      barberoStoreDisplayPrice(
+        productId: 'barbero_monthly',
+        storePrice: '24,99 €',
+        appleStoreCountryCode: 'GR',
+      ),
+      '29,99 €',
+    );
+    expect(
+      barberoStoreDisplayPrice(
+        productId: 'barbero_yearly',
+        storePrice: '249,99 €',
+        appleStoreCountryCode: 'gr',
+      ),
+      '299,99 €',
+    );
+    expect(
+      barberoStoreDisplayPrice(
+        productId: 'barbero_monthly',
+        storePrice: '24,99 €',
+        appleStoreCountryCode: 'ME',
+      ),
+      '24,99 €',
+    );
+    expect(
+      barberoStoreDisplayPrice(
+        productId: 'barbero_monthly',
+        storePrice: '\$29.99',
+        appleStoreCountryCode: null,
+      ),
+      '\$29.99',
+    );
+  });
+
   test('restored purchase failure does not claim a new purchase', () {
     expect(
       barberoStorePurchaseFailureMessage(PurchaseStatus.restored),
