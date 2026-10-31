@@ -18,6 +18,11 @@ bool get _barberoUsesAppleStore =>
 bool get _barberoUsesNativeStore =>
     defaultTargetPlatform == TargetPlatform.android || _barberoUsesAppleStore;
 
+String barberoStorePurchaseFailureMessage(PurchaseStatus status) =>
+    status == PurchaseStatus.restored
+    ? 'Δεν ήταν δυνατή η επαναφορά της προηγούμενης αγοράς για αυτό το κατάστημα. Δοκίμασε ξανά αργότερα ή επικοινώνησε με την υποστήριξη.'
+    : 'Η αγορά ολοκληρώθηκε, αλλά η πρόσβαση του καταστήματος δεν ενημερώθηκε ακόμη. Χρησιμοποίησε την επαναφορά αγορών όταν αποκατασταθεί η σύνδεση.';
+
 Future<String> barberoAppleReceiptForBackend(
   String verificationData,
   Future<String> Function() loadReceipt, {
@@ -438,11 +443,16 @@ class BarberoStoreBillingService {
 
   Future<void> _retryPendingPurchases() async {
     final entries = await _loadPendingPurchases();
-    if (entries.isEmpty) {
+    final session = currentBarberoSession.value;
+    if (session == null || !session.isOwner) {
       return;
     }
+    final shopEntries = entries
+        .where((entry) => entry['shopId'] == session.shopId)
+        .toList(growable: false);
+    if (shopEntries.isEmpty) return;
     await _runSerialized(() async {
-      for (final entry in entries) {
+      for (final entry in shopEntries) {
         if (entry['acknowledged'] == true && entry['storeCompleted'] == true) {
           continue;
         }
@@ -502,8 +512,9 @@ class BarberoStoreBillingService {
               lastStoreError.value = null;
             } catch (_) {
               shouldCompletePurchase = false;
-              lastStoreError.value =
-                  'Η αγορά ολοκληρώθηκε, αλλά η πρόσβαση του καταστήματος δεν ενημερώθηκε ακόμη. Χρησιμοποίησε την επαναφορά αγορών όταν αποκατασταθεί η σύνδεση.';
+              lastStoreError.value = barberoStorePurchaseFailureMessage(
+                purchaseDetails.status,
+              );
             } finally {
               isPurchasePending.value = false;
             }

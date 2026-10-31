@@ -1,8 +1,24 @@
 import 'package:barbero/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
+  test('restored purchase failure does not claim a new purchase', () {
+    expect(
+      barberoStorePurchaseFailureMessage(PurchaseStatus.restored),
+      contains('επαναφορά'),
+    );
+    expect(
+      barberoStorePurchaseFailureMessage(PurchaseStatus.restored),
+      isNot(contains('αγορά ολοκληρώθηκε')),
+    );
+    expect(
+      barberoStorePurchaseFailureMessage(PurchaseStatus.purchased),
+      contains('αγορά ολοκληρώθηκε'),
+    );
+  });
+
   testWidgets('Firebase startup failure shows a recoverable screen', (
     tester,
   ) async {

@@ -26,21 +26,7 @@ class _BarberoSubscriptionGatePageState
   void initState() {
     super.initState();
     _selectedPlan = widget.billing.selectedPlan;
-    if (widget.session.isOwner && widget.billing.requiresPlanSelection) {
-      // Recover a completed store purchase silently when the server has not
-      // received its purchase event yet. Active entitlements still open the
-      // workspace directly through the normal app-flow gate.
-      unawaited(_recoverStorePurchaseSilently());
-    }
-  }
-
-  Future<void> _recoverStorePurchaseSilently() async {
-    try {
-      await _storeBilling.restorePurchases();
-    } catch (_) {
-      // Keep the normal subscription screen visible when there is nothing to
-      // recover or the store is temporarily unavailable.
-    }
+    unawaited(_storeBilling.initialize());
   }
 
   @override
