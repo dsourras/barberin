@@ -50,11 +50,11 @@ class _BarberoSubscriptionGatePageState
           ),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Δεν ήταν δυνατό να ανοίξει η διαδικασία αγοράς.'),
+        SnackBar(
+          content: Text(barberoStorePurchaseLaunchFailureMessage(error)),
         ),
       );
     } finally {
@@ -94,11 +94,11 @@ class _BarberoSubscriptionGatePageState
           ),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Δεν ήταν δυνατή η έναρξη της δωρεάν δοκιμής.'),
+        SnackBar(
+          content: Text(barberoStorePurchaseLaunchFailureMessage(error)),
         ),
       );
     } finally {
@@ -444,11 +444,11 @@ class _LegacyBarberoBillingPageState extends State<_LegacyBarberoBillingPage> {
           ),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Δεν ήταν δυνατό να ανοίξει η διαδικασία αγοράς.'),
+        SnackBar(
+          content: Text(barberoStorePurchaseLaunchFailureMessage(error)),
         ),
       );
     } finally {
@@ -1074,10 +1074,12 @@ class _BarberoBillingPageState extends State<BarberoBillingPage> {
         _selectedPlan,
         requireFreeTrial: _billing.requiresPlanSelection,
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Δεν ήταν δυνατή η έναρξη της αγοράς.')),
+        SnackBar(
+          content: Text(barberoStorePurchaseLaunchFailureMessage(error)),
+        ),
       );
     } finally {
       if (mounted) {

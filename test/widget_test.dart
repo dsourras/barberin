@@ -1,6 +1,7 @@
 import 'package:barbero/main.dart' hide Text;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -222,6 +223,22 @@ void main() {
     );
     expect(
       barberoShouldRetryPendingPurchase(
+        {...restored, 'restoreRequested': true},
+        'shop_a',
+        usesAppleStore: true,
+      ),
+      isTrue,
+    );
+    expect(
+      barberoShouldRetryPendingPurchase(
+        {...restored, 'restoreRequested': true},
+        'shop_b',
+        usesAppleStore: true,
+      ),
+      isFalse,
+    );
+    expect(
+      barberoShouldRetryPendingPurchase(
         restored,
         'shop_a',
         usesAppleStore: false,
@@ -243,6 +260,84 @@ void main() {
         usesAppleStore: true,
       ),
       isFalse,
+    );
+  });
+
+  test('unfinished Apple purchases are recovered only for the same shop', () {
+    final pending = <Map<String, dynamic>>[
+      {
+        'shopId': 'shop_a',
+        'purchase': {
+          'status': 'purchased',
+          'productId': 'barbero_monthly',
+          'purchaseId': 'transaction_a',
+        },
+      },
+      {
+        'shopId': 'shop_b',
+        'purchase': {
+          'status': 'purchased',
+          'productId': 'barbero_monthly',
+          'purchaseId': 'transaction_b',
+        },
+      },
+    ];
+    Map<String, dynamic>? match(String shop, String product, String purchase) =>
+        barberoMatchingPendingApplePurchase(
+          shopId: shop,
+          productId: product,
+          purchaseId: purchase,
+          pendingPurchases: pending,
+        );
+
+    expect(match('shop_a', 'barbero_monthly', 'transaction_a'), pending[0]);
+    expect(match('shop_b', 'barbero_monthly', 'transaction_a'), isNull);
+    expect(match('shop_a', 'barbero_yearly', 'transaction_a'), isNull);
+    expect(match('shop_a', 'barbero_monthly', 'transaction_b'), isNull);
+  });
+
+  test('outbox remains until backend and StoreKit both finish', () {
+    expect(
+      barberoCanDiscardPendingPurchase({
+        'acknowledged': false,
+        'storeCompleted': true,
+      }),
+      isFalse,
+    );
+    expect(
+      barberoCanDiscardPendingPurchase({
+        'acknowledged': true,
+        'storeCompleted': false,
+      }),
+      isFalse,
+    );
+    expect(
+      barberoCanDiscardPendingPurchase({
+        'acknowledged': true,
+        'storeCompleted': true,
+      }),
+      isTrue,
+    );
+  });
+
+  test('StoreKit launch errors include a safe diagnostic code', () {
+    expect(
+      barberoStorePurchaseLaunchFailureMessage(
+        PlatformException(code: 'storekit_duplicate_product_object'),
+      ),
+      contains('storekit_duplicate_product_object'),
+    );
+    expect(
+      barberoStorePurchaseLaunchFailureMessage(
+        PlatformException(code: 'storekit2_failed_to_fetch_product'),
+      ),
+      contains('storekit2_failed_to_fetch_product'),
+    );
+    expect(
+      barberoStorePurchaseLaunchFailureMessage(
+        PlatformException(code: 'unsafe\ncode'),
+      ),
+      isNot(contains('\n')),
     );
   });
 

@@ -83,7 +83,46 @@ bool barberoShouldRetryPendingPurchase(
 }) =>
     entry['shopId'] == shopId &&
     (!usesAppleStore ||
-        (entry['purchase'] as Map?)?['status'] != PurchaseStatus.restored.name);
+        (entry['purchase'] as Map?)?['status'] !=
+            PurchaseStatus.restored.name ||
+        entry['restoreRequested'] == true);
+
+bool barberoCanDiscardPendingPurchase(Map<String, dynamic> entry) =>
+    entry['acknowledged'] == true && entry['storeCompleted'] == true;
+
+Map<String, dynamic>? barberoMatchingPendingApplePurchase({
+  required String shopId,
+  required String productId,
+  required String purchaseId,
+  required Iterable<Map<String, dynamic>> pendingPurchases,
+}) {
+  for (final entry in pendingPurchases) {
+    final purchase = (entry['purchase'] as Map?) ?? const <String, dynamic>{};
+    if (entry['shopId'] == shopId &&
+        purchase['status'] == PurchaseStatus.purchased.name &&
+        purchase['productId'] == productId &&
+        purchase['purchaseId'] == purchaseId) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+String barberoStorePurchaseLaunchFailureMessage(Object error) {
+  if (error is PlatformException) {
+    if (error.code == 'storekit_duplicate_product_object') {
+      return 'Υπάρχει εκκρεμής αγορά στην Apple. Δοκίμασε Επαναφορά αγορών ή επικοινώνησε με την υποστήριξη (κωδικός: ${error.code}).';
+    }
+    if (error.code == 'storekit2_failed_to_fetch_product') {
+      return 'Η Apple δεν βρήκε τη συνδρομή αυτή τη στιγμή. Δοκίμασε ξανά αργότερα (κωδικός: ${error.code}).';
+    }
+    final code = error.code.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '');
+    if (code.isNotEmpty) {
+      return 'Δεν ήταν δυνατό να ξεκινήσει η αγορά από το App Store (κωδικός: $code). Δοκίμασε ξανά ή επικοινώνησε με την υποστήριξη.';
+    }
+  }
+  return 'Δεν ήταν δυνατό να ξεκινήσει η αγορά από το κατάστημα. Δοκίμασε ξανά ή επικοινώνησε με την υποστήριξη.';
+}
 
 Future<String> barberoAppleReceiptForBackend(
   String verificationData,
@@ -183,6 +222,7 @@ class BarberoStoreBillingService {
     if (_isInitialized) {
       await refreshProducts();
       await _retryPendingPurchases();
+      await _recoverKnownUnfinishedApplePurchases();
       return;
     }
     _isInitialized = true;
@@ -201,6 +241,7 @@ class BarberoStoreBillingService {
     );
     await refreshProducts();
     await _retryPendingPurchases();
+    await _recoverKnownUnfinishedApplePurchases();
   }
 
   Future<void> dispose() async {
@@ -312,8 +353,9 @@ class BarberoStoreBillingService {
         purchaseParam: purchaseParam,
       );
       if (launched) return;
-    } catch (_) {
+    } catch (error) {
       isPurchasePending.value = false;
+      lastStoreError.value = barberoStorePurchaseLaunchFailureMessage(error);
       rethrow;
     }
     isPurchasePending.value = false;
@@ -372,8 +414,16 @@ class BarberoStoreBillingService {
   ) async {
     final pending = await _upsertPendingPurchase(purchaseDetails);
     if (pending['acknowledged'] != true) {
-      await _submitPendingPurchaseToBackend(pending);
-      await _markPendingPurchaseAcknowledged(pending['key'] as String);
+      try {
+        await _submitPendingPurchaseToBackend(pending);
+        await _markPendingPurchaseAcknowledged(pending['key'] as String);
+        lastStoreError.value = null;
+      } catch (_) {
+        // The durable outbox retries verification; do not strand StoreKit.
+        lastStoreError.value = barberoStorePurchaseFailureMessage(
+          purchaseDetails.status,
+        );
+      }
     }
     return pending;
   }
@@ -463,6 +513,12 @@ class BarberoStoreBillingService {
     PurchaseDetails purchaseDetails,
   ) async {
     final payload = _purchasePayloadFromDetails(purchaseDetails);
+    final restoreRequested =
+        purchaseDetails.status == PurchaseStatus.restored &&
+        _restoreRequestedShopId == payload['shopId'] &&
+        _restoreRequestedAt != null &&
+        DateTime.now().difference(_restoreRequestedAt!) <
+            const Duration(minutes: 2);
     final key = _pendingPurchaseKey(payload);
     final entries = await _loadPendingPurchases();
     final existingIndex = entries.indexWhere((entry) => entry['key'] == key);
@@ -473,6 +529,8 @@ class BarberoStoreBillingService {
       'purchase': payload['purchase'],
       'acknowledged': existing?['acknowledged'] == true,
       'storeCompleted': existing?['storeCompleted'] == true,
+      'restoreRequested':
+          existing?['restoreRequested'] == true || restoreRequested,
       'updatedAt': DateTime.now().toUtc().toIso8601String(),
     };
     if (existingIndex >= 0) {
@@ -536,7 +594,8 @@ class BarberoStoreBillingService {
     if (shopEntries.isEmpty) return;
     await _runSerialized(() async {
       for (final entry in shopEntries) {
-        if (entry['acknowledged'] == true && entry['storeCompleted'] == true) {
+        if (barberoCanDiscardPendingPurchase(entry)) {
+          await _removePendingPurchase(entry['key'] as String);
           continue;
         }
         try {
@@ -556,6 +615,38 @@ class BarberoStoreBillingService {
     }
     // StoreKit re-emits unfinished transactions on its stream. Calling restore
     // here would also replay unrelated purchases from the same Apple account.
+  }
+
+  Future<void> _recoverKnownUnfinishedApplePurchases() async {
+    if (!_barberoUsesAppleStore) return;
+    final session = currentBarberoSession.value;
+    if (session == null || !session.isOwner) return;
+    final entries = await _loadPendingPurchases();
+    if (entries.isEmpty) return;
+    try {
+      final unfinished = await SK2Transaction.unfinishedTransactions();
+      for (final transaction in unfinished) {
+        final pending = barberoMatchingPendingApplePurchase(
+          shopId: session.shopId,
+          productId: transaction.productId,
+          purchaseId: transaction.id,
+          pendingPurchases: entries,
+        );
+        if (pending == null) continue;
+        await _runSerialized(() async {
+          await SK2Transaction.finish(int.parse(transaction.id));
+          await _markPendingPurchaseStoreCompleted(pending['key'] as String);
+          if (barberoCanDiscardPendingPurchase({
+            ...pending,
+            'storeCompleted': true,
+          })) {
+            await _removePendingPurchase(pending['key'] as String);
+          }
+        });
+      }
+    } catch (_) {
+      // StoreKit 1 and transient StoreKit errors must not block sign-in.
+    }
   }
 
   Future<void> _runSerialized(Future<void> Function() action) async {
@@ -615,7 +706,6 @@ class BarberoStoreBillingService {
           case PurchaseStatus.restored:
             try {
               pendingEntry = await _handlePurchaseWithOutbox(purchaseDetails);
-              lastStoreError.value = null;
             } catch (_) {
               shouldCompletePurchase = false;
               lastStoreError.value = barberoStorePurchaseFailureMessage(
@@ -656,7 +746,7 @@ class BarberoStoreBillingService {
             final pending = matchingPending.isEmpty
                 ? null
                 : matchingPending.first;
-            if (pending == null || pending['storeCompleted'] == true) {
+            if (pending != null && barberoCanDiscardPendingPurchase(pending)) {
               await _removePendingPurchase(key);
             }
           } catch (_) {
