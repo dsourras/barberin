@@ -14,13 +14,11 @@ class BarberinOwnerContactPage extends StatefulWidget {
     required this.shopId,
     required this.initialPhone,
     required this.onContinue,
-    this.requirePhone = false,
   });
 
   final String shopId;
   final String initialPhone;
   final VoidCallback onContinue;
-  final bool requirePhone;
 
   @override
   State<BarberinOwnerContactPage> createState() =>
@@ -116,10 +114,7 @@ class _BarberinOwnerContactPageState extends State<BarberinOwnerContactPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.requirePhone)
-                    const Center(child: BrandWordmark(width: 132))
-                  else
-                    AuthTopBar(onBack: widget.onContinue),
+                  AuthTopBar(onBack: widget.onContinue),
                   const SizedBox(height: 28),
                   Text(
                     barberinLabel('Στοιχεία επικοινωνίας', 'Contact details'),
@@ -132,8 +127,8 @@ class _BarberinOwnerContactPageState extends State<BarberinOwnerContactPage> {
                   const SizedBox(height: 10),
                   Text(
                     barberinLabel(
-                      'Συμπλήρωσε το τηλέφωνο επικοινωνίας του καταστήματος για να ενεργοποιηθεί η διαχείρισή του και να ετοιμαστεί η δική του εφαρμογή κρατήσεων.',
-                      'Enter the shop contact phone to activate management and prepare its own booking app.',
+                      'Συμπλήρωσε το τηλέφωνο επικοινωνίας του καταστήματος μέσα από την εφαρμογή. Θα χρειαστεί όταν ετοιμαστεί η δική του εφαρμογή κρατήσεων.',
+                      'Add the shop contact phone in the app. It is needed when its own booking app is prepared.',
                     ),
                     style: TextStyle(
                       fontSize: 14,
@@ -181,17 +176,6 @@ class _BarberinOwnerContactPageState extends State<BarberinOwnerContactPage> {
                           ),
                     onPressed: _saving ? () {} : () => unawaited(_save()),
                   ),
-                  if (widget.requirePhone) ...[
-                    const SizedBox(height: 10),
-                    Center(
-                      child: TextButton(
-                        onPressed: _saving
-                            ? null
-                            : () => unawaited(FirebaseAuth.instance.signOut()),
-                        child: Text(barberinLabel('Αποσύνδεση', 'Sign out')),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

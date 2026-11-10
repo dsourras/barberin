@@ -1664,8 +1664,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               const SizedBox(height: 8),
               AppTextField(
                 label: barberinLabel(
-                  'Τηλέφωνο καταστήματος (ή στο επόμενο βήμα)',
-                  'Shop phone (or in the next step)',
+                  'Τηλέφωνο καταστήματος (ή στις Ρυθμίσεις)',
+                  'Shop phone (or in Settings)',
                 ),
                 controller: _phoneController,
                 icon: Icons.call_outlined,

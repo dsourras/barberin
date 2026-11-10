@@ -725,20 +725,7 @@ class _AppFlowPageState extends State<AppFlowPage> with WidgetsBindingObserver {
                     } else if (user != null &&
                         session != null &&
                         billing != null) {
-                      final activeShop = currentBarberoAccessibleShops.value
-                          .where((shop) => shop.shopId == session.shopId)
-                          .firstOrNull;
-                      if (session.isOwner &&
-                          activeShop != null &&
-                          activeShop.ownerPhone.isEmpty) {
-                        pageKey = 'owner-contact-${session.shopId}';
-                        page = BarberinOwnerContactPage(
-                          shopId: session.shopId,
-                          initialPhone: '',
-                          requirePhone: true,
-                          onContinue: () => setState(() {}),
-                        );
-                      } else if (!_subscriptionGateEnabled ||
+                      if (!_subscriptionGateEnabled ||
                           billing.canOpenWorkspace) {
                         pageKey = 'workspace-${session.shopId}';
                         page = BarberShell(key: ValueKey(session.shopId));

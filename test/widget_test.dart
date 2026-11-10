@@ -13,7 +13,7 @@ void main() {
     expect(isValidBarberinShopPhone('+30 693 123 4567'), isTrue);
   });
 
-  testWidgets('owner cannot skip the required shop contact step', (
+  testWidgets('shop phone editor does not block workspace access', (
     tester,
   ) async {
     var continued = false;
@@ -22,13 +22,15 @@ void main() {
         home: BarberinOwnerContactPage(
           shopId: 'test-shop',
           initialPhone: '',
-          requirePhone: true,
           onContinue: () => continued = true,
         ),
       ),
     );
-    expect(find.byType(AuthTopBar), findsNothing);
-    expect(find.text('Αργότερα'), findsNothing);
+    expect(find.byType(AuthTopBar), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pump();
+    expect(continued, isTrue);
+    continued = false;
     await tester.tap(find.byType(PrimaryButton));
     await tester.pump();
     expect(find.textContaining('7–15'), findsOneWidget);
