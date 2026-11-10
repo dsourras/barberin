@@ -13,6 +13,8 @@ const nodemailer = require("nodemailer");
 const {buildCanonicalShopIdentity, normalizeShopAddress, normalizeShopLocation} =
   require("./greek_city_normalizer");
 const {normalizeCustomerAppPalette} = require("./customer_app_branding");
+const {hasRequiredSelfServeShopFields} =
+  require("./shop_registration_validation");
 
 initializeApp();
 
@@ -6676,7 +6678,12 @@ exports.barberoRegisterShop = onRequest(
       logoBytes = decodeBase64Image(logoBase64);
     }
 
-    if (!ownerName || !ownerPhone || !ownerEmail || !shopName || !address) {
+    if (!hasRequiredSelfServeShopFields({
+      ownerName,
+      ownerEmail,
+      shopName,
+      address,
+    })) {
       return json(response, 400, {ok: false, message: "missing-required-fields"});
     }
 

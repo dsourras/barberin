@@ -1360,13 +1360,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   void _goNext() {
     final ownerName = _ownerNameController.text.trim();
-    final phone = _phoneController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
     if (ownerName.isEmpty ||
-        phone.isEmpty ||
         email.isEmpty ||
         (!_isSocialRegistration && password.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1517,7 +1515,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final city = _cityController.text.trim();
 
     if (ownerName.isEmpty ||
-        phone.isEmpty ||
         email.isEmpty ||
         (!_isSocialRegistration &&
             (password.isEmpty || confirmPassword.isEmpty)) ||
@@ -1651,7 +1648,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
               const SizedBox(height: 8),
               AppTextField(
-                label: '\u03a4\u03b7\u03bb\u03ad\u03c6\u03c9\u03bd\u03bf',
+                label: barberinLabel('Τηλέφωνο (προαιρετικό)', 'Phone (optional)'),
                 controller: _phoneController,
                 icon: Icons.call_outlined,
                 keyboardType: TextInputType.phone,
@@ -1761,6 +1758,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ] else ...[
               const SectionLabel(
                 '\u0395\u03c0\u03b9\u03c7\u03b5\u03af\u03c1\u03b7\u03c3\u03b7',
+              ),
+              const SizedBox(height: 8),
+              Text(
+                barberinLabel(
+                  'Το όνομα και η διεύθυνση χρειάζονται για να γνωρίζουν οι πελάτες πού γίνεται το ραντεβού.',
+                  'The shop name and address identify where customers attend their appointments.',
+                ),
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
               ),
               const SizedBox(height: 8),
               AppTextField(
