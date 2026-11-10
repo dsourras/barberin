@@ -1,5 +1,207 @@
 part of 'main.dart';
 
+bool isValidBarberinShopPhone(String value) {
+  final phone = value.trim();
+  final digits = phone.replaceAll(RegExp(r'\D'), '');
+  return RegExp(r'^\+?[0-9\s().-]+$').hasMatch(phone) &&
+      digits.length >= 7 &&
+      digits.length <= 15;
+}
+
+class BarberinOwnerContactPage extends StatefulWidget {
+  const BarberinOwnerContactPage({
+    super.key,
+    required this.shopId,
+    required this.initialPhone,
+    required this.onContinue,
+    this.requirePhone = false,
+  });
+
+  final String shopId;
+  final String initialPhone;
+  final VoidCallback onContinue;
+  final bool requirePhone;
+
+  @override
+  State<BarberinOwnerContactPage> createState() =>
+      _BarberinOwnerContactPageState();
+}
+
+class _BarberinOwnerContactPageState extends State<BarberinOwnerContactPage> {
+  late final TextEditingController _phoneController;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController = TextEditingController(text: widget.initialPhone);
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final phone = _phoneController.text.trim();
+    if (!isValidBarberinShopPhone(phone)) {
+      setState(
+        () => _error = barberinLabel(
+          'Βάλε έγκυρο αριθμό τηλεφώνου (7–15 ψηφία).',
+          'Enter a valid phone number (7–15 digits).',
+        ),
+      );
+      return;
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(
+        () => _error = barberinLabel(
+          'Συνδέσου ξανά για να αποθηκεύσεις τον αριθμό.',
+          'Sign in again to save the phone number.',
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final response = await http.post(
+        Uri.parse(
+          'https://europe-west1-barbero-88d00.cloudfunctions.net/barberoUpdateOwnerPhone',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'idToken': await user.getIdToken(),
+          'shopId': widget.shopId,
+          'phone': phone,
+        }),
+      );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('owner-phone-update-failed');
+      }
+      currentBarberoAccessibleShops.value = [
+        for (final shop in currentBarberoAccessibleShops.value)
+          shop.shopId == widget.shopId ? shop.copyWithOwnerPhone(phone) : shop,
+      ];
+      if (mounted) widget.onContinue();
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = barberinLabel(
+            'Ο αριθμός δεν αποθηκεύτηκε. Δοκίμασε ξανά.',
+            'The phone number was not saved. Try again.',
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.barberinBackground,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.requirePhone)
+                    const Center(child: BrandWordmark(width: 132))
+                  else
+                    AuthTopBar(onBack: widget.onContinue),
+                  const SizedBox(height: 28),
+                  Text(
+                    barberinLabel('Στοιχεία επικοινωνίας', 'Contact details'),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: context.barberinTextPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    barberinLabel(
+                      'Συμπλήρωσε το τηλέφωνο επικοινωνίας του καταστήματος για να ενεργοποιηθεί η διαχείρισή του και να ετοιμαστεί η δική του εφαρμογή κρατήσεων.',
+                      'Enter the shop contact phone to activate management and prepare its own booking app.',
+                    ),
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: context.barberinTextSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  AppTextField(
+                    label: barberinLabel('Τηλέφωνο καταστήματος', 'Shop phone'),
+                    controller: _phoneController,
+                    icon: Icons.call_outlined,
+                    keyboardType: TextInputType.phone,
+                    large: true,
+                    fieldHeight: 50,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    barberinLabel(
+                      'Ο αριθμός θα είναι διαθέσιμος στη διαχείριση και στην εφαρμογή κρατήσεων του καταστήματος, ώστε οι πελάτες να μπορούν να επικοινωνούν μαζί του.',
+                      'The number will be available in administration and the shop booking app so customers can contact the shop.',
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.5,
+                      color: context.barberinTextSecondary,
+                    ),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  PrimaryButton(
+                    label: _saving
+                        ? barberinLabel('Αποθήκευση...', 'Saving...')
+                        : barberinLabel(
+                            'Αποθήκευση τηλεφώνου',
+                            'Save phone number',
+                          ),
+                    onPressed: _saving ? () {} : () => unawaited(_save()),
+                  ),
+                  if (widget.requirePhone) ...[
+                    const SizedBox(height: 10),
+                    Center(
+                      child: TextButton(
+                        onPressed: _saving
+                            ? null
+                            : () => unawaited(FirebaseAuth.instance.signOut()),
+                        child: Text(barberinLabel('Αποσύνδεση', 'Sign out')),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class BarberinSettingsPage extends StatefulWidget {
   const BarberinSettingsPage({super.key});
 
@@ -55,9 +257,7 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
       _appointmentSettingsError = null;
     });
     try {
-      final saved = await _appointmentSettingsRepository.save(
-        settings: next,
-      );
+      final saved = await _appointmentSettingsRepository.save(settings: next);
       if (!mounted) return;
       setState(() => _appointmentSettings = saved);
     } catch (_) {
@@ -85,9 +285,7 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
 
   Future<void> _setRemindersEnabled(bool enabled) async {
     final current = _appointmentSettings ?? const AppointmentSettings();
-    await _saveAppointmentSettings(
-      current.copyWith(remindersEnabled: enabled),
-    );
+    await _saveAppointmentSettings(current.copyWith(remindersEnabled: enabled));
   }
 
   Future<void> _setCancellationCutoff(int minutes) async {
@@ -223,6 +421,77 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      if (_isOwner) ...[
+                        Panel(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionLabel(barberinLabel('Κατάστημα', 'Shop')),
+                              const SizedBox(height: 12),
+                              _SettingsNavigationTile(
+                                icon: Icons.call_outlined,
+                                title: barberinLabel(
+                                  'Τηλέφωνο επικοινωνίας',
+                                  'Contact phone',
+                                ),
+                                subtitle:
+                                    currentBarberoAccessibleShops.value
+                                            .where(
+                                              (shop) =>
+                                                  shop.shopId ==
+                                                  currentBarberoSession
+                                                      .value
+                                                      ?.shopId,
+                                            )
+                                            .map((shop) => shop.ownerPhone)
+                                            .firstOrNull
+                                            ?.isNotEmpty ==
+                                        true
+                                    ? currentBarberoAccessibleShops.value
+                                          .firstWhere(
+                                            (shop) =>
+                                                shop.shopId ==
+                                                currentBarberoSession
+                                                    .value
+                                                    ?.shopId,
+                                          )
+                                          .ownerPhone
+                                    : barberinLabel(
+                                        'Δεν έχει συμπληρωθεί',
+                                        'Not provided',
+                                      ),
+                                onTap: () {
+                                  final session = currentBarberoSession.value;
+                                  if (session == null) return;
+                                  final phone =
+                                      currentBarberoAccessibleShops.value
+                                          .where(
+                                            (shop) =>
+                                                shop.shopId == session.shopId,
+                                          )
+                                          .map((shop) => shop.ownerPhone)
+                                          .firstOrNull ??
+                                      '';
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (pageContext) =>
+                                          BarberinOwnerContactPage(
+                                            shopId: session.shopId,
+                                            initialPhone: phone,
+                                            onContinue: () {
+                                              Navigator.of(pageContext).pop();
+                                              if (mounted) setState(() {});
+                                            },
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       Panel(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +582,8 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
                                   ),
                                   _AppointmentConfirmationTile(
                                     value:
-                                        _appointmentSettings?.remindersEnabled ??
+                                        _appointmentSettings
+                                            ?.remindersEnabled ??
                                         true,
                                     enabled: _isOwner,
                                     loading: _savingAppointmentSettings,
@@ -347,8 +617,8 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
                                               ?.customerCancellationCutoffMinutes ??
                                           0,
                                     ),
-                                    enabled: _isOwner &&
-                                        !_savingAppointmentSettings,
+                                    enabled:
+                                        _isOwner && !_savingAppointmentSettings,
                                     onChanged: _setCancellationCutoff,
                                   ),
                                   Divider(
@@ -366,8 +636,8 @@ class _BarberinSettingsPageState extends State<BarberinSettingsPage> {
                                               ?.customerRescheduleCutoffMinutes ??
                                           0,
                                     ),
-                                    enabled: _isOwner &&
-                                        !_savingAppointmentSettings,
+                                    enabled:
+                                        _isOwner && !_savingAppointmentSettings,
                                     onChanged: _setRescheduleCutoff,
                                   ),
                                 ],
@@ -688,11 +958,7 @@ class _AppointmentConfirmationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 22,
-          color: context.barberinTextPrimary,
-        ),
+        Icon(icon, size: 22, color: context.barberinTextPrimary),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -714,15 +980,15 @@ class _AppointmentConfirmationTile extends StatelessWidget {
               Text(
                 value
                     ? onLabel ??
-                        barberinLabel(
-                          'Τα νέα ραντεβού επιβεβαιώνονται άμεσα.',
-                          'New appointments are confirmed immediately.',
-                        )
+                          barberinLabel(
+                            'Τα νέα ραντεβού επιβεβαιώνονται άμεσα.',
+                            'New appointments are confirmed immediately.',
+                          )
                     : offLabel ??
-                        barberinLabel(
-                          'Τα νέα ραντεβού χρειάζονται χειροκίνητη επιβεβαίωση.',
-                          'New appointments require manual confirmation.',
-                        ),
+                          barberinLabel(
+                            'Τα νέα ραντεβού χρειάζονται χειροκίνητη επιβεβαίωση.',
+                            'New appointments require manual confirmation.',
+                          ),
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.35,

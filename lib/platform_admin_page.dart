@@ -937,7 +937,7 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                         controller: ownerPhoneController,
                         keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(
-                          labelText: 'Τηλέφωνο owner *',
+                          labelText: 'Τηλέφωνο καταστήματος *',
                         ),
                       ),
                       TextField(
@@ -1039,6 +1039,15 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                             setDialogState(
                               () => errorText =
                                   'Συμπλήρωσε όλα τα υποχρεωτικά πεδία.',
+                            );
+                            return;
+                          }
+                          if (!isValidBarberinShopPhone(
+                            ownerPhoneController.text,
+                          )) {
+                            setDialogState(
+                              () => errorText =
+                                  'Βάλε έγκυρο τηλέφωνο καταστήματος (7–15 ψηφία).',
                             );
                             return;
                           }
@@ -1425,7 +1434,11 @@ class _PlatformAdminPageState extends State<PlatformAdminPage> {
                               setDialogState(() {
                                 saving = false;
                                 errorText =
-                                    'Δεν αποθηκεύτηκε η έγκριση: $error';
+                                    error.toString().contains(
+                                      'shop-contact-phone-required',
+                                    )
+                                    ? 'Το κατάστημα χρειάζεται τηλέφωνο επικοινωνίας πριν την προετοιμασία της εφαρμογής. Ο ιδιοκτήτης το συμπληρώνει στο Barberin.'
+                                    : 'Δεν αποθηκεύτηκε η έγκριση: $error';
                               });
                             }
                           }

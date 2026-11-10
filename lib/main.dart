@@ -671,6 +671,7 @@ class BarberoAccessibleShop {
     required this.shopName,
     required this.ownerName,
     required this.role,
+    this.ownerPhone = '',
     this.crewId = '',
     this.displayName = '',
     this.billing,
@@ -680,6 +681,7 @@ class BarberoAccessibleShop {
   final String shopId;
   final String shopName;
   final String ownerName;
+  final String ownerPhone;
   final BarberoRole role;
   final String crewId;
   final String displayName;
@@ -687,6 +689,19 @@ class BarberoAccessibleShop {
   final BarberoCustomerAppConfiguration? customerApp;
 
   bool get isOwner => role == BarberoRole.owner;
+
+  BarberoAccessibleShop copyWithOwnerPhone(String phone) =>
+      BarberoAccessibleShop(
+        shopId: shopId,
+        shopName: shopName,
+        ownerName: ownerName,
+        ownerPhone: phone,
+        role: role,
+        crewId: crewId,
+        displayName: displayName,
+        billing: billing,
+        customerApp: customerApp,
+      );
 
   String get roleLabel {
     switch (role) {
@@ -706,6 +721,7 @@ class BarberoAccessibleShop {
       shopId: '${json['shopId'] ?? ''}'.trim(),
       shopName: '${json['shopName'] ?? ''}'.trim(),
       ownerName: '${json['ownerName'] ?? ''}'.trim(),
+      ownerPhone: '${json['ownerPhone'] ?? ''}'.trim(),
       role: barberoRoleFromRaw('${json['role'] ?? ''}'),
       crewId: '${json['crewId'] ?? ''}'.trim(),
       displayName: '${json['displayName'] ?? ''}'.trim(),

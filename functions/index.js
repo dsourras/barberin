@@ -13,7 +13,7 @@ const nodemailer = require("nodemailer");
 const {buildCanonicalShopIdentity, normalizeShopAddress, normalizeShopLocation} =
   require("./greek_city_normalizer");
 const {normalizeCustomerAppPalette} = require("./customer_app_branding");
-const {hasRequiredSelfServeShopFields} =
+const {hasRequiredSelfServeShopFields, isValidShopContactPhone} =
   require("./shop_registration_validation");
 
 initializeApp();
@@ -4069,7 +4069,7 @@ exports.barberoCreatePlatformShop = onRequest(async (request, response) => {
     const logoBytes = decodeOptionalImage(logoBase64, logoContentType);
     const iconBytes = decodeOptionalImage(iconBase64, iconContentType);
 
-    if (!ownerName || !ownerPhone || !ownerEmail || !shopName ||
+    if (!ownerName || !isValidShopContactPhone(ownerPhone) || !ownerEmail || !shopName ||
         !location.address) {
       return json(response, 400, {
         ok: false,
@@ -4913,6 +4913,9 @@ exports.barberoManagePlatformCustomerApp = onRequest(async (request, response) =
     if (action === "request_provisioning") {
       if (request.body?.brandingApproved !== true) {
         return json(response, 400, {ok: false, message: "branding-approval-required"});
+      }
+      if (!isValidShopContactPhone(shop.ownerPhone)) {
+        return json(response, 400, {ok: false, message: "shop-contact-phone-required"});
       }
       if (!["provisioning_required", "failed"].includes(
           String(current.status || "provisioning_required").trim())) {
@@ -6637,6 +6640,36 @@ exports.barberoSaveSustainabilityProfile = onRequest(async (request, response) =
   }
 });
 
+exports.barberoUpdateOwnerPhone = onRequest(async (request, response) => {
+  if (request.method !== "POST") {
+    return json(response, 405, {ok: false, message: "method-not-allowed"});
+  }
+  try {
+    const decoded = await authenticateRequest(request);
+    const shopId = String(request.body?.shopId || "").trim();
+    const phone = String(request.body?.phone || "").trim();
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(shopId) ||
+        !isValidShopContactPhone(phone)) {
+      return json(response, 400, {ok: false, message: "invalid-shop-contact-phone"});
+    }
+    const shopRef = getDatabase().ref(`shops/${shopId}`);
+    const snapshot = await shopRef.get();
+    const shop = snapshot.exists() ? snapshot.val() : null;
+    if (!shop || shop.archivedForTesting === true ||
+        (shopId !== decoded.uid &&
+          String(shop.ownerUserUid || "").trim() !== decoded.uid)) {
+      return json(response, 403, {ok: false, message: "forbidden"});
+    }
+    if (String(shop.ownerPhone || "").trim() !== phone) {
+      await shopRef.update({ownerPhone: phone, updatedAt: new Date().toISOString()});
+    }
+    return json(response, 200, {ok: true, ownerPhone: phone});
+  } catch (error) {
+    console.error(error);
+    return json(response, 403, {ok: false, message: "forbidden"});
+  }
+});
+
 exports.barberoRegisterShop = onRequest(
     {secrets: [crewInvitationSmtpPassword]},
     async (request, response) => {
@@ -6683,7 +6716,7 @@ exports.barberoRegisterShop = onRequest(
       ownerEmail,
       shopName,
       address,
-    })) {
+    }) || (ownerPhone && !isValidShopContactPhone(ownerPhone))) {
       return json(response, 400, {ok: false, message: "missing-required-fields"});
     }
 
@@ -7912,6 +7945,8 @@ exports.barberoResolveSession = onRequest(async (request, response) => {
         shopId: entry.shopId,
         shopName: entry.shopName,
         ownerName: entry.ownerName,
+      ownerPhone: entry.role === "owner" ?
+        String(entry.shop?.ownerPhone || "").trim() : "",
       role: entry.role,
       crewId: entry.crewId,
       displayName: entry.displayName,

@@ -1360,6 +1360,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   void _goNext() {
     final ownerName = _ownerNameController.text.trim();
+    final phone = _phoneController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
@@ -1371,6 +1372,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         const SnackBar(
           content: Text(
             '\u03a3\u03c5\u03bc\u03c0\u03bb\u03ae\u03c1\u03c9\u03c3\u03b5 \u03cc\u03bb\u03b1 \u03c4\u03b1 \u03c0\u03b5\u03b4\u03af\u03b1.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (phone.isNotEmpty && !isValidBarberinShopPhone(phone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            barberinLabel(
+              'Βάλε έγκυρο τηλέφωνο καταστήματος (7–15 ψηφία).',
+              'Enter a valid shop phone number (7–15 digits).',
+            ),
           ),
         ),
       );
@@ -1648,7 +1663,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
               const SizedBox(height: 8),
               AppTextField(
-                label: barberinLabel('Τηλέφωνο (προαιρετικό)', 'Phone (optional)'),
+                label: barberinLabel(
+                  'Τηλέφωνο καταστήματος (ή στο επόμενο βήμα)',
+                  'Shop phone (or in the next step)',
+                ),
                 controller: _phoneController,
                 icon: Icons.call_outlined,
                 keyboardType: TextInputType.phone,

@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const {hasRequiredSelfServeShopFields} =
+const {hasRequiredSelfServeShopFields, isValidShopContactPhone} =
   require("./shop_registration_validation");
 
 const completeShop = {
@@ -10,7 +10,7 @@ const completeShop = {
   address: "Main Street 1",
 };
 
-test("self-service registration does not require an owner phone", () => {
+test("initial registration can collect the shop phone in the next step", () => {
   assert.equal(hasRequiredSelfServeShopFields(completeShop), true);
   assert.equal(hasRequiredSelfServeShopFields({
     ...completeShop,
@@ -25,4 +25,12 @@ test("shop identity and booking location remain required", () => {
       [field]: " ",
     }), false, field);
   }
+});
+
+test("shop contact phone accepts real national or international numbers", () => {
+  assert.equal(isValidShopContactPhone("+30 693 689 7702"), true);
+  assert.equal(isValidShopContactPhone("(212) 555-0198"), true);
+  assert.equal(isValidShopContactPhone("123"), false);
+  assert.equal(isValidShopContactPhone("+30 abc 6936897702"), false);
+  assert.equal(isValidShopContactPhone(""), false);
 });

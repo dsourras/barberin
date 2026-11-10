@@ -6,37 +6,69 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
-  test('product offer displays the exact price returned by each storefront', () {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    final offer = BarberoStoreProductOffer(
-      plan: BarberoBillingPlan.monthly,
-      product: ProductDetails(
-        id: 'barbero_monthly',
-        title: 'Monthly',
-        description: 'Subscription',
-        price: '24,99 €',
-        rawPrice: 24.99,
-        currencyCode: 'EUR',
-      ),
-    );
-    expect(offer.displayPrice, '24,99 €');
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    expect(offer.displayPrice, '24,99 €');
-
-    final usOffer = BarberoStoreProductOffer(
-      plan: BarberoBillingPlan.yearly,
-      product: ProductDetails(
-        id: 'barbero_yearly',
-        title: 'Yearly',
-        description: 'Subscription',
-        price: '\$249.99',
-        rawPrice: 249.99,
-        currencyCode: 'USD',
-      ),
-    );
-    expect(usOffer.displayPrice, '\$249.99');
+  test('shop phone requires a plausible contact number', () {
+    expect(isValidBarberinShopPhone(''), isFalse);
+    expect(isValidBarberinShopPhone('abc'), isFalse);
+    expect(isValidBarberinShopPhone('210 123 4567'), isTrue);
+    expect(isValidBarberinShopPhone('+30 693 123 4567'), isTrue);
   });
+
+  testWidgets('owner cannot skip the required shop contact step', (
+    tester,
+  ) async {
+    var continued = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BarberinOwnerContactPage(
+          shopId: 'test-shop',
+          initialPhone: '',
+          requirePhone: true,
+          onContinue: () => continued = true,
+        ),
+      ),
+    );
+    expect(find.byType(AuthTopBar), findsNothing);
+    expect(find.text('Αργότερα'), findsNothing);
+    await tester.tap(find.byType(PrimaryButton));
+    await tester.pump();
+    expect(find.textContaining('7–15'), findsOneWidget);
+    expect(continued, isFalse);
+  });
+
+  test(
+    'product offer displays the exact price returned by each storefront',
+    () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final offer = BarberoStoreProductOffer(
+        plan: BarberoBillingPlan.monthly,
+        product: ProductDetails(
+          id: 'barbero_monthly',
+          title: 'Monthly',
+          description: 'Subscription',
+          price: '24,99 €',
+          rawPrice: 24.99,
+          currencyCode: 'EUR',
+        ),
+      );
+      expect(offer.displayPrice, '24,99 €');
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(offer.displayPrice, '24,99 €');
+
+      final usOffer = BarberoStoreProductOffer(
+        plan: BarberoBillingPlan.yearly,
+        product: ProductDetails(
+          id: 'barbero_yearly',
+          title: 'Yearly',
+          description: 'Subscription',
+          price: '\$249.99',
+          rawPrice: 249.99,
+          currencyCode: 'USD',
+        ),
+      );
+      expect(usOffer.displayPrice, '\$249.99');
+    },
+  );
 
   testWidgets('menu pages can return to the previous page or home', (
     tester,
